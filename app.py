@@ -63,6 +63,11 @@ handle_pool = ThreadPool(processes=4)
 
 # Databases initialization
 import pymongo
+MONGO_DB_URI = os.getenv('MONGO_DB_URI', None)
+if MONGO_DB_URI is None:
+    print 'Define uri of MongoDB (Complete connection string).'
+    sys.exit(1)
+
 mongo_client = pymongo.MongoClient(MONGO_DB_URI)
 group_data = db.group_manager(mongo_client)
 
