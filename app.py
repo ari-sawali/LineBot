@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Handle not friend(has uid but no profile)
+# TODO: pymongo shell
+# TODO: transfer permission
+
+# TODO: USER MANUAL->new line of content has been changed ('\n'->'  ')
+
 # import custom module
 from bot import webpage_auto_gen, game_objects, db_query_manager
 from bot.system import line_api_proc, string_can_be_int, system_data, imgur_proc
@@ -24,7 +30,7 @@ import requests
 import json
 
 # Database import
-from db import kw_dict_mgr, kwdict_col, group_ban, gb_col, message_tracker, msg_track_col, msg_event_type
+import db
 
 # tool import
 import tool
@@ -56,10 +62,16 @@ app = Flask(__name__)
 handle_pool = ThreadPool(processes=4)
 
 # Databases initialization
+import pymongo
+mongo_client = pymongo.MongoClient(MONGO_DB_URI)
+group_data = db.group_manager(mongo_client)
+
+# TODO: group data usage change (Find all ref)
+
 db_query = db_query_manager("postgres", os.environ["DATABASE_URL"], app)
-kwd = kw_dict_mgr(db_query)
-gb = group_ban(db_query)
-msg_track = message_tracker(db_query)
+kwd = db.kw_dict_mgr(db_query)
+gb = db.group_ban(db_query)
+msg_track = db.message_tracker(db_query)
 
 app_root_url = os.getenv('APP_ROOT_URL', None)
 if app_root_url is None or app_root_url.startswith('http'):

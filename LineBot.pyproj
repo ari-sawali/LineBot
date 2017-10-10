@@ -33,13 +33,20 @@
     <Compile Include="bot\game_object_holder.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bot\sql.py">
+    <Compile Include="bot\sql.py" />
+    <Compile Include="db\db_base.py" />
+    <Compile Include="db\groupban.py" />
+    <Compile Include="db\kwdict.py" />
+    <Compile Include="db\msg_track.py" />
+    <Compile Include="db_sql\sql.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="db\base.py" />
+    <Compile Include="db\group_manage.py" />
     <Compile Include="tool\curr_exc\exceptions.py" />
     <Compile Include="tool\curr_exc\exchange.py" />
     <Compile Include="tool\curr_exc\__init__.py" />
-    <Compile Include="db\db_base.py">
+    <Compile Include="db_sql\db_base.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="imgur\client.py" />
@@ -76,11 +83,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="bot\__init__.py" />
-    <Compile Include="db\groupban.py">
+    <Compile Include="db_sql\groupban.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="db\kwdict.py" />
-    <Compile Include="db\msg_track.py">
+    <Compile Include="db_sql\kwdict.py" />
+    <Compile Include="db_sql\msg_track.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="db\__init__.py">
@@ -119,6 +126,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bot\" />
+    <Folder Include="db_sql %28temp deprecated%29\" />
+    <Folder Include="db_sql\" />
     <Folder Include="tool\curr_exc\" />
     <Folder Include="db\" />
     <Folder Include="game\" />

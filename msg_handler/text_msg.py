@@ -170,7 +170,7 @@ class text_msg(object):
         elif not line_api_proc.is_valid_user_id(line_api_proc.source_user_id(src)):
             text = error.main.unable_to_receive_user_id()
         else:
-            text = self.A(src, params)
+            text = self.A(src, params, True)
 
         return text
 

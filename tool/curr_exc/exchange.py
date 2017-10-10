@@ -198,13 +198,10 @@ class oxr(object):
         source_full = available_dict.get(source, u'(無資料)')
 
         return {'result': exchange_amt, 
-                'string': u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。\n{}'.format(
+                'string': u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(
                     amount, source, source_full,
                     exchange_amt, target, target_full,
-                    timestamp, self.get_available_str())}
-
-    def get_available_str(self):
-        return u'於約{days}天內還可以使用約{req}次。{days}日後次數重設為1000次。'.format(days=self.days_remaining, req=self.request_remaining)
+                    timestamp)}
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):

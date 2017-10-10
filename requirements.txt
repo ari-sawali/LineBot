@@ -6,3 +6,4 @@ validators
 numpy
 enum34
 sympy
+pymongo

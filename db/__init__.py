@@ -9,3 +9,7 @@ from .groupban import (
 from .msg_track import (
     message_tracker, msg_track_col, msg_event_type
 )
+
+from .group_manage import (
+    group_manager, group_data, config_type, user_data
+)
