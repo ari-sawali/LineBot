@@ -262,7 +262,7 @@ def handle_text_message(event):
     splitter = '\n'
 
     if text == 'confirm':
-        confirm_template = CarouselTemplate(columns=[
+        carousel_template = CarouselTemplate(columns=[
             CarouselColumn(text='Linked 1~3', title='Linked 1~3 (Title)', 
                            actions=[MessageTemplateAction(label='1 (ACTUAL)', text='小水母'),
                                     MessageTemplateAction(label='2', text='LINKED'),
