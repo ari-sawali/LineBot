@@ -5,9 +5,11 @@
 # TODO: Handle not friend(has uid but no profile)
 # TODO: pymongo shell
 # TODO: transfer permission
+# TODO: recognize account id(sender_id) instead of password
+# TODO: set pair to pinned
 
-# TODO: USER MANUAL->new line of content has been changed ('\n'->'  ')
-# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs
+# TODO: USER MANUAL->new line of content has been changed ('\n'->1st character is blank means new line included)
+# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs and some inappropriate pair (Thanks 小緯 for reviewing)
 # TODO: Announcement -> When name changed, bot may be unstable
 # TODO: Announcement -> According to free plan, some may not receive personal push notification
 
@@ -259,6 +261,31 @@ def handle_text_message(event):
     src = event.source
     splitter = '\n'
 
+    if text == 'confirm':
+        confirm_template = CarouselTemplate(columns=[
+            CarouselColumn(text='Linked 1~3', title='Linked 1~3 (Title)', 
+                           actions=[MessageTemplateAction(label='1 (ACTUAL)', text='小水母'),
+                                    MessageTemplateAction(label='2', text='LINKED'),
+                                    MessageTemplateAction(label='3', text='LINKED')]),
+            CarouselColumn(text='Linked 4~6', title='Linked 4~6 (Title)', 
+                           actions=[MessageTemplateAction(label='4', text='LINKED'),
+                                    MessageTemplateAction(label='5', text='LINKED'),
+                                    MessageTemplateAction(label='6', text='LINKED')]),
+            CarouselColumn(text='Linked 7~9', title='Linked 7~9 (Title)', 
+                           actions=[MessageTemplateAction(label='1', text='LINKED'),
+                                    MessageTemplateAction(label='2', text='LINKED'),
+                                    MessageTemplateAction(label='3', text='LINKED')]),
+            CarouselColumn(text='Linked 10~12', title='Linked 10~12 (Title)', 
+                           actions=[MessageTemplateAction(label='1', text='LINKED'),
+                                    MessageTemplateAction(label='2', text='LINKED'),
+                                    MessageTemplateAction(label='3', text='LINKED')]),
+            CarouselColumn(text='Linked 13~15', title='Linked 13~15 (Title)', 
+                           actions=[MessageTemplateAction(label='1', text='LINKED'),
+                                    MessageTemplateAction(label='2', text='LINKED'),
+                                    MessageTemplateAction(label='3', text='LINKED')])])
+        template_message = TemplateSendMessage(alt_text='Linked word template (Related ID: 1, 2, 3...15)', template=carousel_template)
+        api_reply(event.reply_token, template_message, src)
+
     try:
         if text == '561563ed706e6f696abbe050ad79cf334b9262da6f83bc1dcf7328f2':
             sys_data.intercept = not sys_data.intercept
@@ -488,21 +515,6 @@ def handle_text_message(event):
         
         error_msg = webpage_generator.rec_error(text, traceback.format_exc().decode('utf-8'), line_api_proc.source_channel_id(src))
         api_reply(token, TextSendMessage(text=error_msg), src)
-    return 
-
-    if text == 'confirm':
-        confirm_template = ConfirmTemplate(text='Do it?', actions=[MessageTemplateAction(label='Yes', text='Yes!'),
-            MessageTemplateAction(label='No', text='No!'),])
-        template_message = TemplateSendMessage(alt_text='Confirm alt text', template=confirm_template)
-        api_reply(event.reply_token, template_message, src)
-    elif text == 'carousel':
-        carousel_template = CarouselTemplate(columns=[CarouselColumn(text='hoge1', title='fuga1', actions=[URITemplateAction(label='Go to line.me', uri='https://line.me'),
-                PostbackTemplateAction(label='ping', data='ping')]),
-            CarouselColumn(text='hoge2', title='fuga2', actions=[PostbackTemplateAction(label='ping with text', data='ping',
-                    text='ping'),
-                MessageTemplateAction(label='Translate Rice', text='米')]),])
-        template_message = TemplateSendMessage(alt_text='Buttons alt text', template=carousel_template)
-        api_reply(event.reply_token, template_message, src)
 
 
 @handler.add(MessageEvent, message=StickerMessage)
