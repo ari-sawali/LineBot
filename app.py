@@ -7,6 +7,9 @@
 # TODO: transfer permission
 
 # TODO: USER MANUAL->new line of content has been changed ('\n'->'  ')
+# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs
+# TODO: Announcement -> When name changed, bot may be unstable
+# TODO: Announcement -> According to free plan, some may not receive personal push notification
 
 # import custom module
 from bot import webpage_auto_gen, game_objects, db_query_manager
@@ -234,11 +237,11 @@ def latex_webpage(timestamp):
 def full_ranking(type):
     sys_data.view_webpage()
     if type == 'user':
-        content = kw_dict_mgr.list_user_created_ranking(line_api, kwd.user_created_rank(50))
+        content = db.kw_dict_mgr.list_user_created_ranking(line_api, kwd.user_created_rank(50))
     elif type == 'used':
-        content = kw_dict_mgr.list_keyword_ranking(kwd.order_by_usedrank(10000))
+        content = db.kw_dict_mgr.list_keyword_ranking(kwd.order_by_usedrank(10000))
     elif type == 'called':
-        content = kw_dict_mgr.list_keyword_recently_called(kwd.recently_called(10000))
+        content = db.kw_dict_mgr.list_keyword_recently_called(kwd.recently_called(10000))
     else:
         content = error.webpage.no_content()
         
@@ -537,7 +540,7 @@ def handle_sticker_message(event):
                       [TextSendMessage(text=kwdata + u'貼圖圖包ID: {}\n貼圖圖片ID: {}'.format(package_id, sticker_id)),
                       TextSendMessage(text=u'圖片路徑(Android):\nemulated\\0\\Android\\data\\jp.naver.line.android\\stickers\\{}\\{}'.format(package_id, sticker_id)),
                       TextSendMessage(text=u'圖片路徑(Windows):\nC:\\Users\\USER_NAME\\AppData\\Local\\LINE\\Data\\Sticker\\{}\\{}'.format(package_id, sticker_id)),
-                      TextSendMessage(text=u'圖片路徑(網路):\n{}'.format(kw_dict_mgr.sticker_png_url(sticker_id)))],
+                      TextSendMessage(text=u'圖片路徑(網路):\n{}'.format(db.kw_dict_mgr.sticker_png_url(sticker_id)))],
                       src)
         else:
             auto_reply_system(rep, sticker_id, True, src)
@@ -735,7 +738,7 @@ def auto_reply_system(token, keyword, is_sticker_kw, src, is_kw_pic_sha=False):
         msg_track.log_message_activity(line_api_proc.source_channel_id(src), 
                                        db.msg_event_type.recv_stk_repl if is_sticker_kw else db.msg_event_type.recv_txt_repl)
         result = res[0]
-        reply_obj = kw_dict_mgr.split_reply(result[int(kwdict_col.reply)].decode('utf-8'), result[int(kwdict_col.is_pic_reply)])
+        reply_obj = db.kw_dict_mgr.split_reply(result[int(kwdict_col.reply)].decode('utf-8'), result[int(kwdict_col.is_pic_reply)])
 
         if result[int(kwdict_col.is_pic_reply)]:
             reply_object_list = [ImageSendMessage(original_content_url=reply_obj['main'], preview_image_url=reply_obj['main'])]
