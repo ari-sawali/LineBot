@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: Set Sytem config -> output error message
+
 # TODO: Handle not friend(has uid but no profile)
 # TODO: pymongo shell
 # TODO: transfer permission
@@ -274,7 +276,7 @@ def handle_text_message(event):
             api_reply(token, TextSendMessage(text='Calculator debugging {}.'.format('enabled' if sys_data.calc_debug else 'disabled')), src)
             return
 
-        msg_track.log_message_activity(line_api_proc.source_channel_id(src), msg_event_type.recv_txt)
+        msg_track.log_message_activity(line_api_proc.source_channel_id(src), db.msg_event_type.recv_txt)
 
         if text == 'ERRORERRORERRORERROR':
             raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
@@ -515,7 +517,7 @@ def handle_sticker_message(event):
         global game_data
         rps_obj = game_data.get_rps(cid)
 
-        msg_track.log_message_activity(cid, msg_event_type.recv_stk)
+        msg_track.log_message_activity(cid, db.msg_event_type.recv_stk)
 
         if rps_obj is not None:
             text = minigame_rps_capturing(rps_obj, True, sticker_id, line_api_proc.source_user_id(src))
@@ -558,7 +560,7 @@ def handle_sticker_message(event):
 
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
-    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), msg_event_type.recv_pic)
+    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), db.msg_event_type.recv_pic)
 
     src = event.source
     token = event.reply_token
@@ -600,7 +602,7 @@ def handle_postback(event):
 # Incomplete
 @handler.add(MessageEvent, message=LocationMessage)
 def handle_location_message(event):
-    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), msg_event_type.recv_txt)
+    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), db.msg_event_type.recv_txt)
     return
 
     api_reply(event.reply_token,
@@ -612,7 +614,7 @@ def handle_location_message(event):
 # Incomplete
 @handler.add(MessageEvent, message=(VideoMessage, AudioMessage))
 def handle_media_message(event):
-    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), msg_event_type.recv_txt)
+    msg_track.log_message_activity(line_api_proc.source_channel_id(event.source), db.msg_event_type.recv_txt)
     return
 
     if isinstance(event.message, ImageMessage):
@@ -692,9 +694,9 @@ def api_reply(reply_token, msgs, src):
 
         for index, msg in enumerate(msgs):
             if isinstance(msg, TemplateSendMessage):
-                msg_track.log_message_activity(line_api_proc.source_channel_id(src), msg_event_type.send_stk)
+                msg_track.log_message_activity(line_api_proc.source_channel_id(src), db.msg_event_type.send_stk)
             elif isinstance(msg, TextSendMessage):
-                msg_track.log_message_activity(line_api_proc.source_channel_id(src), msg_event_type.send_txt)
+                msg_track.log_message_activity(line_api_proc.source_channel_id(src), db.msg_event_type.send_txt)
 
                 if len(msg.text) > 2000:
                     msgs[index] = TextSendMessage(text=error.main.text_length_too_long(webpage_generator.rec_text(msg.text)))
@@ -731,7 +733,7 @@ def auto_reply_system(token, keyword, is_sticker_kw, src, is_kw_pic_sha=False):
     res = kwd.get_reply(keyword, is_sticker_kw, is_kw_pic_sha)
     if res is not None:
         msg_track.log_message_activity(line_api_proc.source_channel_id(src), 
-                                       msg_event_type.recv_stk_repl if is_sticker_kw else msg_event_type.recv_txt_repl)
+                                       db.msg_event_type.recv_stk_repl if is_sticker_kw else db.msg_event_type.recv_txt_repl)
         result = res[0]
         reply_obj = kw_dict_mgr.split_reply(result[int(kwdict_col.reply)].decode('utf-8'), result[int(kwdict_col.is_pic_reply)])
 
