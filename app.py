@@ -532,7 +532,7 @@ def handle_sticker_message(event):
             results = kwd.search_sticker_keyword(sticker_id)
             
             if results is not None:
-                kwdata = u'相關回覆組ID: {}。\n'.format(u', '.join([unicode(result[int(kwdict_col.id)]) for result in results]))
+                kwdata = u'相關回覆組ID: {}。\n'.format(u', '.join([unicode(result[int(db.kwdict_col.id)]) for result in results]))
             else:
                 kwdata = u'無相關回覆組ID。\n'
 
@@ -738,14 +738,14 @@ def auto_reply_system(token, keyword, is_sticker_kw, src, is_kw_pic_sha=False):
         msg_track.log_message_activity(line_api_proc.source_channel_id(src), 
                                        db.msg_event_type.recv_stk_repl if is_sticker_kw else db.msg_event_type.recv_txt_repl)
         result = res[0]
-        reply_obj = db.kw_dict_mgr.split_reply(result[int(kwdict_col.reply)].decode('utf-8'), result[int(kwdict_col.is_pic_reply)])
+        reply_obj = db.kw_dict_mgr.split_reply(result[int(db.kwdict_col.reply)].decode('utf-8'), result[int(db.kwdict_col.is_pic_reply)])
 
-        if result[int(kwdict_col.is_pic_reply)]:
+        if result[int(db.kwdict_col.is_pic_reply)]:
             reply_object_list = [ImageSendMessage(original_content_url=reply_obj['main'], preview_image_url=reply_obj['main'])]
 
             if reply_obj['attachment'] is not None:
                 reply_object_list.append(TextSendMessage(
-                    text=u'{}\n\nID: {}'.format(reply_obj['attachment'], result[int(kwdict_col.id)])))
+                    text=u'{}\n\nID: {}'.format(reply_obj['attachment'], result[int(db.kwdict_col.id)])))
                 
             api_reply(token, reply_object_list, src)
             return True
