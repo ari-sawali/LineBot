@@ -37,8 +37,8 @@ class group_manager(db_base):
     ID_LENGTH = 33
     GROUP_DB_NAME = 'group'
 
-    def __init__(self, mongo_client):
-        super(group_manager, self).__init__(mongo_client, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
+    def __init__(self, mongo_client_uri):
+        super(group_manager, self).__init__(mongo_client_uri, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
 
     def new_data(self, gid, admin_uid, admin_pw, config=config_type.ALL, pw_is_sha=False):
         if len(admin_uid) != group_manager.ID_LENGTH or len(gid) != group_manager.ID_LENGTH:

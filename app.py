@@ -68,8 +68,7 @@ if MONGO_DB_URI is None:
     print 'Define uri of MongoDB (Complete connection string).'
     sys.exit(1)
 
-mongo_client = pymongo.MongoClient(MONGO_DB_URI)
-group_data = db.group_manager(mongo_client)
+group_data = db.group_manager(MONGO_DB_URI)
 
 # TODO: group data usage change (Find all ref)
 
