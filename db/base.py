@@ -5,33 +5,34 @@ import pymongo
 from collections import MutableMapping
 
 class db_base(pymongo.collection.Collection):
+    COLLECTION_NAME = '_id'
     SEQUENCE = '_seq'
     NOT_EXIST_SEQ_ID = -1
 
-    def __init__(self, mongo_client_uri, db_name, collection_name, add_seq, index_col=None, codec_options=None, read_preference=None, write_concern=None, read_concern=None, **kwargs):
-        self._has_seq = add_seq
+    def __init__(self, mongo_client_uri, db_name, collection_name, has_seq, index_col_list=None, codec_options=None, read_preference=None, write_concern=None, read_concern=None, **kwargs):
+        self._has_seq = has_seq
+        self._collection_name = collection_name
 
         mongo_client = pymongo.MongoClient(mongo_client_uri)
 
         self._db = mongo_client.get_database(db_name)
         super(db_base, self).__init__(self._db, collection_name, False, codec_options, read_preference, write_concern, read_concern, **kwargs)
 
-        if index_col is None:
-            index_col = []
+        if index_col_list is None:
+            index_col_list = []
+        else:
+            index_col_list = list(index_col_list)
 
-        if not isinstance(index_col, (list, tuple)):
+        if not isinstance(index_col_list, (list, tuple)):
             raise ValueError('Column to make index must be list or tuple.')
         
-        if add_seq:
-            index_col = list(index_col)
-            index_col.extend(db_base.SEQUENCE)
+        if collection_name not in self._db.collection_names() and has_seq:
+            self._db.counter.insert({ db_base.COLLECTION_NAME: collection_name, db_base.SEQUENCE: 0 })
 
-        for column in index_col: 
-            self.create_index([(column, pymongo.ASCENDING)], unique=True)
-        
-        if collection_name not in self._db.collection_names() and add_seq:
-            self._db.counter.insert({ '_id': collection_name, 'seq': 0 })
-            self.create_index([(db_base.SEQUENCE, pymongo.ASCENDING)], unique=True)
+            if has_seq:
+                index_col_list.append(db_base.SEQUENCE)
+            
+            self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
     def insert_one(self, document, bypass_document_validation=False):
         inserted_seq_id = db_base.NOT_EXIST_SEQ_ID
@@ -64,10 +65,25 @@ class db_base(pymongo.collection.Collection):
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, inserted_seq_ids)
 
+    def drop(self):
+        self._db.counter.delete_many({ '_id': self._collection_name })
+        return super(db_base, self).drop()
+
+    def cursor_limit(self, cursor, limit=None, limit_default=None):
+        if (isinstance(limit, (int, long)) ^ (limit is None)) and (isinstance(limit_default, (int, long)) ^ (limit_default is None)):
+            if limit is not None:
+                return cursor.limit(limit)
+            elif limit_default is not None:
+                return cursor.limit(limit_default)
+            else:
+                return cursor
+        else:
+            raise ValueError('Either limit default and limit must be integer or None to present "not set".')
+
 
     def _next_seq(self, collection_name):
-        ret = db.counters.findAndModify({ 'query': { '_id': collection_name }, 'update': { '$inc': { 'seq': 1 } }, 'new': True})
-        return ret.seq
+        ret = self._db.counter.find_one_and_update({ db_base.COLLECTION_NAME: collection_name }, { '$inc': { db_base.SEQUENCE: 1 }}, None, None, True, pymongo.ReturnDocument.AFTER)
+        return ret[db_base.SEQUENCE]
 
 class dict_like_mapping(MutableMapping):
     def __init__(self, org_dict):

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+# IMPORTANT: Set Sytem config -> output error message
+
 import enum
 from datetime import datetime, timedelta
 from collections import defaultdict

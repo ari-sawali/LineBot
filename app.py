@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: Set Sytem config -> output error message
-
 # TODO: Handle not friend(has uid but no profile)
 # TODO: pymongo shell
-# TODO: transfer permission
 # TODO: recognize account id(sender_id) instead of password
-# TODO: set pair to pinned
+# TODO: last called pair sequence id
 
-# TODO: USER MANUAL->new line of content has been changed ('\n'->1st character is blank means new line included)
+# TODO: USER MANUAL->new line of content has been changed ('\n'->use cmd to trans \n)
+# TODO: User Manual -> Priority on pair belongs to group
+
 # TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs and some inappropriate pair (Thanks 小緯 for reviewing)
 # TODO: Announcement -> When name changed, bot may be unstable
 # TODO: Announcement -> According to free plan, some may not receive personal push notification
+
+# IMPORTANT: Config -> Calculator Timeout, kw_dict duplicate CD
 
 # import custom module
 from bot import webpage_auto_gen, game_objects, db_query_manager
@@ -261,6 +262,7 @@ def handle_text_message(event):
     src = event.source
     splitter = '\n'
 
+    # IMPORTANT: linked keyword (test block)
     if text == 'confirm':
         carousel_template = CarouselTemplate(columns=[
             CarouselColumn(text='Linked 1~3', title='Linked 1~3 (Title)', 
@@ -702,6 +704,7 @@ def introduction_template():
     return template_message
 
 
+# TODO: make wrapper class
 def api_reply(reply_token, msgs, src):
     if not sys_data.silence:
         if not isinstance(msgs, (list)):
@@ -756,8 +759,7 @@ def auto_reply_system(token, keyword, is_sticker_kw, src, is_kw_pic_sha=False):
             reply_object_list = [ImageSendMessage(original_content_url=reply_obj['main'], preview_image_url=reply_obj['main'])]
 
             if reply_obj['attachment'] is not None:
-                reply_object_list.append(TextSendMessage(
-                    text=u'{}\n\nID: {}'.format(reply_obj['attachment'], result[int(db.kwdict_col.id)])))
+                reply_object_list.append(TextSendMessage(text=reply_obj['attachment']))
                 
             api_reply(token, reply_object_list, src)
             return True

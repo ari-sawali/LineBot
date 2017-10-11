@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# TODO: transfer permission
+
 import os, sys
 import error
 
@@ -36,6 +38,55 @@ class config_type(enum.IntEnum):
 class group_manager(db_base):
     ID_LENGTH = 33
     GROUP_DB_NAME = 'group'
+
+    VALIDATION_JSON = """{
+                            "group_id": {
+                              "$regex": "^[CR]{1}[0-9a-f]{32}$",
+                              "$options": ""
+                            },
+                            "config_type": {
+                              "$type": 16
+                            },
+                            "admins": {
+                              "$exists": true
+                            },
+                            "admins.admin.pw": {
+                              "$regex": "^[0-9a-f]{56}$",
+                              "$options": ""
+                            },
+                            "admins.admin.uid": {
+                              "$regex": "^[U]{1}[0-9a-f]{32}$",
+                              "$options": ""
+                            },
+                            "admins.moderators": {
+                              "$exists": true
+                            },
+                            "$or": [
+                              {
+                                "admins.moderators": {
+                                  "$size": 0
+                                }
+                              },
+                              {
+                                "admins.moderators": {
+                                  "$elemMatch": {
+                                    "$and": [
+                                      {
+                                        "uid": {
+                                          "$regex": "^[U]{1}[0-9a-f]{32}$"
+                                        }
+                                      },
+                                      {
+                                        "pw": {
+                                          "$regex": "^[0-9a-f]{56}$"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                         }"""
 
     def __init__(self, mongo_client_uri):
         super(group_manager, self).__init__(mongo_client_uri, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])

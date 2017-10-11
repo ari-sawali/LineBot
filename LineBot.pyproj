@@ -23,6 +23,7 @@
     <Content Include="requirements.txt" />
     <Content Include="runtime.txt" />
     <Content Include="static\style.css" />
+    <Content Include="SystemConfig.ini" />
     <Content Include="templates\Base.html" />
     <Content Include="templates\ErrorList.html" />
     <Content Include="templates\LaTeX.html" />
@@ -126,7 +127,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bot\" />
-    <Folder Include="db_sql %28temp deprecated%29\" />
     <Folder Include="db_sql\" />
     <Folder Include="tool\curr_exc\" />
     <Folder Include="db\" />
