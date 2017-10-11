@@ -8,7 +8,7 @@
 # TODO: USER MANUAL->new line of content has been changed ('\n'->use cmd to trans \n)
 # TODO: User Manual -> Priority on pair belongs to group
 
-# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs and some inappropriate pair (Thanks 小緯 for reviewing)
+# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs and some inappropriate pair (Thanks 小緯(Anonymous) for reviewing), selection process is anonymous(not targeted)
 # TODO: Announcement -> When name changed, bot may be unstable
 # TODO: Announcement -> According to free plan, some may not receive personal push notification
 

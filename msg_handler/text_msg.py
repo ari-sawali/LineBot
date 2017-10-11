@@ -271,7 +271,7 @@ class text_msg(object):
             if action != 'ID':
                 results = None
                 error_occurred = True
-                text += error_occurred.main.invalid_thing_with_correct_format(u'參數1', u'ID', action)
+                text += error.main.invalid_thing_with_correct_format(u'參數1', u'ID', action)
             else:
                 if system.string_can_be_int(pair_id):
                     results = self.kwd.get_info_id(pair_id)   
