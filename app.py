@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-# TODO: Handle not friend(has uid but no profile)
+# TODO: Handle not friend(has uid but no profile) cannot operate
 # TODO: pymongo shell
 # TODO: recognize account id(sender_id) instead of password
 # TODO: last called pair sequence id
+# TODOL init join group -> choose to activate public group database in time, or randomly specify one UID to become moderator(provide user manual link) 
 
 # TODO: USER MANUAL->new line of content has been changed ('\n'->use cmd to trans \n)
 # TODO: User Manual -> Priority on pair belongs to group
@@ -698,7 +699,7 @@ def handle_join(event):
 def introduction_template():
     buttons_template = ButtonsTemplate(title=u'機器人簡介', text='歡迎使用小水母！', 
             actions=[URITemplateAction(label=u'點此開啟使用說明', uri='https://sites.google.com/view/jellybot'),
-                URITemplateAction(label=u'點此導向開發者LINE帳號', uri='http://line.me/ti/p/~raenonx'),
+                URITemplateAction(label=u'點此導向問題回報網址', uri='https://github.com/RaenonX/LineBot/issues'),
                 MessageTemplateAction(label=u'點此查看群組資料', text='JC\nG')])
     template_message = TemplateSendMessage(alt_text=u'機器人簡介', template=buttons_template)
     return template_message
