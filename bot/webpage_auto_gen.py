@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+# TODO: keep webpage content in specified (7 days?) time, auto delete after data expired. Append expire date at the end of webpage
+
 from enum import Enum
 from error import error
 from cgi import escape

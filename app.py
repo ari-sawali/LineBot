@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# TODO: Handle not friend(has uid but no profile) cannot operate
+# TODO: Handle error when not friend(has uid but no profile registered) -> ban any action that will need to display the name of user
 # TODO: pymongo shell
 # TODO: recognize account id(sender_id) instead of password
 # TODO: last called pair sequence id
-# TODOL init join group -> choose to activate public group database in time, or randomly specify one UID to become moderator(provide user manual link) 
+# TODO: init join group -> choose to activate public group database in time, or randomly specify one UID to become moderator(provide user manual link) 
+# TODO: disable reply for user individual (self-ban, group-manager-ban[This won't require line user name])
 
 # TODO: USER MANUAL->new line of content has been changed ('\n'->use cmd to trans \n)
 # TODO: User Manual -> Priority on pair belongs to group
@@ -61,6 +62,7 @@ from linebot.models import (
     ImageMessage, VideoMessage, AudioMessage,
     UnfollowEvent, FollowEvent, JoinEvent, LeaveEvent, BeaconEvent
 )
+from linebot.exceptions import LineBotApiError
 
 # import imgur API
 from imgur import ImgurClient
@@ -315,6 +317,8 @@ def handle_text_message(event):
             raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
         elif splitter in text:
             head, cmd, oth = msg_handler.split(text, splitter, 3)
+            head = head.replace(' ', '')
+            cmd = cmd.replace(' ', '')
 
             if head == 'JC':
                 params = command_executor.split_verify(cmd, splitter, oth)
@@ -504,13 +508,14 @@ def handle_text_message(event):
 
                     api_reply(token, TextSendMessage(text=text), src)
                     return
-    except exceptions.LineBotApiError as ex:
+    except LineBotApiError as ex:
         text = u'開機時間: {}\n\n'.format(sys_data.boot_up)
         text += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
         text += u'錯誤內容: {}'.format(ex.error.as_json_string()) 
 
         error_msg = webpage_generator.rec_error(text, traceback.format_exc().decode('utf-8'), line_api_proc.source_channel_id(src))
-        api_reply(token, TextSendMessage(text=error_msg), src)
+        if ex.status_code != 429:
+            api_reply(token, TextSendMessage(text=error_msg), src)
     except Exception as exc:
         text = u'開機時間: {}\n\n'.format(sys_data.boot_up)
         exc_type, exc_obj, exc_tb = sys.exc_info()

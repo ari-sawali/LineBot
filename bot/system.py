@@ -10,6 +10,7 @@ import hashlib
 import operator
 import traceback
 from math import *
+import error
 
 from linebot.models import SourceGroup, SourceRoom, SourceUser
 
@@ -193,6 +194,13 @@ class line_api_proc(object):
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
                 return None
+
+    def profile_name(self, uid):
+        prof = self.profile(uid)
+        if prof is None:
+            return error.error.main.user_name_not_found()
+        else:
+            return prof.display_name
 
     def profile_group(self, gid, uid):
         try:

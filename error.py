@@ -74,6 +74,10 @@ class error(object):
             return u'無對應LINE帳號資料。'
 
         @staticmethod
+        def user_name_not_found():
+            return u'找不到使用者名稱。'
+
+        @staticmethod
         def text_length_too_long(url):
             return u'因文字內容長度超過LINE Messaging API的最大字數限制(2000字)，故無法顯示。請點下列網址查看完整內容。\n{}'.format(url)
 
