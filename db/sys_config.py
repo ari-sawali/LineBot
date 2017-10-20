@@ -64,6 +64,6 @@ class config_data(dict_like_mapping):
         return self[field]
 
     def set(self, field, value):
-        return super(config_data, self).setdefault(field, value)
+        self[field] = value
 
 
