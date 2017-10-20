@@ -8,7 +8,7 @@ from collections import defaultdict
 from .base import db_base, dict_like_mapping
 import error
 from tool import random_gen
-from bot import line_api_wrapper
+from bot.system import line_api_wrapper
 
 CONTENT_HOLDER_DB_NAME = 'content'
 
