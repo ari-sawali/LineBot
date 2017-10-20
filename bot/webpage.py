@@ -31,7 +31,7 @@ class webpage_manager(object):
         self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
         with self._flask_app.app_context():
             err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
-            err_detail += u'頻道ID: {}\n\n'.format(channel_id)
+            err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
             err_detail += decoded_traceback
             
             print '===================================='
