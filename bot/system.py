@@ -16,7 +16,7 @@ from linebot.models import (
     CarouselTemplate, ButtonsTemplate, CarouselColumn, MessageTemplateAction, URITemplateAction
 )
 
-from db.content_holder import webpage_content_type
+import db
 
 class system_data(object):
     def __init__(self):
@@ -206,7 +206,7 @@ class line_api_wrapper(object):
         MAX_CHARACTER_LENGTH = 2000 # Ref: https://developers.line.me/en/docs/messaging-api/reference/#text
 
         if len(text) > MAX_CHARACTER_LENGTH:
-            text = error.error.main.text_length_too_long(webpage_gen.rec_webpage(text, webpage_content_type.TEXT))
+            text = error.error.main.text_length_too_long(webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
 
         return TextSendMessage(text=text)
 

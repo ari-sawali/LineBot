@@ -8,7 +8,7 @@ from collections import defaultdict
 from .base import db_base, dict_like_mapping
 import error
 from tool import random_gen
-from bot.system import line_api_wrapper
+import bot
 
 CONTENT_HOLDER_DB_NAME = 'content'
 
@@ -140,7 +140,7 @@ class game_object_holder(db_base):
         self.delete_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
 
     def create_data(self, chat_instance_id, creator_id, creator_name, rock, paper, scissor):
-        is_bot = line_api_wrapper.is_valid_user_id(chat_instance_id)
+        is_bot = bot.line_api_wrapper.is_valid_user_id(chat_instance_id)
 
         self.insert_one(rps(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
 
