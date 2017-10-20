@@ -15,6 +15,8 @@ from bot.commands import permission
 from .base import db_base, dict_like_mapping
 from .misc import FormattedStringResult
 
+GROUP_DB_NAME = 'group'
+
 class EnumWithName(Enum):
     def __new__(cls, value, name):
         member = object.__new__(cls)
@@ -74,10 +76,9 @@ class msg_type(EnumWithName):
 
 class group_manager(db_base):
     ID_LENGTH = 33
-    GROUP_DB_NAME = 'group'
 
     def __init__(self, mongo_db_uri):
-        super(group_manager, self).__init__(mongo_db_uri, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
+        super(group_manager, self).__init__(mongo_db_uri, GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
 
         self._activator = group_activator(mongo_db_uri)
         self._permission_manager = user_data_manager(mongo_db_uri)
@@ -414,7 +415,7 @@ class group_activator(db_base):
     DATA_EXPIRE_SECS = 24 * 60 * 60
 
     def __init__(self, mongo_db_uri):
-        super(group_activator, self).__init__(mongo_db_uri, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
+        super(group_activator, self).__init__(mongo_db_uri, GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
         self.create_index([(group_activation_data.TOKEN, pymongo.DESCENDING)], expireAfterSeconds=group_activator.DATA_EXPIRE_SECS)
 
     def new_data(self, group_id):
@@ -565,7 +566,7 @@ class user_data_manager(db_base):
     COLLECTION_NAME = 'user_data'
 
     def __init__(self, mongo_db_uri):
-        super(user_data_manager, self).__init__(mongo_db_uri, SYSTEM_DATABASE_NAME, user_data_manager.COLLECTION_NAME, False, [user_data.USER_ID])
+        super(user_data_manager, self).__init__(mongo_db_uri, GROUP_DB_NAME, user_data_manager.COLLECTION_NAME, False, [user_data.USER_ID])
         self._ADMIN_UID = os.getenv('ADMIN_UID', None)
         if self._ADMIN_UID is None:
             print 'Specify bot admin uid as environment variable "ADMIN_UID".'
