@@ -44,7 +44,7 @@ class config_data(dict_like_mapping):
     REPLY_ERROR = 'rep_err'
 
     def __init__(self, org_dict):
-        if org is None:
+        if org_dict is None:
             org_dict = {
                 config_data.SILENCE: False,
                 config_data.INTERCEPT: True,
