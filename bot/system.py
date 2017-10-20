@@ -275,6 +275,8 @@ class oxford_api_wrapper(object):
         Set environment variable "OXFORD_ID", "OXFORD_KEY" as presented api id and api key.
         """
         self._language = language
+        self._id = os.getenv('OXFORD_ID', None)
+        self._key = os.getenv('OXFORD_KEY', None)
         self._url = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/{}/'.format(self._language)
         self._enabled = False if self._id is None or self._key is None else True
 
