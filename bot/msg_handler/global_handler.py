@@ -111,7 +111,7 @@ class global_msg_handle(object):
             uid = bot.line_api_wrapper.source_user_id(src)
 
             try:
-                user_name = self._line_api_wrapper.profile_name(uid, src)
+                user_name = self._line_api_wrapper.profile_name(uid)
                 if user_name is None:
                     user_name = 'Empty'
             except bot.UserProfileNotFoundError:
