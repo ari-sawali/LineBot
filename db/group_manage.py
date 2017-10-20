@@ -415,7 +415,7 @@ class group_activator(db_base):
 
     def __init__(self, mongo_db_uri):
         super(group_activator, self).__init__(mongo_db_uri, group_manager.GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
-        self.create_index([(system_data.RECORD_DATE, pymongo.DESCENDING)], expireAfterSeconds=group_activator.DATA_EXPIRE_SECS)
+        self.create_index([(group_activation_data.TOKEN, pymongo.DESCENDING)], expireAfterSeconds=group_activator.DATA_EXPIRE_SECS)
 
     def new_data(self, group_id):
         """Return token string."""
