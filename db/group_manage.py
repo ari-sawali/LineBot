@@ -172,7 +172,8 @@ class group_manager(db_base):
                 self._set_cache_config(gid, group.config_type)
                 return cfg_type
             else:
-                raise ValueError(error.error.main.miscellaneous(u'群組資料未登錄。').encode('utf-8'))
+                self.new_data(gid)
+                return self.get_group_config_type(gid)
 
     def get_user_permission(self, gid, uid):
         permission = self._get_cache_config(gid. uid)

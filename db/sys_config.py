@@ -24,7 +24,7 @@ class system_config(db_base):
         if self._cache is None:
             self._set_cache()
 
-        return self._cache.get(field)
+        return self._cache.get(field_var)
 
     def _set_cache(self):
         self._cache = config_data(self.find_one())
