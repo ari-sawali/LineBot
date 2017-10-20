@@ -842,8 +842,8 @@ class pair_data(dict_like_mapping):
     def basic_text(self, display_status=False):
         kw = group_dict_manager._keyword_repr(self, False)
         rep = group_dict_manager._reply_repr(self, False)
-        rep_att = self.reply_attach_text
-        linked = u'、'.join(self.linked_words)
+        rep_att = u'無' if self.reply_attach_text is None else self.reply_attach_text
+        linked = u'、'.join(self.linked_words) if len(self.linked_words) > 0 else None
         
         if display_status:
             status = u''
@@ -857,8 +857,10 @@ class pair_data(dict_like_mapping):
         text = u'#{}{}'.format(self.seq_id, status)
         text += u'\n關鍵字內容: {}'.format(kw)
         text += u'\n回覆內容: {}'.format(rep)
-        text += u'\n回覆附加文字: {}'.format(rep_att)
-        text += u'\n相關關鍵字: {}'.format(linked)
+        if self.reply_type == word_type.PICTURE:
+            text += u'\n回覆附加文字: {}'.format(rep_att)
+        if linked is not None:
+            text += u'\n相關關鍵字: {}'.format(linked)
 
         return text
 

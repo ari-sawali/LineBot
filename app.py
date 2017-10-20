@@ -2,8 +2,6 @@
 
 # TODO: self silent (new db)
 
-# IMPORTANT: Delete env var: ADMIN, G_ADMIN, G_MOD
-
 import os, sys, errno
 import tempfile
 import traceback
@@ -222,7 +220,7 @@ def handle_text_message(event):
                 return
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            text += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exc.message.decode("utf-8"))
+            text += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
         
         text += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
