@@ -251,9 +251,6 @@ class global_msg_handle(object):
         if full_text == 'ERRORERRORERRORERROR':
             raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
 
-        group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
-        user_permission = self._get_user_permission(src)
-
         #########################################################
         ### TERMINATE CHECK - MAIN SYSTEM CONFIG CHANGING KEY ###
         #########################################################
@@ -273,6 +270,13 @@ class global_msg_handle(object):
         if terminate_1 or group_config == db.config_type.SILENCE:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
+
+        ############################################
+        ######## ASSIGN NECESSARY VARIABLES ########
+        ############################################
+
+        group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
+        user_permission = self._get_user_permission(src)
 
         ########################################
         ### TERMINATE CHECK - SYSTEM COMMAND ###
