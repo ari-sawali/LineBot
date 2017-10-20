@@ -255,7 +255,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - MAIN SYSTEM CONFIG CHANGING KEY ###
         #########################################################
 
-        terminate_0 = self._handle_text_sys_config(event, full_text)
+        terminate_0 = self._handle_text_sys_config(event)
 
         if terminate_0:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
