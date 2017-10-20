@@ -129,7 +129,7 @@ class line_api_wrapper(object):
     def reply_message(self, reply_token, msgs):
         self._line_api.reply_message(reply_token, msgs)
 
-    def reply_message_text(self, reply_token, msgs, webpage_gen):
+    def reply_message_text(self, reply_token, msgs):
         if isinstance(msgs, (str, unicode)):
             msgs = [msgs]
         self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, self._webpage_generator) for msg in msgs])
