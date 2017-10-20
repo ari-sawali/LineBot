@@ -18,9 +18,6 @@ class system_config(db_base):
             self._set_cache()
 
         self._cache.set(field_var, setting_bool)
-        print field_var
-        print setting_bool
-        print self._cache
         return config_data(self.find_one_and_update({}, { '$set': self._cache }, None, None, True, pymongo.ReturnDocument.AFTER))
 
     def get(self, field_var):
