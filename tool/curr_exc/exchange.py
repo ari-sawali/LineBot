@@ -5,7 +5,7 @@ import urllib
 import datetime
 import json
 from collections import OrderedDict
-from bot import system
+import bot
 
 import exceptions
 
@@ -202,7 +202,7 @@ class oxr(object):
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):
-        symbol_length = len(system.left_alphabet(symbol_text.replace(' ', '')))
+        symbol_length = len(bot.left_alphabet(symbol_text.replace(' ', '')))
         if symbol_length == 3:
             return True
         elif symbol_length > 3 and symbol_length / 3 - 1 == symbol_text.count(' ') and symbol_length % 3 == 0:

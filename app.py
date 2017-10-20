@@ -287,7 +287,7 @@ def handle_join(event):
         if group_data is None:
             activation_token = global_handler._group_manager.new_data(cid, ADMIN_UID, db.config_type.ALL)
             
-            group_action_dict['點此激活公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
+            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, '群組資料查閱快捷樣板', '相關指令')
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
