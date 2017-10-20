@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from enum import Enum
+from enum import IntEnum
 
-class permission(Enum):
-    RESTRICTED = -1, '限制用戶'
-    USER = 0, '一般用戶'
-    MODERATOR = 1, '副管理員'
-    ADMIN = 2, '管理員'
-    BOT_ADMIN = 3, '機器人管理員'
-
+class EnumWithName(IntEnum):
     def __new__(cls, value, name):
         member = object.__new__(cls)
         member._value_ = value
@@ -20,6 +14,16 @@ class permission(Enum):
 
     def __str__(self):
         return self._name
+
+    def __unicode__(self):
+        return unicode(self._name.decode('utf-8'))
+
+class permission(EnumWithName):
+    RESTRICTED = -1, '限制用戶'
+    USER = 0, '一般用戶'
+    MODERATOR = 1, '副管理員'
+    ADMIN = 2, '管理員'
+    BOT_ADMIN = 3, '機器人管理員'
 
     def __gt__(a, b):
         return int(a) > int(b)
@@ -39,28 +43,10 @@ class permission(Enum):
     def __lt__(a, b):
         return int(a) < int(b)
 
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
-
-class cmd_category(Enum):
+class cmd_category(EnumWithName):
     MAIN = 0, '主要指令'
     EXTEND = 1, '延伸指令'
     GAME = 2, '遊戲用指令'
-
-    def __new__(cls, value, name):
-        member = object.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
 
 class command_object(object):
     def __init__(self, min_split, max_split, cmd_category, lowest_permission_req=permission.USER):

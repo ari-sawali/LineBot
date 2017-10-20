@@ -3,7 +3,7 @@
 from ConfigParser import SafeConfigParser
 import enum
 
-class EnumWithName(enum.Enum):
+class EnumWithName(enum.IntEnum):
     def __new__(cls, value, name):
         member = object.__new__(cls)
         member._value_ = value

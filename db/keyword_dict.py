@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from enum import Enum
+from enum import IntEnum
 
 import pymongo
 from datetime import timedelta, datetime
@@ -11,7 +11,7 @@ from .misc import FormattedStringResult
 
 PUBLIC_GROUP_ID = 'C--------------------------------'
 
-class word_type(Enum):
+class word_type(IntEnum):
     TEXT = 0, '文字'
     STICKER = 1, '貼圖'
     PICTURE = 2, '圖片'
@@ -858,7 +858,7 @@ class pair_data(dict_like_mapping):
         text += u'\n關鍵字內容: {}'.format(kw)
         text += u'\n回覆內容: {}'.format(rep)
         if self.reply_type == word_type.PICTURE:
-            text += u'\n回覆附加文字: {}'.format(rep_att)
+            text += u'\n附加回覆: {}'.format(rep_att)
         if linked is not None:
             text += u'\n相關關鍵字: {}'.format(linked)
 

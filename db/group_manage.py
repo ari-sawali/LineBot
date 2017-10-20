@@ -7,7 +7,7 @@ import urlparse
 import psycopg2
 from sqlalchemy.exc import IntegrityError
 import hashlib
-from enum import Enum, IntEnum
+from enum import IntEnum
 import pymongo
 import tool
 
@@ -17,7 +17,7 @@ from .misc import FormattedStringResult
 
 GROUP_DB_NAME = 'group'
 
-class EnumWithName(Enum):
+class EnumWithName(IntEnum):
     def __new__(cls, value, name):
         member = object.__new__(cls)
         member._value_ = value
