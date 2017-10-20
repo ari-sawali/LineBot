@@ -215,17 +215,17 @@ def handle_text_message(event):
     try:
         global_handler.handle_text(event)
     except Exception as ex:
-        text = u'開機時間: {}\n'.format(sys_data.boot_up)
+        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
         if isinstance(ex, LineBotApiError):
-            text += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-            text += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
+            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
+            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
             if ex.status_code == 429:
                 return
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            text += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
         
-        text += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
+        error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
         line_api.reply_message_text(token, error_msg)
@@ -233,25 +233,24 @@ def handle_text_message(event):
 
 @handler.add(MessageEvent, message=StickerMessage)
 def handle_sticker_message(event):
-    rep = event.reply_token
+    token = event.reply_token
     src = event.source
 
     try:
         global_handler.handle_sticker(event)
-    except exceptions.LineBotApiError as ex:
-        text = u'開機時間: {}\n\n'.format(sys_data.boot_up)
-        text += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-        for err in ex.error.details:
-            text += u'錯誤內容: {}\n錯誤訊息: {}\n'.format(err.property, err.message.decode("utf-8"))
+    except Exception as ex:
+        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
+        if isinstance(ex, LineBotApiError):
+            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
+            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
+            if ex.status_code == 429:
+                return
+        else:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
+        
+        error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
-        error_msg = webpage_generator.rec_error(text, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
-    except Exception as exc:
-        text = u'開機時間: {}\n\n'.format(sys_data.boot_up)
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        text += u'錯誤種類: {}\n\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exc.message.decode("utf-8"))
-        
-        error_msg = webpage_generator.rec_error(text, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
-        
     if sys_config.get(db.config_data.REPLY_ERROR):
         line_api.reply_message_text(token, error_msg)
 
@@ -263,12 +262,18 @@ def handle_image_message(event):
 
     try:
         global_handler.handle_sticker(event)
-    except Exception as exc:
-        text = u'開機時間: {}\n\n'.format(sys_data.boot_up)
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        text += u'錯誤種類: {}\n\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exc.message.decode("utf-8"))
+    except Exception as ex:
+        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
+        if isinstance(ex, LineBotApiError):
+            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
+            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
+            if ex.status_code == 429:
+                return
+        else:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
         
-        error_msg = webpage_generator.rec_error(text, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
+        error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
         line_api.reply_message_text(token, error_msg)
