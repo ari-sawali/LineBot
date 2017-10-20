@@ -197,11 +197,8 @@ class oxr(object):
         target_full = available_dict.get(target, u'(無資料)')
         source_full = available_dict.get(source, u'(無資料)')
 
-        return {'result': exchange_amt, 
-                'string': u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(
-                    amount, source, source_full,
-                    exchange_amt, target, target_full,
-                    timestamp)}
+        return ConvertResult(exchange_amt, 
+                             u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):
@@ -212,3 +209,17 @@ class oxr(object):
             return True
         else:
             return False
+
+class ConvertResult(object):
+    def __init__(self, result, formatted_string):
+        self._result = result
+        self._formatted_string = formatted_string
+
+    @property
+    def result(self):
+        return self._result
+    
+    @property
+    def formatted_string(self):
+        return self._formatted_string
+        

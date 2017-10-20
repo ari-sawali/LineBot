@@ -18,15 +18,20 @@ class calc_type(Enum):
     algebraic_equations = 2
 
 class text_calculator(object):
-    # IMPORTANT: always timeout on non calculatable text (basic)
+    EQUATION_KEYWORD = '=0'
 
-    def __init__(self, timeout=15.0):
+    def __init__(self, timeout=15):
         self._queue = MultiQueue()
         self._timeout = timeout
 
-        self._equation_keyword = '=0'
+    def calculate(self, text, debug=False, sympy_calc=False, calculation_type=None):
+        """
+        Set calc_type to None to use auto detect.
 
-    def calculate(self, text, debug=False, sympy_calc=False):
+        Auto detect format:
+        Polynomial Factorization: no new line, no EQUATION_KEYWORD
+        Algebraic equation: contains new line, contains EQUATION_KEYWORD, 1st line means variables(use comma to separate), 2nd line or more is equation 
+        """
         result_data = calc_result_data(text)
         init_time = time.time()
         
@@ -35,18 +40,21 @@ class text_calculator(object):
             return result_data
 
         try:
-            if sympy_calc:
-                calc_type_var = self._sympy_calculate_type(text)
+            if calculation_type is None:
+                if sympy_calc:
+                    calc_type_var = self._sympy_calculate_type(text)
 
-                if calc_type_var == calc_type.unknown:
-                    result_data.success = False
-                    result_data.calc_result = error.string_calculator.unknown_calculate_type()
+                    if calc_type_var == calc_type.unknown:
+                        result_data.success = False
+                        result_data.calc_result = error.string_calculator.unknown_calculate_type()
 
-                    return result_data
+                        return result_data
 
-                calc_proc = self._get_calculate_proc(calc_type_var, (init_time, text, debug, self._queue))
+                    calc_proc = self._get_calculate_proc(calc_type_var, (init_time, text, debug, self._queue))
+                else:
+                    calc_proc = self._get_calculate_proc(calc_type.normal, (init_time, text, debug, self._queue))
             else:
-                calc_proc = self._get_calculate_proc(calc_type.normal, (init_time, text, debug, self._queue))
+                calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
             calc_proc.start()
 
             result_data = self._queue.get(True, self._timeout)
@@ -143,12 +151,12 @@ class text_calculator(object):
             var_init_symbol = ' '.join(var_init.split(','))
             formula_list = text_line[1:]
 
-            if any((not formula.endswith(self._equation_keyword)) for formula in formula_list):
+            if any((not formula.endswith(text_calculator.EQUATION_KEYWORD)) for formula in formula_list):
                 result_data.success = False
                 result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
                 queue.put(result_data)
             
-            formula_list_replaced = [text_calculator.formula_to_py(eq).replace(self._equation_keyword, '') for eq in text_line[1:]]
+            formula_list_replaced = [text_calculator.formula_to_py(eq).replace(text_calculator.EQUATION_KEYWORD, '') for eq in text_line[1:]]
 
             # [u'x**2-1']
 
@@ -214,9 +222,9 @@ class text_calculator(object):
         queue.put(result_data)
 
     def _sympy_calculate_type(self, text):
-        if self._equation_keyword in text and '\n' in text:
+        if text_calculator.EQUATION_KEYWORD in text and '\n' in text:
             return calc_type.algebraic_equations
-        elif self._equation_keyword not in text and '\n' not in text:
+        elif text_calculator.EQUATION_KEYWORD not in text and '\n' not in text:
             return calc_type.polynomial_factorization
         else:
             return calc_type.unknown

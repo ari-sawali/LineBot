@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: Set Sytem config -> output error message
-
+import os, sys
 import enum
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -9,172 +8,77 @@ from linebot import exceptions
 import hashlib
 import operator
 import traceback
-from math import *
 import error
 
-from linebot.models import SourceGroup, SourceRoom, SourceUser
+from linebot.models import (
+    SourceGroup, SourceRoom, SourceUser,
+    TextSendMessage, ImageSendMessage, TemplateSendMessage,
+    CarouselTemplate, ButtonsTemplate, CarouselColumn, MessageTemplateAction, URITemplateAction
+)
 
-class _command(object):
-    def __init__(self, min_split=2, max_split=2, non_user_permission_required=False):
-        self._split_max = max_split
-        self._split_min = min_split
-        self._count = 0
-        self._non_user_permission_required = non_user_permission_required
-
-    @property
-    def split_max(self):
-        """Maximum split count."""
-        return self._split_max + (1 if self._non_user_permission_required else 0) 
-
-    @property
-    def split_min(self):
-        """Minimum split count."""
-        return self._split_min
-
-    @property
-    def count(self):
-        """Called count."""
-        return self._count
-
-    @count.setter
-    def count(self, value):
-        """Called count."""
-        self._count = value 
-
-    @property
-    def non_user_permission_required(self):
-        """Required Permission"""
-        return self._non_user_permission_required
-
-_sys_cmd_dict = {'S': _command(1, 1, True), 
-                'A': _command(2, 4, False), 
-                'M': _command(2, 4, True), 
-                'D': _command(1, 2, False), 
-                'R': _command(1, 2, True), 
-                'Q': _command(1, 2, False), 
-                'C': _command(0, 0, True), 
-                'I': _command(1, 2, False), 
-                'K': _command(2, 2, False), 
-                'P': _command(0, 1, False), 
-                'G': _command(0, 1, False), 
-                'GA': _command(1, 5, True), 
-                'H': _command(0, 1, False), 
-                'SHA': _command(1, 1, False), 
-                'O': _command(1, 1, False), 
-                'B': _command(0, 0, False), 
-                'RD': _command(1, 2, False),
-                'STK': _command(0, 0, False),
-                'PIC': _command(0, 0, False),
-                'T': _command(1, 1, False),
-                'C': _command(0, 3, False)}
-
-_game_cmd_dict = {'RPS': _command(0, 4, False)}
-
-_helper_cmd_dict = {'MFF': _command(0, 8, False),
-                    'CALC': _command(0, 0, False)}
+from db import webpage_content_type
 
 class system_data(object):
     def __init__(self):
         self._boot_up = datetime.now() + timedelta(hours=8)
-        self._silence = False
-        self._intercept = True
-        self._string_calc_debug = False
         self._last_sticker = defaultdict(str)
         self._last_pic_sha = defaultdict(str)
-        self._sys_cmd_dict = _sys_cmd_dict
-        self._game_cmd_dict = _game_cmd_dict
-        self._helper_cmd_dict = _helper_cmd_dict
-        self._webpage_viewed = 0
+        self._last_pair = defaultdict(str)
 
     def set_last_sticker(self, cid, stk_id):
-        self._last_sticker[cid] = str(stk_id)
+        self._last_sticker[cid] = stk_id
 
     def get_last_sticker(self, cid):
         return self._last_sticker.get(cid)
 
     def set_last_pic_sha(self, cid, sha):
-        self._last_pic_sha[cid] = str(sha)
+        self._last_pic_sha[cid] = sha
 
     def get_last_pic_sha(self, cid):
         return self._last_pic_sha.get(cid)
 
-    @property
-    def silence(self):
-        return self._silence
+    def set_last_pair(self, cid, pair_id):
+        self._last_pair[cid] = pair_id
 
-    @silence.setter
-    def silence(self, value):
-        self._silence = value
-        
-    @property
-    def intercept(self):
-        return self._intercept
-
-    @intercept.setter
-    def intercept(self, value):
-        self._intercept = value
-        
-    @property
-    def calc_debug(self):
-        return self._string_calc_debug
-
-    @calc_debug.setter
-    def calc_debug(self, value):
-        self._string_calc_debug = value
+    def get_last_pair(self, cid):
+        return self._last_pair.get(cid)
 
     @property
     def boot_up(self):
         return self._boot_up
 
-    @property
-    def sys_cmd_dict(self):
-        return self._sys_cmd_dict
+class line_event_source_type(Enum):
+    USER = 0, '私訊'
+    GROUP = 1, '群組'
+    ROOM = 2, '房間'
 
-    @property
-    def sys_cmd_called(self):
-        return sum([x.count for x in self._sys_cmd_dict.itervalues()])
+    def __new__(cls, value, name):
+        member = object.__new__(cls)
+        member._value_ = value
+        member._name = name
+        return member
 
-    @property
-    def game_cmd_dict(self):
-        return self._game_cmd_dict
+    def __int__(self):
+        return self.value
 
-    @property
-    def sys_cmd_called(self):
-        return sum([x.count for x in self._game_cmd_dict.itervalues()])
+    def __str__(self):
+        return self._name
 
-    @property
-    def helper_cmd_dict(self):
-        return self._helper_cmd_dict
+    def __unicode__(self):
+        return unicode(self._name.decode('utf-8'))
 
-    @property
-    def sys_cmd_called(self):
-        return sum([x.count for x in self._helper_cmd_dict.itervalues()])
+    @staticmethod
+    def determine(event_source):
+        if isinstance(event_source, SourceUser):
+            return line_event_source_type.USER
+        elif isinstance(event_source, SourceGroup):
+            return line_event_source_type.GROUP
+        elif isinstance(event_source, SourceRoom):
+            return line_event_source_type.ROOM
+        else:
+            raise ValueError(error.error.main.miscellaneous(u'Undefined type of event source instance.'))
 
-    @property
-    def webpage_viewed(self):
-        return self._webpage_viewed
-
-    def view_webpage(self):
-        self._webpage_viewed += 1
-
-class permission_verifier(object):
-    def __init__(self, permission_key_list):
-        self._permission_list = [None]
-        self._permission_list.extend(permission_key_list)
-
-    def permission_level(self, key):
-        try:
-            return permission(self._permission_list.index(hashlib.sha224(key).hexdigest()))
-        except ValueError:
-            return permission.user
-
-class permission(enum.IntEnum):
-    user = 0
-    moderator = 1
-    group_admin = 2
-    bot_admin = 3
-
-class line_api_proc(object):
+class line_api_wrapper(object):
     def __init__(self, line_api):
         self._line_api = line_api
 
@@ -183,12 +87,13 @@ class line_api_proc(object):
             if src is None:
                 return self._line_api.get_profile(uid)
             else:
-                if isinstance(src, SourceUser):
+                source_type = line_event_source_type.determine(src)
+                if source_type == line_event_source_type.USER:
                     return self.profile(uid, None)
-                elif isinstance(src, SourceGroup):
-                    return self.profile_group(line_api_proc.source_channel_id(src), uid)
-                elif isinstance(src, SourceRoom):
-                    return self.profile_room(line_api_proc.source_channel_id(src), uid)
+                elif source_type == line_event_source_type.GROUP:
+                    return self.profile_group(line_api_wrapper.source_channel_id(src), uid)
+                elif source_type == line_event_source_type.ROOM:
+                    return self.profile_room(line_api_wrapper.source_channel_id(src), uid)
                 else:
                     raise ValueError('Instance not defined.')
         except exceptions.LineBotApiError as ex:
@@ -196,9 +101,10 @@ class line_api_proc(object):
                 return None
 
     def profile_name(self, uid):
+        """Raise UserProfileNotFoundError if user name is unreachable."""
         prof = self.profile(uid)
         if prof is None:
-            return error.error.main.user_name_not_found()
+            raise UserProfileNotFoundError()
         else:
             return prof.display_name
 
@@ -222,6 +128,11 @@ class line_api_proc(object):
     def reply_message(self, reply_token, msgs):
         self._line_api.reply_message(reply_token, msgs)
 
+    def reply_message_text(self, reply_token, msgs):
+        if isinstance(msgs, (str, unicode)):
+            msgs = [msgs]
+        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg) for msg in msgs])
+
     @staticmethod
     def source_channel_id(event_source):
         return event_source.sender_id
@@ -235,10 +146,79 @@ class line_api_proc(object):
         return uid is not None and len(uid) == 33 and uid.startswith('U')
     
     @staticmethod
-    def is_valid_room_group_id(uid):
-        return uid is not None and len(uid) == 33 and (uid.startswith('C') or uid.startswith('R'))
+    def is_valid_room_group_id(gid):
+        return gid is not None and len(gid) == 33 and (gid.startswith('C') or gid.startswith('R'))
 
-class imgur_proc(object):
+    @staticmethod
+    def wrap_template_with_action(data_dict, alt_text, title):
+        """
+        data_dict should follow the format below, and the length of dict must less than or equals to 15. Result may be unexpected if the format is invalid.
+        { DISPLAY_TEXT: ACTION_MESSAGE }
+
+        title will display as "{title} {index}", index is the index of carousel.
+        title should be str type.
+
+        Return TemplateSendMessage.
+        """
+        MAX_ACTIONS = 15
+        MAX_ACTIONS_IN_CAROUSEL = 3
+
+        length_action_dict = len(data_dict)
+
+        if length_action_dict > MAX_ACTIONS:
+            raise ValueError(error.error.main.miscellaneous(u'Length of data dict must less than or equals to {}.'.format(MAX_ACTIONS)))
+
+        column_list = []
+        for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
+            d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
+
+            title = '{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
+            explain_text = '#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
+            action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d.iteritems()]
+
+            column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
+
+        return TemplateSendMessage(alt_text='Linked word template.\n{}'.format(alt_text), template=CarouselTemplate(columns=column_list))
+    
+    @staticmethod
+    def wrap_image_message(picture_url, preview_url=None):
+        """
+        Return ImageSendMessage.
+        """
+        MAX_URL_CHARACTER_LENGTH = 1000 # Ref: https://developers.line.me/en/docs/messaging-api/reference/#image
+
+        if len(picture_url) > MAX_URL_CHARACTER_LENGTH:
+            raise ValueError(error.error.main.miscellaneous(u'String length of picture_url must less than or equals to {}.'.format(MAX_URL_CHARACTER_LENGTH)))
+
+        if preview_url is not None and len(preview_url) > MAX_URL_CHARACTER_LENGTH:
+            raise ValueError(error.error.main.miscellaneous(u'String length of preview_url must less than or equals to {}.'.format(MAX_URL_CHARACTER_LENGTH)))
+
+        if preview_url is None:
+            preview_url = picture_url
+
+        return ImageSendMessage(original_content_url=picture_url, preview_image_url=preview_url)
+
+    @staticmethod
+    def wrap_text_message(text, webpage_gen):
+        """
+        Return TextSendMessage.
+        """
+        MAX_CHARACTER_LENGTH = 2000 # Ref: https://developers.line.me/en/docs/messaging-api/reference/#text
+
+        if len(text) > MAX_CHARACTER_LENGTH:
+            text = error.error.main.text_length_too_long(webpage_gen.rec_webpage(text, webpage_content_type.TEXT))
+
+        return TextSendMessage(text=text)
+
+    @staticmethod
+    def introduction_template():
+        buttons_template = ButtonsTemplate(title=u'機器人簡介', text='歡迎使用小水母！', 
+                actions=[URITemplateAction(label=u'點此開啟使用說明', uri='https://sites.google.com/view/jellybot'),
+                         URITemplateAction(label=u'點此導向問題回報網址', uri='https://github.com/RaenonX/LineBot/issues'),
+                         URITemplateAction(label=u'群組管理權限申請單', uri='https://goo.gl/forms/91RWtMKZNMvGrpk32')])
+        return TemplateSendMessage(alt_text=u'機器人簡介', template=buttons_template)
+
+class imgur_api_wrapper(object):
     def __init__(self, imgur_api):
         self._imgur_api = imgur_api
     
@@ -272,13 +252,59 @@ class imgur_proc(object):
     def client_remaining(self):
         return int(self._imgur_api.credits['ClientRemaining'])
 
+    def get_status_string(self, ip_addr=None):
+        try:
+            text = u''
+            if ip_addr is not None:
+                text += u'連結IP: {}\n'.format(ip_addr)
+                text += u'IP可用額度: {} ({:.2%})\n'.format(self.user_remaining, float(self.user_remaining) / float(self.user_limit))
+                text += u'IP上限額度: {}\n'.format(self.user_limit)
+                text += u'IP積分重設時間: {} (UTC+8)\n\n'.format((self.user_reset + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S'))
+
+            text += u'目前API擁有額度: {} ({:.2%})\n'.format(self.client_remaining, float(self.client_remaining) / float(self.client_limit))
+            text += u'今日API上限額度: {}'.format(self.client_limit)
+        except ValueError:
+            import json
+            text = json.dump(self._imgur_api.credits)
+
+        return text
+
+class oxford_api_wrapper(object):
+    def __init__(self, language):
+        """
+        Set environment variable "OXFORD_ID", "OXFORD_KEY" as presented api id and api key.
+        """
+        self._language = language
+        self._url = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/{}/'.format(self._language)
+        self._enabled = False if self._id is None or self._key is None else True
+
+    def get_data_json(self, word):
+        if self._enabled:
+            url = self._url + word.lower()
+            r = requests.get(url, headers = {'app_id': self._id, 'app_key': self._key})
+            status_code = r.status_code
+
+            if status_code != requests.codes.ok:
+                return status_code
+            else:
+                return r.json()
+        else:
+            raise RuntimeError(error.error.main.miscellaneous(u'Oxford dictionary not enabled.').encode('utf-8'))
+
+    @property
+    def enabled(self):
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, value):
+        self._enabled = value
 
 def left_alphabet(s):
     return filter(unicode.isalpha, unicode(s))
 
-def string_can_be_int(s):
+def string_can_be_int(*args):
     try:
-        int(s)
+        [int(i) for i in args]
         return True
     except ValueError:
         return False
@@ -290,5 +316,8 @@ def string_can_be_float(s):
     except ValueError:
         return False
 
+class UserProfileNotFoundError(Exception):
+    def __init__(self, *args):
+        super(UserProfileNotFoundError, self).__init__(*args)
     
 

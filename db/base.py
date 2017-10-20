@@ -4,16 +4,18 @@ import pymongo
 
 from collections import MutableMapping
 
+SYSTEM_DATABASE_NAME = 'sys'
+
 class db_base(pymongo.collection.Collection):
     COLLECTION_NAME = '_id'
     SEQUENCE = '_seq'
     NOT_EXIST_SEQ_ID = -1
 
-    def __init__(self, mongo_client_uri, db_name, collection_name, has_seq, index_col_list=None, codec_options=None, read_preference=None, write_concern=None, read_concern=None, **kwargs):
+    def __init__(self, mongo_db_uri, db_name, collection_name, has_seq, index_col_list=None, codec_options=None, read_preference=None, write_concern=None, read_concern=None, **kwargs):
         self._has_seq = has_seq
         self._collection_name = collection_name
 
-        mongo_client = pymongo.MongoClient(mongo_client_uri)
+        mongo_client = pymongo.MongoClient(mongo_db_uri)
 
         self._db = mongo_client.get_database(db_name)
         super(db_base, self).__init__(self._db, collection_name, False, codec_options, read_preference, write_concern, read_concern, **kwargs)
@@ -41,7 +43,7 @@ class db_base(pymongo.collection.Collection):
             if db_base.SEQUENCE in document:
                 raise ValueError('Remove _seq field to add sequence id.')
 
-            document[db_base.SEQUENCE] = self._next_seq(self.name)
+            document[db_base.SEQUENCE] = self._next_seq()
             inserted_seq_id = document[db_base.SEQUENCE]
 
         result = super(db_base, self).insert_one(document, bypass_document_validation)
@@ -51,19 +53,19 @@ class db_base(pymongo.collection.Collection):
     def insert_many(self, documents, ordered=True, bypass_document_validation=False):
         inserted_seq_ids = []
 
-        for document in documents:
-            if self._has_seq:
-                if db_base.SEQUENCE in document:
-                    raise ValueError('Remove _seq field to add sequence id.')
+        if any(db_base.SEQUENCE in document for document in documents):
+            raise ValueError('Remove _seq field in data to add sequence id.')
 
-                document[db_base.SEQUENCE] = self._next_seq(self.name)
-                inserted_seq_ids.append(document[db_base.SEQUENCE])
-            else:
-                inserted_seq_ids.append(db_base.NOT_EXIST_SEQ_ID)
+        if self._has_seq:
+            seq_ids = self._next_seq_array(len(documents))
+            for document, seq_id in zip(documents, seq_ids):
+                document[db_base.SEQUENCE] = seq_id
+        else:
+            seq_ids = [db_base.NOT_EXIST_SEQ_ID for i in len(documents)]
 
         result = super(db_base, self).insert_many(documents, ordered, bypass_document_validation)
         
-        return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, inserted_seq_ids)
+        return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
     def drop(self):
         self._db.counter.delete_many({ '_id': self._collection_name })
@@ -81,9 +83,15 @@ class db_base(pymongo.collection.Collection):
             raise ValueError('Either limit default and limit must be integer or None to present "not set".')
 
 
-    def _next_seq(self, collection_name):
-        ret = self._db.counter.find_one_and_update({ db_base.COLLECTION_NAME: collection_name }, { '$inc': { db_base.SEQUENCE: 1 }}, None, None, True, pymongo.ReturnDocument.AFTER)
-        return ret[db_base.SEQUENCE]
+    def _next_seq(self):
+        ret = self._next_seq_array(1)
+        return ret[0]
+
+    def _next_seq_array(self, length=1):
+        ret = self._db.counter.find_one_and_update({ db_base.COLLECTION_NAME: self.name }, { '$inc': { db_base.SEQUENCE: length }}, None, None, True, pymongo.ReturnDocument.BEFORE)
+        new_seq_begin = ret[db_base.SEQUENCE] + 1
+
+        return [i for i in range(new_seq_begin, new_seq_begin + length)]
 
 class dict_like_mapping(MutableMapping):
     def __init__(self, org_dict):

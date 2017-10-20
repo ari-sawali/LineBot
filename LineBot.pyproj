@@ -31,19 +31,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.py" />
-    <Compile Include="bot\game_object_holder.py">
+    <Compile Include="bot\commands.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bot\sql.py" />
-    <Compile Include="db\db_base.py" />
-    <Compile Include="db\groupban.py" />
-    <Compile Include="db\kwdict.py" />
-    <Compile Include="db\msg_track.py" />
-    <Compile Include="db_sql\sql.py">
+    <Compile Include="bot\config.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\msg_handler\global_handler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="db\base.py" />
+    <Compile Include="db\content_holder.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="db\group_manage.py" />
+    <Compile Include="db\keyword_dict.py" />
+    <Compile Include="db\keyword_dict_global.py" />
+    <Compile Include="db\misc.py" />
+    <Compile Include="db\sys_config.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="db\sys_stats.py" />
+    <Compile Include="db_sql\sql.py" />
     <Compile Include="tool\curr_exc\exceptions.py" />
     <Compile Include="tool\curr_exc\exchange.py" />
     <Compile Include="tool\curr_exc\__init__.py" />
@@ -70,17 +79,14 @@
     <Compile Include="imgur\imgur\models\__init__.py" />
     <Compile Include="imgur\imgur\__init__.py" />
     <Compile Include="imgur\__init__.py" />
-    <Compile Include="msg_handler\game_msg.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="bot\system.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="msg_handler\img_msg.py">
+    <Compile Include="bot\msg_handler\img_msg.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="msg_handler\text_msg.py" />
-    <Compile Include="bot\webpage_auto_gen.py">
+    <Compile Include="bot\msg_handler\text_msg.py" />
+    <Compile Include="bot\webpage.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="bot\__init__.py" />
@@ -97,13 +103,7 @@
     <Compile Include="error.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="game\rps.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="game\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="msg_handler\__init__.py">
+    <Compile Include="bot\msg_handler\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tool\mff.py">
@@ -118,9 +118,6 @@
     <Compile Include="tool\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="worker.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|2.7" />
@@ -130,12 +127,11 @@
     <Folder Include="db_sql\" />
     <Folder Include="tool\curr_exc\" />
     <Folder Include="db\" />
-    <Folder Include="game\" />
     <Folder Include="imgur\" />
     <Folder Include="imgur\helpers\" />
     <Folder Include="imgur\imgur\" />
     <Folder Include="imgur\imgur\models\" />
-    <Folder Include="msg_handler\" />
+    <Folder Include="bot\msg_handler\" />
     <Folder Include="templates\" />
     <Folder Include="static\" />
     <Folder Include="tool\" />
