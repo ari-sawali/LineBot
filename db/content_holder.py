@@ -131,7 +131,7 @@ class game_object_holder(db_base):
     COLLECTION_NAME = 'game'
 
     def __init__(self, mongo_db_uri):
-        super(game_object_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, game_object_holder.COLLECTION_NAME, index_col_list, [])
+        super(game_object_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, game_object_holder.COLLECTION_NAME, False, [rps.CHAT_INSTANCE_ID])
 
     def update_data(self, chat_instance_id, new_data):
         self.find_one_and_replace({ rps.CHAT_INSTANCE_ID: chat_instance_id }, new_data)
