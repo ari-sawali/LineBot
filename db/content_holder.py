@@ -413,7 +413,7 @@ class rps(dict_like_mapping):
 
     def register_player(self, name, uid):
         if self.get_player_by_uid(uid) is None:
-             self[rps.PLAYERS][uid] = battle_player.init_by_field(name, uid)
+            self[rps.PLAYERS][uid] = battle_player.init_by_field(name, uid)
             return True
         else:
             return False
