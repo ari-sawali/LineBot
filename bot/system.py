@@ -128,10 +128,10 @@ class line_api_wrapper(object):
     def reply_message(self, reply_token, msgs):
         self._line_api.reply_message(reply_token, msgs)
 
-    def reply_message_text(self, reply_token, msgs):
+    def reply_message_text(self, reply_token, msgs, webpage_gen):
         if isinstance(msgs, (str, unicode)):
             msgs = [msgs]
-        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg) for msg in msgs])
+        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, webpage_gen) for msg in msgs])
 
     @staticmethod
     def source_channel_id(event_source):
