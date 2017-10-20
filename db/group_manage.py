@@ -339,9 +339,6 @@ class group_data(dict_like_mapping):
 
     @staticmethod
     def init_by_field(gid, config_type):
-        if mod_user_data_list is None:
-            mod_user_data_list = []
-
         init_dict = {
             group_data.GROUP_ID: gid,
             group_data.CONFIG_TYPE: int(config_type),
