@@ -36,15 +36,15 @@ class config_category_kw_dict(EnumWithName):
 class config_category_timeout(EnumWithName):
     CALCULATOR = 0, 'Calculator'
 
-class config_manager(SafeConfigParser):
+class config_manager(object):
     def __init__(self, file_path):
-        super(config_manager, self).__init__()
-        self.read(file_path)
+        self._parser = SafeConfigParser()
+        self._parser.read(file_path)
 
     def get(self, cat_enum, key_enum):
-        return self.get(str(cat_enum), str(key_enum))
+        return self._parser.get(str(cat_enum), str(key_enum))
 
     def getint(self, cat_enum, key_enum):
-        return super(config_manager, self).getint(str(cat_enum), str(key_enum))
+        return self._parser.getint(str(cat_enum), str(key_enum))
 
 
