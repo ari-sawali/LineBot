@@ -5,7 +5,7 @@ import enum
 
 class EnumWithName(enum.IntEnum):
     def __new__(cls, value, name):
-        member = object.__new__(cls)
+        member = int.__new__(cls)
         member._value_ = value
         member._name = name
         return member

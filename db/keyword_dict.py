@@ -17,7 +17,7 @@ class word_type(IntEnum):
     PICTURE = 2, '圖片'
 
     def __new__(cls, value, name):
-        member = object.__new__(cls)
+        member = int.__new__(cls)
         member._value_ = value
         member._name = name
         return member

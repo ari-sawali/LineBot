@@ -53,7 +53,7 @@ class line_event_source_type(enum.IntEnum):
     ROOM = 2, '房間'
 
     def __new__(cls, value, name):
-        member = object.__new__(cls)
+        member = int.__new__(cls)
         member._value_ = value
         member._name = name
         return member
