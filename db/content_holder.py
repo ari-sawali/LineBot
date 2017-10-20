@@ -394,7 +394,7 @@ class rps(dict_like_mapping):
             rps.PLAYERS: player_dict,
             rps.PROPERTIES: {
                 rps.ENABLED: True,
-                rps.IS_VS_BOT: vs_bot
+                rps.IS_VS_BOT: vs_bot,
                 rps.RESULT_GENERATED: False,
                 rps.PLAY_BEGIN: -1,
                 rps.GAP_TIME: -1
