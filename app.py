@@ -252,7 +252,7 @@ def handle_sticker_message(event):
         error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
-        line_api.reply_message_text(token, error_msg)
+        line_api.reply_message_text(token, error_msg, webpage_generator)
 
 
 @handler.add(MessageEvent, message=ImageMessage)
@@ -276,7 +276,7 @@ def handle_image_message(event):
         error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
-        line_api.reply_message_text(token, error_msg)
+        line_api.reply_message_text(token, error_msg, webpage_generator)
 
 
 @handler.add(FollowEvent)
