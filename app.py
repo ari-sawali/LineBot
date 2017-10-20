@@ -67,8 +67,13 @@ if app_root_url is None or app_root_url.startswith('http'):
 else:
     app.config.update(SERVER_NAME=app_root_url)
 
+# system command related initialization
 sys_data = bot.system_data()
 cmd_mgr = bot.commands_manager(bot.cmd_dict)
+
+# configurations initialization
+config_mgr = bot.config_manager('SystemConfig.ini')
+sys_config = db.system_config(MONGO_DB_URI)
 
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)
@@ -119,9 +124,6 @@ webpage_generator = bot.webpage_manager(app, MONGO_DB_URI)
 str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, bot.config_category_timeout.CALCULATOR))
 
 # Message handler initialization
-config_mgr = bot.config_manager('SystemConfig.ini')
-sys_config = db.system_config(MONGO_DB_URI)
-
 text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, 
                                                oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc)
 game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api)
