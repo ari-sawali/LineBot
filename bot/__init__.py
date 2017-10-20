@@ -8,10 +8,6 @@ from .webpage import (
     webpage_manager
 )
 
-from .game_object_holder import (
-    game_objects
-)
-
 from .commands import (
     permission, cmd_category, command_object, cmd_dict, commands_manager, permission
 )
