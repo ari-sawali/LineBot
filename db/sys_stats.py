@@ -23,10 +23,10 @@ class system_statistics(db_base):
         result = self.update_one({ system_data.RECORD_DATE: today },
                                  { '$inc': { system_data.COMMAND_CALLED + '.' + command: 1 } }, True)
 
-    def webpage_viewed(self, webpage_type):
+    def webpage_viewed(self, webpage_type_enum):
         today = self._get_today_date()
         result = self.update_one({ system_data.RECORD_DATE: today },
-                                 { '$inc': { system_data.WEBPAGE_VIEWED + '.' + webpage_type: 1 } }, True)
+                                 { '$inc': { system_data.WEBPAGE_VIEWED + '.' + str(webpage_type_enum): 1 } }, True)
 
     # UNDONE: asked at https://stackoverflow.com/questions/46806932/how-to-sum-the-value-of-keys-in-subcollection-within-a-range
     def get_statistics(self):
