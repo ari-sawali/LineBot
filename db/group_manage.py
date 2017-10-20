@@ -637,7 +637,7 @@ class user_data_manager(db_base):
         else:
             return False
 
-    def _set_cache():
+    def _set_cache(self):
         self._cache = [user_data(data) for data in self.find()]
 
 class user_data(dict_like_mapping):

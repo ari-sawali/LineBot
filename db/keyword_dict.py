@@ -842,6 +842,8 @@ class pair_data(dict_like_mapping):
     def basic_text(self, display_status=False):
         kw = group_dict_manager._keyword_repr(self, False)
         rep = group_dict_manager._reply_repr(self, False)
+        rep_att = self.reply_attach_text
+        linked = u'、'.join(self.linked_words)
         
         if display_status:
             status = u''
@@ -855,15 +857,17 @@ class pair_data(dict_like_mapping):
         text = u'#{}{}'.format(self.seq_id, status)
         text += u'\n關鍵字內容: {}'.format(kw)
         text += u'\n回覆內容: {}'.format(rep)
+        text += u'\n回覆附加文字: {}'.format(rep_att)
+        text += u'\n相關關鍵字: {}'.format(linked)
 
         return text
 
-    def detailed_text(self, include_basic=True, line_api_proc=None, kwd_mgr=None):
+    def detailed_text(self, include_basic=True, line_api_wrapper=None, kwd_mgr=None):
         def format_line_profile_with_time(action_str, uid, timestamp):
             text = u''
 
-            if line_api_proc is not None:
-                profile = line_api_proc.profile(uid)
+            if line_api_wrapper is not None:
+                profile = line_api_wrapper.profile(uid)
                 if profile is None:
                     name = error.main.line_account_data_not_found()
                 else:
