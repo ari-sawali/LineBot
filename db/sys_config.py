@@ -9,7 +9,7 @@ class system_config(db_base):
     COLLECTION_NAME = 'config'
 
     def __init__(self, mongo_db_uri):
-        super(system_statistics, self).__init__(mongo_db_uri, SYSTEM_DATABASE_NAME, system_config.COLLECTION_NAME, False)
+        super(system_config, self).__init__(mongo_db_uri, SYSTEM_DATABASE_NAME, system_config.COLLECTION_NAME, False)
         self._cache = None
 
     def set(self, field_var, setting_bool):
