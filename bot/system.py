@@ -47,7 +47,7 @@ class system_data(object):
     def boot_up(self):
         return self._boot_up
 
-class line_event_source_type(Enum):
+class line_event_source_type(enum.Enum):
     USER = 0, '私訊'
     GROUP = 1, '群組'
     ROOM = 2, '房間'
