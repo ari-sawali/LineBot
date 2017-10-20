@@ -244,12 +244,12 @@ class global_msg_handle(object):
     def handle_text(self, event):
         self._print_intercepted(event)
 
-        if event.message == 'ERRORERRORERRORERROR':
-            raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
-
         src = event.source
         token = event.reply_token
         full_text = event.message.text
+
+        if full_text == 'ERRORERRORERRORERROR':
+            raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
 
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
         user_permission = self._get_user_permission(src)
