@@ -5,7 +5,7 @@ from .keyword_dict import (
 from .keyword_dict_global import word_dict_global
 
 from .group_manage import (
-    group_manager, group_data, config_type, msg_type, user_data
+    group_manager, group_data, config_type, msg_type, user_data, InsufficientPermissionError
 )
 
 from .sys_stats import (

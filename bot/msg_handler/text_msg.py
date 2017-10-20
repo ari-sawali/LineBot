@@ -513,9 +513,32 @@ class text_msg_handler(object):
         else:
             gid = bot.line_api_wrapper.source_channel_id(src)
         
-        uid = bot.line_api_wrapper.source_user_id(src)
-        
-        if params[2] is not None:
+        setter_uid = bot.line_api_wrapper.source_user_id(src)
+        try:
+            setter_name = self._line_api_wrapper.profile_name(setter_uid)
+        except bot.UserProfileNotFoundError:
+            return error.line_bot_api.unable_to_receive_user_id()
+
+        if params[3] is not None:
+            action = params[1]
+            target_uid = params[2]
+            permission = parmas[3]
+
+            if action == 'S':
+                try:
+                    target_name = self._line_api_wrapper.profile_name(target_uid)
+                except bot.UserProfileNotFoundError:
+                    return error.line_bot_api.unable_to_receive_user_id()
+                
+                try:
+                    self._group_manager.set_permission(gid, setter_uid, target_uid, permission)
+                    
+                    text = u'成員權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限代碼: {}'.format(setter_uid, setter_name, target_name, target_uid, permission)
+                except db.InsufficientPermissionError:
+                    text = error.main.restricted()
+            else:
+                text = error.main.incorrect_param(u'參數1', u'S(更改權限)')
+        elif params[2] is not None:
             action = params[1]
         
             if action == 'ACTIVATE':
@@ -524,20 +547,21 @@ class text_msg_handler(object):
                 text = u'公用資料庫啟用{}。'.format(u'成功' if activate_result else u'失敗')
             else:
                 if bot.line_api_wrapper.is_valid_user_id(params[2]):
-                    if action != 'A':
-                        new_mod_uid = params[2]
-                        result = self._group_manager.create_member(gid, new_mod_uid)
-                        text = u'群組副管新增成功。' if result else result
-                    elif action != 'D':
-                        del_mod_uid = params[2]
-                        result = self._group_manager.delete_member(gid, del_mod_uid)
-                        text = u'群組副管刪除成功。' if result else result
-                    elif action != 'C':
-                        new_admin_uid = params[2]
-                        result = self._group_manager.change_admin(gid, uid, new_admin_uid)
-                        text = u'群組管理員更換成功。' if result else result
+                    if action == 'D':
+                        target_uid = params[2]
+                        try:
+                            target_name = self._line_api_wrapper.profile_name(target_uid)
+                        except bot.UserProfileNotFoundError:
+                            return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
+
+                        try:
+                            self._group_manager.delete_permission(gid, setter_uid, target_uid)
+                            
+                            text = u'成員權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
+                        except db.InsufficientPermissionError:
+                            text = error.main.restricted()
                     else:
-                        text = error.main.incorrect_param(u'參數2', u'ACTIVATE(啟用)、S(設定權限)、D(刪除權限)')
+                        text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
                 else:
                     text = error.main.invalid_thing_with_correct_format(u'參數2', u'激活密鑰或合法使用者UID。')
         elif params[1] is not None:
@@ -551,7 +575,8 @@ class text_msg_handler(object):
                 cfg_type = config_type(cfg_type)
             except ValueError:
                 return invalid_cfg_type
-            change_result = self._group_manager.set_config_type(gid, cfg_type, uid)
+
+            change_result = self._group_manager.set_config_type(gid, cfg_type, setter_uid)
         
             if change_result:
                 text = u'群組自動回覆設定已更改為【{}】。'.format(unicode(cfg_type))

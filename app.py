@@ -2,13 +2,6 @@
 
 # TODO: self silent (new db)
 
-# TODO: Announcement -> Database migrate, will delete some pair, including all disabled pairs and some inappropriate pair (Thanks 小緯(Anonymous) for reviewing), selection process is anonymous(not targeted)
-# TODO: Announcement -> When name changed, bot may be unstable
-# TODO: Announcement -> According to free plan, some may not receive personal push notification
-# TODO: Announcement -> group ban silence -> SYS_ONLY, not silence->ALL
-# TODO: Announcement -> Migrate after beta test, test record will not be rec, db will migrate
-# TODO: Announcement -> command usage in P is not yet implemented
-
 # IMPORTANT: Delete env var: ADMIN, G_ADMIN, G_MOD
 
 import os, sys, errno

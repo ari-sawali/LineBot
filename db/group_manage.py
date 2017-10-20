@@ -156,9 +156,9 @@ class group_manager(db_base):
         """Raise InsufficientPermissionError if action is not allowed."""
         self._permission_manager.set_permission(gid, setter_uid, target_uid, permission_lv)
 
-    def delete_permission(self):
+    def delete_permission(self, gid, setter_uid, target_uid):
         """Raise InsufficientPermissionError if action is not allowed."""
-        self._permission_manager.del_data(gid, setter_uid, target_uid, permission_lv)
+        self._permission_manager.del_data(gid, setter_uid, target_uid)
 
     def get_group_config_type(self, gid):
         cfg_type = self._get_cache_config(gid)
@@ -185,8 +185,6 @@ class group_manager(db_base):
                 permission = permission.USER
             self._set_cache_permission(gid, uid, permission)
             return permission
-
-        
         
     # utilities - activity tracking
     def log_message_activity(self, chat_instance_id, rcv_type_enum, rep_type_enum=None, rcv_count=1, rep_count=1):
@@ -586,10 +584,15 @@ class user_data_manager(db_base):
         else:
             raise InsufficientPermissionError()
 
-    def del_data(self, group_id, setter_uid, target_uid, target_permission_lv):
+    def del_data(self, group_id, setter_uid, target_uid):
         """
         Raise InsufficientPermissionError if action is not allowed.
         """
+        target_data = self.get_user_data(group_id, target_uid)
+        if target_data is not None:
+            target_permission_lv = target_data.permission_level
+        else:
+            target_permission_lv = permission.USER
 
         if self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             self.delete_one({ user_data.USER_ID: target_uid, user_data.GROUP: group_id })
