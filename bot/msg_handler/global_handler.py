@@ -157,7 +157,7 @@ class global_msg_handle(object):
 
     def _handle_text_sys_config(self, event):
         """Return whether message has been replied."""
-
+        full_text = event.message.text
         if full_text == self._silence_key:
             new_setting = self._system_config.set(db.config_data.SILENCE, not self._system_config.get(db.config_data.SILENCE)).get(db.config_data.SILENCE)
             self._line_api_wrapper.reply_message_text(event.reply_token, 'BOT SILENCE: {}'.format('ENABLED' if new_setting else 'DISABLED'))
