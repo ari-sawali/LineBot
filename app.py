@@ -127,7 +127,7 @@ str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, b
 text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, 
                                                oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc)
 game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api)
-img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path, kwd)
+img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path)
 
 global_handler = bot.msg_handler.global_msg_handle(line_api, sys_config, MONGO_DB_URI, text_handler, game_handler, img_handler)
 
