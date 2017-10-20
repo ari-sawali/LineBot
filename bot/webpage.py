@@ -38,11 +38,9 @@ class webpage_manager(object):
             print err_detail.encode('utf-8')
             print '===================================='
 
-            self.rec_webpage(err_detail, db.webpage_content_type.ERROR, error_instance.__class__.__name__)
+            error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, error_instance.__class__.__name__)
 
-            return u'詳細錯誤URL: {}\n錯誤清單: {}'.format(
-                url_for(self._route_method_name[db.webpage_content_type.ERROR], timestamp=timestamp),
-                url_for(self._error_list_route_name))
+            return u'詳細錯誤URL: {}\n錯誤清單: {}'.format(error_url, url_for(self._error_list_route_name))
     
     def rec_webpage(self, content, type, short_description=None):
         """Return recorded webpage url."""
