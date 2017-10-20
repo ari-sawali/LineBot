@@ -3,6 +3,22 @@
 from ConfigParser import SafeConfigParser
 import enum
 
+class EnumWithName(enum.Enum):
+    def __new__(cls, value, name):
+        member = object.__new__(cls)
+        member._value_ = value
+        member._name = name
+        return member
+
+    def __int__(self):
+        return self.value
+
+    def __str__(self):
+        return self._name
+
+    def __unicode__(self):
+        return unicode(self._name.decode('utf-8'))
+
 class config_category(EnumWithName):
     KEYWORD_DICT = 0, 'KeywordDictionary'
     TIMEOUT = 1, 'Timeout'
@@ -30,21 +46,5 @@ class config_manager(SafeConfigParser):
 
     def getint(self, cat_enum, key_enum):
         return super(config_manager, self).getint(str(cat_enum), str(key_enum))
-
-class EnumWithName(enum.Enum):
-    def __new__(cls, value, name):
-        member = object.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
 
 
