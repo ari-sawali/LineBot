@@ -174,7 +174,8 @@ class global_msg_handle(object):
             return True
         
         if full_text == self._rep_error_key:
-            new_setting = self._system_config.set(db.config_data.REPLY_ERROR, not self._system_config.get(db.config_data.REPLY_ERROR)).get(db.config_data.REPLY_ERROR)
+            new_setting = self._system_config.set(db.config_data.REPLY_ERROR, not self._system_config.get(db.config_data.REPLY_ERROR))
+            new_setting = new_setting.get(db.config_data.REPLY_ERROR)
             self._line_api_wrapper.reply_message_text(event.reply_token, 'REPLY ON ERROR: {}'.format('ENABLED' if new_setting else 'DISABLED'))
             return True
 
