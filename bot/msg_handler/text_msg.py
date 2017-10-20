@@ -26,8 +26,8 @@ class text_msg_handler(object):
         self._array_separator = self._config_manager.get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
 
         self._system_data = system_data
-        self._system_config = db.system_config(MONGO_DB_URI)
-        self._system_stats = db.system_statistics(MONGO_DB_URI)
+        self._system_config = db.system_config(mongo_db_uri)
+        self._system_stats = db.system_statistics(mongo_db_uri)
         self._command_manager = command_manager
 
         self._kwd_public = db.group_dict_manager(mongo_db_uri, config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.CREATE_DUPLICATE), config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.REPEAT_CALL))
