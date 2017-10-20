@@ -244,7 +244,7 @@ class global_msg_handle(object):
     def handle_text(self, event):
         self._print_intercepted(event)
 
-        if full_text == 'ERRORERRORERRORERROR':
+        if event.message == 'ERRORERRORERRORERROR':
             raise Exception('THIS ERROR IS CREATED FOR TESTING PURPOSE.')
 
         src = event.source
