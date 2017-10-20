@@ -54,7 +54,7 @@ class webpage_content_holder(db_base):
     def rec_data(self, content, type, short_description=None):
         """Return sequence id of recorded content document."""
         timestamp = self._get_timestamp_in_datetime()
-        content += '\n\n網頁內容將在{}後清除。'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+        content += u'\n\n網頁內容將在{}後清除。'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
         return self.insert_one(webpage_data.init_by_field(timestamp, type, content, short_description)).inserted_seq_id
 
     def get_data(self, type, id):
