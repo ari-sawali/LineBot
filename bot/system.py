@@ -16,7 +16,7 @@ from linebot.models import (
     CarouselTemplate, ButtonsTemplate, CarouselColumn, MessageTemplateAction, URITemplateAction
 )
 
-from db import webpage_content_type
+from db.content_holder import webpage_content_type
 
 class system_data(object):
     def __init__(self):
