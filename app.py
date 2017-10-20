@@ -72,6 +72,9 @@ cmd_mgr = bot.commands_manager(bot.cmd_dict)
 # configurations initialization
 config_mgr = bot.config_manager('SystemConfig.ini')
 sys_config = db.system_config(MONGO_DB_URI)
+    
+# Webpage auto generator
+webpage_generator = bot.webpage_manager(app, MONGO_DB_URI)
 
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)
@@ -89,7 +92,7 @@ if channel_access_token is None:
     print('Specify LINE_CHANNEL_ACCESS_TOKEN environment variable.')
     sys.exit(1)
 handler = WebhookHandler(channel_secret)
-line_api = bot.line_api_wrapper(LineBotApi(channel_access_token))
+line_api = bot.line_api_wrapper(LineBotApi(channel_access_token), webpage_generator)
 
 # Imgur APi instantiation
 imgur_client_id = os.getenv('IMGUR_CLIENT_ID', None)
@@ -114,9 +117,6 @@ oxford_dict_obj = bot.oxford_api_wrapper('en')
 
 # File path
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-    
-# Webpage auto generator
-webpage_generator = bot.webpage_manager(app, MONGO_DB_URI)
 
 # Tool instance initialization
 str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, bot.config_category_timeout.CALCULATOR))
@@ -228,7 +228,7 @@ def handle_text_message(event):
         error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
-        line_api.reply_message_text(token, error_msg, webpage_generator)
+        line_api.reply_message_text(token, error_msg)
 
 
 @handler.add(MessageEvent, message=StickerMessage)
@@ -252,7 +252,7 @@ def handle_sticker_message(event):
         error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
-        line_api.reply_message_text(token, error_msg, webpage_generator)
+        line_api.reply_message_text(token, error_msg)
 
 
 @handler.add(MessageEvent, message=ImageMessage)
@@ -276,7 +276,7 @@ def handle_image_message(event):
         error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
-        line_api.reply_message_text(token, error_msg, webpage_generator)
+        line_api.reply_message_text(token, error_msg)
 
 
 @handler.add(FollowEvent)

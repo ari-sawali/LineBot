@@ -79,8 +79,9 @@ class line_event_source_type(enum.IntEnum):
             raise ValueError(error.error.main.miscellaneous(u'Undefined type of event source instance.'))
 
 class line_api_wrapper(object):
-    def __init__(self, line_api):
+    def __init__(self, line_api, webpage_generator):
         self._line_api = line_api
+        self._webpage_generator = webpage_generator
 
     def profile(self, uid, src=None):
         try:
@@ -131,7 +132,7 @@ class line_api_wrapper(object):
     def reply_message_text(self, reply_token, msgs, webpage_gen):
         if isinstance(msgs, (str, unicode)):
             msgs = [msgs]
-        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, webpage_gen) for msg in msgs])
+        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, self._webpage_generator) for msg in msgs])
 
     @staticmethod
     def source_channel_id(event_source):
