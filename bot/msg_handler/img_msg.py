@@ -8,10 +8,9 @@ import time
 from imgur.helpers.error import ImgurClientError
 
 class img_msg_handler(object):
-    def __init__(self, line_api, imgur_api, tmp_path, kw_dict):
+    def __init__(self, line_api, imgur_api, tmp_path):
         self._line_api = line_api
         self._imgur_api = imgur_api
-        self._kw_dict = kw_dict
 
         self.tmp_path = tmp_path
 
