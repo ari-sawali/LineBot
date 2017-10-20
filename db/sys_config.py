@@ -18,8 +18,10 @@ class system_config(db_base):
             self._set_cache()
 
         self._cache.set(field_var, setting_bool)
+        print field_var
+        print setting_bool
         print self._cache
-        return config_data(self.find_one_and_update({}, { '$set': { field_var: setting_bool } }, None, None, True, pymongo.ReturnDocument.AFTER))
+        return config_data(self.find_one_and_update({}, { '$set': self._cache }, None, None, True, pymongo.ReturnDocument.AFTER))
 
     def get(self, field_var):
         if self._cache is None:
@@ -50,7 +52,7 @@ class config_data(dict_like_mapping):
                 config_data.SILENCE: False,
                 config_data.INTERCEPT: True,
                 config_data.CALCULATOR_DEBUG: False,
-                config_data.REPLY_ERROR: True
+                config_data.REPLY_ERROR: False
             }
 
         if not all(k in org_dict for k in (config_data.SILENCE, config_data.INTERCEPT, config_data.CALCULATOR_DEBUG, config_data.REPLY_ERROR)):
