@@ -261,7 +261,7 @@ def handle_image_message(event):
     token = event.reply_token
 
     try:
-        global_handler.handle_sticker(event)
+        global_handler.handle_image(event)
     except Exception as ex:
         error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
         if isinstance(ex, LineBotApiError):
