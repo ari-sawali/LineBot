@@ -450,6 +450,7 @@ class group_activation_data(dict_like_mapping):
             group_data.GROUP_ID: group_id,
             group_activation_data.TOKEN: token
         }
+        return group_activation_data(init_dict)
         
     def __init__(self, org_dict):
         if not all(k in org_dict for k in (group_data.GROUP_ID, group_activation_data.TOKEN)):
