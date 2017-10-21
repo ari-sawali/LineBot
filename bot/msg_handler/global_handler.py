@@ -425,9 +425,9 @@ class global_msg_handle(object):
 
         return False
 
-    def _handle_image_auto_reply(self, image_sha, config):
+    def _handle_image_auto_reply(self, event, image_sha, config):
         """Return whether message has been replied. THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
-        reply_data = self._get_kwd_instance(src, config).get_reply_data(image_sha, db.word_type.PICTURE)
+        reply_data = self._get_kwd_instance(event.source, config).get_reply_data(image_sha, db.word_type.PICTURE)
         if reply_data is not None:
             self._handle_auto_reply(event, reply_data)
             return True

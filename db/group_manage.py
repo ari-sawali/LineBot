@@ -350,8 +350,6 @@ class group_data(dict_like_mapping):
             }
         }
 
-        # DEBUG: NOT A INSTANCE OF MUTABLE MAPPING?
-
         return group_data(init_dict)
 
     def __init__(self, org_dict):
