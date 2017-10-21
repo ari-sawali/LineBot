@@ -84,6 +84,7 @@ class text_msg_handler(object):
 
     def _get_kwd_instance(self, src, config):
         source_type = bot.line_event_source_type.determine(src)
+        print source_type
         if source_type is bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
         elif source_type is bot.line_event_source_type.GROUP or source_type is bot.line_event_source_type.USER:
