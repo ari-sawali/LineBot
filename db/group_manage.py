@@ -358,18 +358,24 @@ class group_data(dict_like_mapping):
         if org_dict is not None:
             if not all(k in org_dict for k in (group_data.GROUP_ID, group_data.SPECIAL_USER, group_data.CONFIG_TYPE)):
                 raise ValueError('Invalid group data dictionary.')
-            if org_dict[group_data.SPECIAL_USER].get(group_data.ADMINS, None) is None:
-                raise ValueError('Admin data is null in group data dictionary.')
+
+            if org_dict[group_data.SPECIAL_USER] is None:
+                org_dict[group_data.SPECIAL_USER] = { 
+                    group_data.ADMINS: [],
+                    group_data.MODERATORS: [],
+                    group_data.RESTRICTS: []
+                }
+            else:
+                for k in (group_data.ADMINS, group_data.MODERATORS, group_data.RESTRICTS):
+                    if org_dict[group_data.SPECIAL_USER].get(k, None) is None:
+                        org_dict[group_data.SPECIAL_USER][k] = []
 
             org_dict[group_data.MESSAGE_RECORDS] = msg_stats_data(org_dict[group_data.MESSAGE_RECORDS])
         else:
             raise ValueError('Dictionary is None.')
-
-        # self._members_data_set = False
         return super(group_data, self).__init__(org_dict)
 
     def set_members_data(self, admins_list, mods_list, restricts_list):
-        self._members_data_set = True
         self[group_data.SPECIAL_USER][group_data.ADMINS] = admins_list
         self[group_data.SPECIAL_USER][group_data.MODERATORS] = mods_list
         self[group_data.SPECIAL_USER][group_data.RESTRICTS] = restricts_list
@@ -390,8 +396,6 @@ class group_data(dict_like_mapping):
         return text
 
     def get_group_members_string(self):
-        if not self._members_data_set:
-            return error.error.main.miscellaneous(u'未寫入群組非一般用戶使用者資料。')
         text = u'管理員:\n{}'.format(self[group_data.SPECIAL_USER][group_data.ADMINS])
         text += u'副管:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.MODERATORS]))
         text += u'限制用戶:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.RESTRICTS]))
