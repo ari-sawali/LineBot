@@ -253,8 +253,10 @@ class global_msg_handle(object):
         terminate_0 = self._handle_text_sys_config(event)
 
         if terminate_0:
+            print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
+        print 'pass 0'
 
         ############################################
         ######## ASSIGN NECESSARY VARIABLES ########
@@ -270,8 +272,10 @@ class global_msg_handle(object):
         terminate_1 = self._terminate()
         
         if terminate_1 or group_config == db.config_type.SILENCE:
+            print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
+        print 'pass 1'
 
         ########################################
         ### TERMINATE CHECK - SYSTEM COMMAND ###
@@ -280,8 +284,10 @@ class global_msg_handle(object):
         terminate_2 = self._handle_text_sys_command(event, full_text)
 
         if terminate_2:
+            print 'terminate 2'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
             return
+        print 'pass 2'
 
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
@@ -290,8 +296,10 @@ class global_msg_handle(object):
         terminate_3 = self._handle_text_rps(event, full_text)
 
         if terminate_3 or group_config == db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
+            print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
+        print 'pass 3'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -300,7 +308,9 @@ class global_msg_handle(object):
         terminate_4 = self._handle_text_auto_reply(event, full_text, group_config)
              
         if terminate_4:
+            print 'terminate 4'
             return
+        print 'pass 4'
 
         #########################################
         ### TERMINATE CHECK - TEXT CALCULATOR ###
@@ -309,8 +319,10 @@ class global_msg_handle(object):
         terminate_5 = self._handle_text_str_calc(event, full_text)
 
         if terminate_5:
+            print 'terminate 5'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return 
+        print 'pass 5'
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
 
