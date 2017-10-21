@@ -332,6 +332,8 @@ class global_msg_handle(object):
 
     def _handle_sticker_data(self, event):
         """Return whether message has been replied."""
+        print type(event.source)
+        print bot.line_event_source_type.determine(event.source)
         if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
