@@ -176,7 +176,7 @@ class group_manager(db_base):
                 return self.get_group_config_type(gid)
 
     def get_user_permission(self, gid, uid):
-        permission = self._get_cache_config(gid. uid)
+        permission = self._get_cache_permission(gid, uid)
         if permission is not None:
             return permission
         else:
