@@ -332,11 +332,7 @@ class global_msg_handle(object):
 
     def _handle_sticker_data(self, event):
         """Return whether message has been replied."""
-        print type(event.source)
-        print bot.line_event_source_type.determine(event.source)
-        print bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER
-        print bot.line_event_source_type.USER
-        if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+        if bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
             print 'IN'
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
@@ -414,7 +410,7 @@ class global_msg_handle(object):
     ##############################
 
     def _handle_image_upload(self, event, image_sha):
-        if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+        if bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
             upload_result = self._img_handle.upload_imgur(event.message)
 
             rep_list = [bot.line_api_wrapper.wrap_text_message(u'檔案雜湊碼(SHA224)'), 

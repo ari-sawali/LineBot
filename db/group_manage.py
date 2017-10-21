@@ -341,7 +341,7 @@ class group_data(dict_like_mapping):
     def init_by_field(gid, config_type):
         init_dict = {
             group_data.GROUP_ID: gid,
-            group_data.CONFIG_TYPE: int(config_type),
+            group_data.CONFIG_TYPE: config_type,
             group_data.MESSAGE_RECORDS: msg_stats_data.empty_init(),
             group_data.SPECIAL_USER: { 
                 group_data.ADMINS: [],
@@ -349,6 +349,8 @@ class group_data(dict_like_mapping):
                 group_data.RESTRICTS: []
             }
         }
+
+        # DEBUG: NOT A INSTANCE OF MUTABLE MAPPING?
 
         return group_data(init_dict)
 
