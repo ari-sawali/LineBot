@@ -182,11 +182,11 @@ class group_manager(db_base):
         else:
             user_data = self._permission_manager.get_user_data(gid, uid)
             if user_data is not None:
-                permission = user_data.permission_level
+                u_permission = user_data.permission_level
             else:
-                permission = permission.USER
-            self._set_cache_permission(gid, uid, permission)
-            return permission
+                u_permission = permission.USER
+            self._set_cache_permission(gid, uid, u_permission)
+            return u_permission
         
     # utilities - activity tracking
     def log_message_activity(self, chat_instance_id, rcv_type_enum, rep_type_enum=None, rcv_count=1, rep_count=1):

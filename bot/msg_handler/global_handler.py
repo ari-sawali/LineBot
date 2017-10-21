@@ -320,7 +320,7 @@ class global_msg_handle(object):
         """Return whether message has been replied."""
         src = event.source
 
-        rps_obj = self._game_data.get_rps(bot.line_api_wrapper.source_channel_id(src))
+        rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
 
         if rps_obj is not None:
             rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, bot.line_api_wrapper.source_user_id(src))
