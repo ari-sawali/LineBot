@@ -57,6 +57,7 @@ class global_msg_handle(object):
     def _handle_auto_reply(self, event, reply_data):
         """THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
         self._system_data.set_last_pair(bot.line_api_wrapper.source_channel_id(event.source), reply_data.seq_id)
+        src = event.source
         msg = event.message
 
         if isinstance(msg, TextMessage):
