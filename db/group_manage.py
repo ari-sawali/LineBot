@@ -365,7 +365,7 @@ class group_data(dict_like_mapping):
         else:
             raise ValueError('Dictionary is None.')
 
-        self._members_data_set = False
+        # self._members_data_set = False
         return super(group_data, self).__init__(org_dict)
 
     def set_members_data(self, admins_list, mods_list, restricts_list):
