@@ -342,7 +342,12 @@ class group_data(dict_like_mapping):
         init_dict = {
             group_data.GROUP_ID: gid,
             group_data.CONFIG_TYPE: int(config_type),
-            group_data.MESSAGE_RECORDS: msg_stats_data.empty_init()
+            group_data.MESSAGE_RECORDS: msg_stats_data.empty_init(),
+            group_data.SPECIAL_USER: { 
+                group_data.ADMINS: [],
+                group_data.MODERATORS: [],
+                group_data.RESTRICTS: []
+            }
         }
 
         return group_data(init_dict)
