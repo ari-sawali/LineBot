@@ -101,7 +101,7 @@ class global_msg_handle(object):
             action_dict = { db.simplified_string(word, 12): word for word in rep_link }
             alt_text = u'相關字詞: {}'.format(u'、'.join(word for word in rep_link))
 
-            rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, '相關回覆組'))
+            rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
         
         self._line_api_wrapper.reply_message(token, rep_list) 
 
