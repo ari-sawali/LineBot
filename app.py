@@ -287,7 +287,7 @@ def handle_follow(event):
 @handler.add(JoinEvent)
 def handle_join(event):
     reply_token = event.reply_token
-    cid = line_api_proc.source_channel_id(event.source)
+    cid = bot.line_api_wrapper.source_channel_id(event.source)
     
     if not bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
         group_data = ma.get_group_by_id(cid)
