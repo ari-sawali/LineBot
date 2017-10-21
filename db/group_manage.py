@@ -353,13 +353,6 @@ class group_data(dict_like_mapping):
         return group_data(init_dict)
 
     def __init__(self, org_dict):
-
-
-
-        print org_dict # DEBUG PURPOSE
-
-
-
         if org_dict is not None:
             if not all(k in org_dict for k in (group_data.GROUP_ID, group_data.SPECIAL_USER, group_data.CONFIG_TYPE)):
                 raise ValueError('Invalid group data dictionary.')

@@ -161,25 +161,15 @@ class global_msg_handle(object):
 
         # IMPORTANT: make dict
 
-        if full_text == self._silence_key:
-            new_setting = self._system_config.set(db.config_data.SILENCE, not self._system_config.get(db.config_data.SILENCE)).get(db.config_data.SILENCE)
-            self._line_api_wrapper.reply_message_text(event.reply_token, 'BOT SILENCE: {}'.format('ENABLED' if new_setting else 'DISABLED'))
-            return True
+        action_dict = { self._silence_key: (db.config_data.SILENCE, 'BOT SILENCE: {}'),
+                        self._intercept_key: (db.config_data.INTERCEPT, 'MESSAGE INTERCEPTION: {}'),
+                        self._calc_debug_key: (db.config_data.CALCULATOR_DEBUG, 'CALCULATOR DEBUG: {}'),
+                        self._rep_error_key: (db.config_data.REPLY_ERROR, 'REPLY ON ERROR: {}') }
 
-        if full_text == self._intercept_key:
-            new_setting = self._system_config.set(db.config_data.INTERCEPT, not self._system_config.get(db.config_data.INTERCEPT)).get(db.config_data.INTERCEPT)
-            self._line_api_wrapper.reply_message_text(event.reply_token, 'MESSAGE INTERCEPTION: {}'.format('ENABLED' if new_setting else 'DISABLED'))
-            return True
-        
-        if full_text == self._calc_debug_key:
-            new_setting = self._system_config.set(db.config_data.CALCULATOR_DEBUG, not self._system_config.get(db.config_data.CALCULATOR_DEBUG)).get(db.config_data.CALCULATOR_DEBUG)
-            self._line_api_wrapper.reply_message_text(event.reply_token, 'CALCULATOR DEBUG: {}'.format('ENABLED' if new_setting else 'DISABLED'))
-            return True
-        
-        if full_text == self._rep_error_key:
-            new_setting = self._system_config.set(db.config_data.REPLY_ERROR, not self._system_config.get(db.config_data.REPLY_ERROR)).get(db.config_data.REPLY_ERROR)
-            self._line_api_wrapper.reply_message_text(event.reply_token, 'REPLY ON ERROR: {}'.format('ENABLED' if new_setting else 'DISABLED'))
-            return True
+        action = action_dict.get(full_text, None)
+        if action is not None:
+            new_setting = self._system_config.set(action[0], not self._system_config.get(action[0])).get(action[0])
+            self._line_api_wrapper.reply_message_text(event.reply_token, action[1].format('ENABLED' if new_setting else 'DISABLED'))
 
         return False
 
