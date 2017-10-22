@@ -50,7 +50,7 @@ class webpage_manager(object):
         { seq_id: url }
         """
         MAX_COUNT = 100
-        return OrderedDict({ u'{} - {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'), data.short_description): url_for(self._route_method_name, seq_id=data.seq_id) for data in self._content_holder.get_error_page_list(MAX_COUNT) })
+        return OrderedDict([(u'{} - {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'), data.short_description), url_for(self._route_method_name, seq_id=data.seq_id)) for data in self._content_holder.get_error_page_list(MAX_COUNT)])
 
     def get_webpage_data(self, id):
         if isinstance(id, (str, unicode)):

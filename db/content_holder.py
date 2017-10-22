@@ -47,7 +47,7 @@ class webpage_content_holder(db_base):
         if page_data is not None:
             data = webpage_data(page_data)
             data.content += u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=webpage_content_holder.DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
-            data.content += u'\n\n網頁紀錄時間: {}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+            data.content += u'\n\n網頁紀錄時間: {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
             data.content += u'\n網頁種類: {}'.format(unicode(data.content_type))
 
             return data
