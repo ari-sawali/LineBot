@@ -171,6 +171,7 @@ def callback():
 
 @app.route("/error", methods=['GET'])
 def get_error_list():
+    print webpage_generator.get_error_dict()
     return webpage_generator.html_render_error_list(sys_data.boot_up, webpage_generator.get_error_dict())
 
 @app.route("/webpage/<seq_id>", methods=['GET'])
