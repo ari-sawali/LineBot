@@ -78,15 +78,15 @@ class global_msg_handle(object):
 
         rep_list = []
 
-        if rep_type is db.word_type.TEXT:
+        if rep_type == db.word_type.TEXT:
             rep_list.append(bot.line_api_wrapper.wrap_text_message(rep_content, self._webpage_generator))
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), recv_msg_type, db.msg_type.TEXT)
-        elif rep_type is db.word_type.STICKER:
+        elif rep_type == db.word_type.STICKER:
             rep_list.append(bot.line_api_wrapper.wrap_image_message(db.sticker_png_url(rep_content)))
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), recv_msg_type, db.msg_type.STICKER)
-        elif rep_type is db.word_type.PICTURE:
+        elif rep_type == db.word_type.PICTURE:
             rep_list.append(bot.line_api_wrapper.wrap_image_message(rep_content))
             
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), recv_msg_type, db.msg_type.PICTURE)
@@ -178,7 +178,7 @@ class global_msg_handle(object):
     def _handle_text_sys_command(self, event, user_permission):
         """Return whether message has been replied."""
         full_text = event.message.text
-        if bot.msg_handler.global_msg_handle.SPLITTER in text:
+        if bot.msg_handler.global_msg_handle.SPLITTER in full_text:
             head, content = split(full_text, global_msg_handle.SPLITTER, 2)
 
             if head == text_msg_handler.HEAD:
@@ -271,7 +271,7 @@ class global_msg_handle(object):
 
         terminate_1 = self._terminate()
         
-        if terminate_1 or group_config is db.config_type.SILENCE:
+        if terminate_1 or group_config == db.config_type.SILENCE:
             print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
@@ -295,7 +295,7 @@ class global_msg_handle(object):
         
         terminate_3 = self._handle_text_rps(event, full_text)
 
-        if terminate_3 or group_config is db.config_type.SYS_ONLY or user_permission is bot.permission.RESTRICTED:
+        if terminate_3 or group_config == db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
             print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
@@ -346,7 +346,7 @@ class global_msg_handle(object):
 
     def _handle_sticker_data(self, event):
         """Return whether message has been replied."""
-        if bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
+        if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
             print 'IN'
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
@@ -388,7 +388,7 @@ class global_msg_handle(object):
         
         terminate_0 = self._terminate()
         
-        if terminate_0 or group_config is db.config_type.SILENCE or user_permission is bot.permission.RESTRICTED:
+        if terminate_0 or group_config == db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
 
@@ -397,7 +397,7 @@ class global_msg_handle(object):
         ####################################
 
         terminate_1 = self._handle_sticker_rps(event, sticker_id)
-        if terminate_1 or group_config is db.config_type.SYS_ONLY:
+        if terminate_1 or group_config == db.config_type.SYS_ONLY:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return 
 
@@ -425,7 +425,7 @@ class global_msg_handle(object):
     ##############################
 
     def _handle_image_upload(self, event, image_sha):
-        if bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
+        if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
             upload_result = self._img_handle.upload_imgur(event.message)
 
             rep_list = [bot.line_api_wrapper.wrap_text_message(u'檔案雜湊碼(SHA224)'), 
@@ -465,7 +465,7 @@ class global_msg_handle(object):
         
         terminate_0 = self._terminate()
         
-        if terminate_0 or group_config is db.config_type.SILENCE or user_permission is bot.permission.RESTRICTED:
+        if terminate_0 or group_config == db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
 

@@ -2,8 +2,6 @@
 
 from enum import IntEnum
 
-# IMPORTANT: __new__
-
 class EnumWithName(IntEnum):
     def __new__(cls, value, name):
         member = int.__new__(cls, value)

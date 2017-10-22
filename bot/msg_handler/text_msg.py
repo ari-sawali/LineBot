@@ -84,10 +84,10 @@ class text_msg_handler(object):
 
     def _get_kwd_instance(self, src, config):
         source_type = bot.line_event_source_type.determine(src)
-        if source_type is bot.line_event_source_type.USER:
+        if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
-        elif source_type is bot.line_event_source_type.GROUP or source_type is bot.line_event_source_type.USER:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), config is db.config_type.ALL)
+        elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.USER:
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), config == db.config_type.ALL)
         else:
             raise ValueError(error.main.miscellaneous(u'Unknown source type'))
 
@@ -489,7 +489,7 @@ class text_msg_handler(object):
         else:
             gid = line_api_proc.source_channel_id(src)
 
-        if params[1] is None and bot.line_event_source_type.determine(src) is bot.line_event_source_type.USER:
+        if params[1] is None and bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             return error.main.incorrect_channel(False, True, True)
 
         if bot.line_api_wrapper.is_valid_room_group_id(gid):
@@ -506,7 +506,7 @@ class text_msg_handler(object):
         if not key_permission_lv >= low_perm:
             return error.main.restricted(low_perm)
 
-        if bot.line_event_source_type.determine(src) is bot.line_event_source_type.USER:
+        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             gid = params.pop(1)
             if not bot.line_api_wrapper.is_valid_room_group_id(gid):
                 return error.main.incorrect_param(u'參數1', u'合法的群組/房間ID')

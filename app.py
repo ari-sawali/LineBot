@@ -289,7 +289,7 @@ def handle_join(event):
     reply_token = event.reply_token
     cid = bot.line_api_wrapper.source_channel_id(event.source)
     
-    if not bot.line_event_source_type.determine(event.source) is bot.line_event_source_type.USER:
+    if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
         group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
         group_action_dict = { '點此查看群組資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
         if group_data is None:

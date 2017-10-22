@@ -9,24 +9,6 @@ class permission(ext.EnumWithName):
     ADMIN = 2, '管理員'
     BOT_ADMIN = 3, '機器人管理員'
 
-    def __gt__(a, b):
-        return int(a) > int(b)
-
-    def __ge__(a, b):
-        return int(a) >= int(b)
-
-    def __ne__(a, b):
-        return int(a) != int(b)
-
-    def __eq__(a, b):
-        return int(a) == int(b)
-
-    def __le__(a, b):
-        return int(a) <= int(b)
-
-    def __lt__(a, b):
-        return int(a) < int(b)
-
 class cmd_category(ext.EnumWithName):
     MAIN = 0, '主要指令'
     EXTEND = 1, '延伸指令'
