@@ -113,7 +113,7 @@ class webpage_data(dict_like_mapping):
         return self[webpage_data.TIMESTAMP]
 
     @property
-    def webpage_content_type(self):
+    def content_type(self):
         return self[webpage_data.TYPE]
 
     @property
