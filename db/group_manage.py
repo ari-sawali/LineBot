@@ -262,8 +262,8 @@ class group_manager(db_base):
 
                 text = u''
                 if including_channel_id:
-                    text += u'頻道ID: {} 【{}】'.format(gid, activation_status)
-                text += u'\n收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
+                    text += u'頻道ID: {} 【{}】\n'.format(gid, activation_status)
+                text += u'收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
                 text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
                 return text
 
@@ -365,9 +365,9 @@ class group_data(dict_like_mapping):
         return text
 
     def get_group_members_string(self):
-        text = u'管理員:\n{}'.format(self[group_data.SPECIAL_USER][group_data.ADMINS])
-        text += u'副管:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.MODERATORS]))
-        text += u'限制用戶:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.RESTRICTS]))
+        text = u'管理員:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.ADMINS]))
+        text += u'\n副管:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.MODERATORS]))
+        text += u'\n限制用戶:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.RESTRICTS]))
 
         return text
 
