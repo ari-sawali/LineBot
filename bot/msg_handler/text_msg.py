@@ -298,6 +298,7 @@ class text_msg_handler(object):
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance)
+        print query_result
         if isinstance(query_result[0], (str, unicode)):
             return query_result
 

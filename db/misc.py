@@ -55,8 +55,6 @@ class FormattedStringResult(object):
             if data_left > 0:
                 _list_limited.append(u'...(還有{}筆)'.format(data_left))
 
-        print data_list
-
         return FormattedStringResult(_list_limited, _list_full, has_result)
 
     @property
