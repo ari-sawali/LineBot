@@ -818,7 +818,7 @@ class text_msg_handler(object):
 
 
     def split_verify(self, cmd, splitter, param_text):
-        if self._command_manager.is_command_exist(cmd):
+        if not self._command_manager.is_command_exist(cmd):
             return error.main.invalid_thing(u'指令', cmd)
 
         cmd_obj = self._command_manager.get_command_data(cmd)
