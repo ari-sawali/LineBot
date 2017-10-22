@@ -276,7 +276,7 @@ class group_dict_manager(db_base):
 
         if exclude_id is not None:
             query_dict[pair_data.SEQUENCE] = { '$ne': exclude_id }
-
+            
         return self._disable(query_dict, disabler, pinned)
 
     def disable_keyword_by_id(self, id_or_id_list, disabler, pinned=False):
@@ -419,7 +419,6 @@ class group_dict_manager(db_base):
             called_count = associated_pair[pair_data.STATISTICS][pair_data.CALLED_COUNT]
             ranking = self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': called_count } }) + 1 
             return ranking
-
 
     @staticmethod
     def _list_result(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None):
@@ -832,6 +831,9 @@ class pair_data(dict_like_mapping):
         rep = group_dict_manager._reply_repr(self, False)
         rep_att = u'無' if self.reply_attach_text is None else self.reply_attach_text
         linked = u'、'.join(self.linked_words) if len(self.linked_words) > 0 else None
+        affil_group = self.affiliated_group
+        if affil_group == PUBLIC_GROUP_ID:
+            affil_group = u'公用'
         
         if display_status:
             status = u''
@@ -849,6 +851,7 @@ class pair_data(dict_like_mapping):
             text += u'\n附加回覆: {}'.format(rep_att)
         if linked is not None:
             text += u'\n相關關鍵字: {}'.format(linked)
+        text += u'\n隸屬群組: {}'.format(affil_group)
 
         return text
 
