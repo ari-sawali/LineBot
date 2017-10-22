@@ -30,6 +30,8 @@ class config_manager(object):
         if config.startswith('"') and config.endswith('"'):
             config = config[1:-1]
 
+        return config
+
     def getint(self, cat_enum, key_enum):
         return self._parser.getint(str(cat_enum), str(key_enum))
 
