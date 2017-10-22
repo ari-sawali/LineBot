@@ -85,11 +85,13 @@ class db_base(pymongo.collection.Collection):
 
     def find(self, *args, **kwargs):
         print 'MongoDB FIND @{}.{}'.format(self._db_name, self._collection_name)
+        print args
 
         return super(db_base, self).find(*args, **kwargs)
 
     def find_one(self, filter=None, *args, **kwargs):
         print 'MongoDB FIND_ONE @{}.{}'.format(self._db_name, self._collection_name)
+        print args
 
         return super(db_base, self).find_one(filter, *args, **kwargs)
 
