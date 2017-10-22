@@ -12,6 +12,7 @@ import pymongo
 import tool
 
 from bot.commands import permission
+import bot
 from .base import db_base, dict_like_mapping
 from .misc import FormattedStringResult
 
@@ -63,9 +64,12 @@ class group_manager(db_base):
             return
         else:
             try:
+                if bot.line_api_wrapper.is_valid_user_id(gid):
+                    config = config_type.ALL
+
                 data = group_data.init_by_field(gid, config)
                 self.insert_one(data)
-                self._permission_manager.new_data(gid, self._ADMIN_UID, self._ADMIN_UID, permission.BOT_ADMIN)
+                self._permission_manager.new_data(gid, self._ADMIN_UID, self._ADMIN_UID, bot.permission.BOT_ADMIN)
                 return self._activator.new_data(gid)
             except pymongo.errors.DuplicateKeyError as ex:
                 return
@@ -91,9 +95,9 @@ class group_manager(db_base):
             else:
                 g_data = group_data(result)
                 if including_member_data:
-                    admins_list = self._permission_manager.get_data_by_permission(gid, permission.ADMIN)
-                    mods_list = self._permission_manager.get_data_by_permission(gid, permission.MODERATOR)
-                    restricts_list = self._permission_manager.get_data_by_permission(gid, permission.RESTRICTED)
+                    admins_list = self._permission_manager.get_data_by_permission(gid, bot.permission.ADMIN)
+                    mods_list = self._permission_manager.get_data_by_permission(gid, bot.permission.MODERATOR)
+                    restricts_list = self._permission_manager.get_data_by_permission(gid, bot.permission.RESTRICTED)
                     g_data.set_members_data(admins_list, mods_list, restricts_list)
 
                 return g_data
@@ -149,7 +153,7 @@ class group_manager(db_base):
             if user_data is not None:
                 u_permission = user_data.permission_level
             else:
-                u_permission = permission.USER
+                u_permission = bot.permission.USER
             self._set_cache_permission(gid, uid, u_permission)
             return u_permission
         
@@ -568,7 +572,7 @@ class user_data_manager(db_base):
         if target_data is not None:
             target_permission_lv = target_data.permission_level
         else:
-            target_permission_lv = permission.USER
+            target_permission_lv = bot.permission.USER
 
         if self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             self.delete_one({ user_data.USER_ID: target_uid, user_data.GROUP: group_id })
@@ -605,8 +609,8 @@ class user_data_manager(db_base):
             u_data = user_data(u_data)
 
             # Need moderator+ to set restricted
-            if action_permission < permission.USER:
-                return u_data.permission_level >= permission.MODERATOR
+            if action_permission < bot.permission.USER:
+                return u_data.permission_level >= bot.permission.MODERATOR
             else:
                 return u_data.permission_level >= action_permission
         else:

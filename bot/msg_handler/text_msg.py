@@ -104,7 +104,7 @@ class text_msg_handler(object):
             if bot.string_can_be_int(params[1]) and bot.string_can_be_int(params[2]):
                 begin_index = int(params[1])
                 end_index = int(params[2])
-                title = u'搜尋範圍: 【回覆組ID】介於【{}】和【{}】之間的回覆組。\n'.format(si, ei)
+                title = u'範圍: 【回覆組ID】介於【{}】和【{}】之間的回覆組。\n'.format(si, ei)
 
                 if end_index - begin_index < 0:
                     return error.main.incorrect_param(u'參數2', u'大於參數1的數字')
@@ -114,14 +114,14 @@ class text_msg_handler(object):
                 action = params[1]
                 if action == 'UID':
                     uid = params[2]
-                    title = u'搜尋範圍: 【回覆組製作者UID】為【{}】的回覆組。\n'.format(uid)
+                    title = u'範圍: 【回覆組製作者UID】為【{}】的回覆組。\n'.format(uid)
                     if bot.line_api_wrapper.is_valid_user_id(uid):
                         return kwd_instance.search_pair_by_creator(uid)
                     else:
                         return error.line_bot_api.illegal_user_id(uid)
                 elif action == 'GID':
                     gid = params[2]
-                    title = u'搜尋範圍: 隸屬於【群組ID】為【{}】的回覆組。\n'.format(gid)
+                    title = u'範圍: 隸屬於【群組ID】為【{}】的回覆組。\n'.format(gid)
                     if bot.line_api_wrapper.is_valid_room_group_id(gid):
                         return self._kwd_global.get_pairs_by_group_id(gid, True)
                     else:
@@ -129,7 +129,7 @@ class text_msg_handler(object):
                 elif action == 'ID':
                     ids = params[2]
                     id_list = ids.split(self._array_separator)
-                    title = u'搜尋範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join(id_list))
+                    title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join(id_list))
                     if bot.string_can_be_int(ids.replace(self._array_separator, '')):
                         return kwd_instance.search_pair_by_index(id_list)
                     else:
@@ -138,9 +138,9 @@ class text_msg_handler(object):
                     return error.main.incorrect_param(u'參數1', u'ID、UID(使用者)或GID(群組隸屬資料)')
         else:
             kw = params[1]
-            title = u'搜尋範圍: 【關鍵字】或【回覆】包含【{}】的回覆組。\n'.format(kw)
+            title = u'範圍: 【關鍵字】或【回覆】包含【{}】的回覆組。\n'.format(kw)
 
-            return kwd_instance.search_pair_by_keyword(kw)
+            return kwd_instance.search_pair_by_keyword(kw), title
 
     # TEST: mongo shell command
     def _S(self, src, params, key_permission_lv):
@@ -298,13 +298,13 @@ class text_msg_handler(object):
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance)
-        if isinstance(query_result, (str, unicode)):
+        if isinstance(query_result[0], (str, unicode)):
             return query_result
 
         # process output
         max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_QUERY_OUTPUT_COUNT)
         str_length = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_SIMPLE_STRING_LENGTH)
-        output = db.keyword_dict.group_dict_manager.list_keyword(query_result, max_count, title, error.main.no_result(), str_length)
+        output = db.keyword_dict.group_dict_manager.list_keyword(query_result[0], max_count, query_result[1], error.main.no_result(), str_length)
 
         text = output.limited
         text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
@@ -403,12 +403,12 @@ class text_msg_handler(object):
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance)
-        if isinstance(query_result, (str, unicode)):
+        if isinstance(query_result[0], (str, unicode)):
             return query_result
         
         # process output
         max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
-        output = db.keyword_dict.group_dict_manager.list_keyword_info(query_result, kwd_instance, self._line_api_wrapper, max_count, title, error.main.no_result())
+        output = db.keyword_dict.group_dict_manager.list_keyword_info(query_result[0], kwd_instance, self._line_api_wrapper, max_count, query_result[1], error.main.no_result())
 
         text = output.limited
         text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
