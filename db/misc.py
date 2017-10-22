@@ -16,8 +16,6 @@ class FormattedStringResult(object):
             append_first_list = [append_first_list]
 
         if append_first_list is not None:
-            print 'IN'
-            print append_first_list
             _list_limited.extend(append_first_list)
             _list_full.extend(append_first_list)
 
@@ -39,8 +37,6 @@ class FormattedStringResult(object):
             else:
                 _limited_data_list = data_list
 
-            print _list_limited
-            print _list_full
             _list_limited.extend([string_format_function(data) for data in _limited_data_list])
             _list_full.extend([string_format_function(data) for data in data_list])
 
@@ -52,8 +48,6 @@ class FormattedStringResult(object):
             if data_left > 0:
                 _list_limited.append(u'...(還有{}筆)'.format(data_left))
 
-        print _list_limited
-        print _list_full
         print data_list
 
         return FormattedStringResult(_list_limited, _list_full)

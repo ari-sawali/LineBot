@@ -239,7 +239,7 @@ class group_manager(db_base):
             return group_permission_data.get(uid, None)
         
     @staticmethod
-    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None):
+    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True):
         if group_data_or_list is not None and len(group_data_or_list) > 0:
             if not isinstance(group_data_or_list, list):
                 group_data_or_list = [group_data_or_list]
@@ -256,8 +256,10 @@ class group_manager(db_base):
                 else:
                     activation_status = u'N/A'
 
-                text = u'頻道ID: {} 【{}】'.format(gid, activation_status)
-                text += u'\n收到:\n{}'.format('\n'.join(u'{} - {}(觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
+                text = u''
+                if including_channel_id:
+                    text += u'頻道ID: {} 【{}】'.format(gid, activation_status)
+                text += u'\n收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
                 text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
                 return text
 
@@ -348,7 +350,7 @@ class group_data(dict_like_mapping):
         return self._members_data_set
 
     def get_status_string(self):
-        message_track_string = group_manager.message_track_string(self).full
+        message_track_string = group_manager.message_track_string(self, None, None, None, False).limited
         admins_string = self.get_group_members_string()
 
         text = u'房間/群組ID: {}\n'.format(self.group_id)
