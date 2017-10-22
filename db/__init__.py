@@ -17,5 +17,5 @@ from .sys_config import (
 )
 
 from .content_holder import (
-    webpage_content_holder, webpage_content_type, game_object_holder, rps
+    webpage_content_holder, webpage_content_type, game_object_holder, rps, webpage_data
 )

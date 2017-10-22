@@ -82,6 +82,16 @@ class webpage_data(dict_like_mapping):
         }
         return webpage_data(init_dict)
 
+    @staticmethod
+    def no_content_template():
+        init_dict = {
+            webpage_data.TIMESTAMP: time.time(),
+            webpage_data.TYPE: webpage_content_type.ERROR,
+            webpage_data.CONTENT: error.error.webpage.no_content(),
+            webpage_data.SHORT_DESCRIPTION: error.error.webpage.no_content()
+        }
+        return webpage_data(init_dict)
+
     def __init__(self, org_dict):
         if org_dict is None:
             raise ValueError(error.error.main.miscellaneous(u'Dict is None.'))

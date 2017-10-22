@@ -55,10 +55,9 @@ class webpage_manager(object):
         webpage_data = self._content_holder.get_data(id)
 
         if webpage_data is None:
-            return error.webpage.no_content()
+            return db.webpage_data.no_content_template()
         else:
-            
-            return text
+            return webpage_data
 
     @staticmethod
     def html_render(page_data):
