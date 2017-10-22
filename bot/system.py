@@ -163,7 +163,7 @@ class line_api_wrapper(object):
 
             title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
-            action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d.iteritems()]
+            action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
 
             column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
 
