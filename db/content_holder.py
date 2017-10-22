@@ -46,7 +46,7 @@ class webpage_content_holder(db_base):
         page_data = self.find_one({ webpage_data.SEQUENCE_ID: id })
         if page_data is not None:
             data = webpage_data(page_data)
-            data.content += u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
+            data.content += u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=webpage_content_holder.DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
             data.content += u'\n\n網頁紀錄時間: {}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
             data.content += u'\n網頁種類: {}'.format(unicode(data.content_type))
         else:
@@ -57,6 +57,7 @@ class webpage_content_holder(db_base):
         find_cursor = self.find({ webpage_data.TYPE: webpage_content_type.ERROR }, sort=[(webpage_data.SEQUENCE_ID, pymongo.DESCENDING)])
         find_cursor = self.cursor_limit(find_cursor, limit)
         data_list = list(find_cursor)
+        print data_list
         return [webpage_data(page) for page in data_list]
 
 class webpage_data(dict_like_mapping):
