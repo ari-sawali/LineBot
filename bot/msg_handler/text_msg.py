@@ -344,12 +344,14 @@ class text_msg_handler(object):
     def _E(self, src, params, key_permission_lv):
         # assign instance to manage pair
         kwd_instance = self._get_kwd_instance(src)
-        shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + id }, '更動回覆組ID: {}'.format(id), '相關指令')
+
+        action = params[1]
+        id = params[2]
+
+        shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + id }, u'更動回覆組ID: {}'.format(id), u'相關指令')
         
         # edit linked keyword pair
         if params[3] is not None:
-            action = params[1]
-            id = params[2]
             word_list = params[3].split(self._array_separator)
 
             if not bot.string_can_be_int(id):
@@ -368,9 +370,6 @@ class text_msg_handler(object):
                 return '#{} 相關回覆組變更失敗。'.format(id)
         # edit pinned property
         elif params[2] is not None:
-            action = params[1]
-            id = params[2]
-            
             low_perm = self._command_manager.get_command_data('E').lowest_permission
             if key_permission_lv > low_perm:
                 if not bot.string_can_be_int(id):

@@ -136,7 +136,7 @@ class line_api_wrapper(object):
         return gid is not None and len(gid) == 33 and (gid.startswith('C') or gid.startswith('R'))
 
     @staticmethod
-    def wrap_template_with_action(data_dict, alt_text, title):
+    def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
         """
         data_dict should follow the format below, and the length of dict must less than or equals to 15. Result may be unexpected if the format is invalid.
 
@@ -147,11 +147,6 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
-        if isinstance(title, str):
-            title = title.decode('utf-8')
-
-        if isinstance(alt_text, str):
-            alt_text = alt_text.decode('utf-8')
 
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
@@ -164,13 +159,13 @@ class line_api_wrapper(object):
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
             d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
 
-            title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
+            title_unicode = u'{} {}'.format(title_unicode, i / MAX_ACTIONS_IN_CAROUSEL + 1)
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
             action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
 
-            column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
+            column_list.append(CarouselColumn(text=explain_text, title=title_unicode, actions=action_list))
 
-        return TemplateSendMessage(alt_text='相關回覆組快捷樣板.\n{}'.format(alt_text), template=CarouselTemplate(columns=column_list))
+        return TemplateSendMessage(alt_text=alt_text_unicode, template=CarouselTemplate(columns=column_list))
     
     @staticmethod
     def wrap_image_message(picture_url, preview_url=None):
