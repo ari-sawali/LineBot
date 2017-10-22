@@ -2,6 +2,7 @@
 
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
+# TODO: categorize error class
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing
 # TODO: self silent (new db)

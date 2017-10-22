@@ -22,7 +22,7 @@ class error(object):
         
         @staticmethod
         def invalid_thing_with_correct_format(name_of_thing, correct_format, thing):
-            return u'不合法的{nt}: {t}。{nt}應為{fmt}。詳情請查看使用說明書( {um} )。'.format(nt=name_of_thing, t=thing, fmt=correct_format, um=error.USER_MANUAL_URL)
+            return u'不合法的{nt}: {t}。{nt}應為{fmt}。\n詳情請查看使用說明書( {um} )。'.format(nt=name_of_thing, t=thing, fmt=correct_format, um=error.USER_MANUAL_URL)
 
         @staticmethod
         def lack_of_thing(name_of_thing):
@@ -114,7 +114,7 @@ class error(object):
     class auto_reply(object):
         @staticmethod
         def illegal_flags(flags):
-            return error.main.invalid_thing_with_correct_format(u'旗標', u'兩個字元，第一字代表關鍵字種類；第二字代表回覆種類。內容應為文字(T)、貼圖(S)或圖片(P)', flags)
+            return error.main.invalid_thing_with_correct_format(u'旗標', u'兩個字元，第一字代表關鍵字種類；第二字代表回覆種類。\n內容應為文字(T)、貼圖(S)或圖片(P)', flags)
 
     class string_calculator(object):
         @staticmethod

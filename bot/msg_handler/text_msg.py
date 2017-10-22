@@ -198,11 +198,13 @@ class text_msg_handler(object):
         except db.UnknownFlagError:
             return error.auto_reply.illegal_flags(flags)
 
+        source_type = bot.line_event_source_type.determine(src)
+
         if kw_type == db.word_type.STICKER and not bot.string_can_be_int(kw):
             return error.main.invalid_thing_with_correct_format(u'關鍵字', u'貼圖ID', kw)
         
-        if kw_type == db.word_type.PICTURE and not kw.startswith('https://'):
-            return error.main.invalid_thing_with_correct_format(u'關鍵字', u'使用HTTPS通訊協定的圖片網址', kw)
+        if kw_type == db.word_type.PICTURE and not len(kw) == db.pair_data.HASH_LENGTH:
+            return error.main.invalid_thing_with_correct_format(u'關鍵字', u'共{}字元的{}雜湊'.format(db.pair_data.HASH_LENGTH, db.pair_data.HASH_TYPE), kw)
 
         if rep_type == db.word_type.STICKER and not bot.string_can_be_int(rep):
             return error.main.invalid_thing_with_correct_format(u'回覆', u'貼圖ID', rep)

@@ -31,8 +31,6 @@ class UnknownFlagError(Exception):
             super(UnknownFlagError, self).__init__(*args)
 
 class group_dict_manager(db_base):
-    HASH_LENGTH = 56
-    HASH_TYPE = 'SHA224'
     WORD_DICT_DB_NAME = 'word_dict'
 
     VALIDATION_JSON = """{
@@ -237,12 +235,6 @@ class group_dict_manager(db_base):
                 raise ValueError('linked word should be list or tuple type.')
         elif len(linked_word) > 15:
             return error.main.miscellaneous(u'相關關鍵字最高只能寫入15組關鍵字。')
-        elif kw_type == word_type.PICTURE and len(keyword) != group_dict_manager.HASH_LENGTH:
-            raise ValueError('Length of the keyword is invalid (Not {}), use {} encryption to generate the checksum of the file.'.format(
-                group_dict_manager.HASH_LENGTH, group_dict_manager.HASH_TYPE))
-        elif rep_type == word_type.PICTURE and len(keyword) != group_dict_manager.HASH_LENGTH:
-            raise ValueError('Length of the keyword is invalid (Not {}), use {} encryption to generate the checksum of the file.'.format(
-                group_dict_manager.HASH_LENGTH, group_dict_manager.HASH_TYPE))
 
         if not pinned:
             check_result = self.count({
@@ -689,6 +681,9 @@ class pair_data(dict_like_mapping):
         }
     }
     """
+    
+    HASH_LENGTH = 56
+    HASH_TYPE = 'SHA224'
 
     SEQUENCE = '_seq'
 
