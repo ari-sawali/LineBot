@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from flask import request, url_for
 import pymongo
+import ast
 from linebot.models import TextSendMessage
 
 import db
@@ -152,11 +153,11 @@ class text_msg_handler(object):
 
             if params[2] is not None:
                 db_name = params[1]
-                shell_cmd = params[2]
+                shell_cmd_dict = params[2]
 
-                result = self._pymongo_client.get_database(db_name).command(shell_cmd)
+                result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
 
-                text = u'資料庫指令:\n{}\n\n'.format(shell_cmd)
+                text = u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
                 if results is not None and len(results) > 0:
                     text += json.dump(result)
                 else:
