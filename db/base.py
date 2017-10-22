@@ -19,6 +19,7 @@ class db_base(pymongo.collection.Collection):
         mongo_client = pymongo.MongoClient(mongo_db_uri)
 
         self._db = mongo_client.get_database(self._db_name)
+        self._db.set_profiling_level(2)
         super(db_base, self).__init__(self._db, collection_name, False, codec_options, read_preference, write_concern, read_concern, **kwargs)
 
         if index_col_list is None:

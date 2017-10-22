@@ -21,7 +21,7 @@ class EnumWithName(IntEnum):
     def __unicode__(self):
         return unicode(self._name.decode('utf-8'))
 
-def object_to_json(o, indent=4, space=" ", newline="\n", level=0):
+def object_to_json(o, level=0, indent=4, space=" ", newline="\n"):
     ret = ""
     if isinstance(o, dict):
         ret += "{" + newline
@@ -29,15 +29,15 @@ def object_to_json(o, indent=4, space=" ", newline="\n", level=0):
         for k,v in o.iteritems():
             ret += comma
             comma = ",\n"
-            ret += space * indent * (level+1)
+            ret += space * indent * level
             ret += '"' + str(k) + '":' + space
             ret += object_to_json(v, level + 1)
 
-        ret += newline + space * indent * level + "}"
+        ret += newline + space * indent * (level - 1) + "}"
     elif isinstance(o, basestring):
         ret += '"' + o + '"'
     elif isinstance(o, list):
-        ret += "[" + ",".join([object_to_json(e, level+1) for e in o]) + "]"
+        ret += "[" + ", ".join([object_to_json(e, level+1) for e in o]) + "]"
     elif isinstance(o, bool):
         ret += "true" if o else "false"
     elif isinstance(o, (int, long)):
