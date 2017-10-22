@@ -2,6 +2,9 @@
 
 class FormattedStringResult(object):
     def __init__(self, limited_list, full_list):
+        
+        print limited_list
+        print full_list
         self._limited = '\n'.join(limited_list)
         self._full = '\n'.join(full_list)
 
@@ -45,6 +48,10 @@ class FormattedStringResult(object):
 
             if data_left > 0:
                 _list_limited.append(u'...(還有{}筆)'.format(data_left))
+
+        print _list_limited
+        print _list_full
+        print data_list
 
         return FormattedStringResult(_list_limited, _list_full)
 
