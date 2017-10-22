@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import enum
-from datetime import datetime
+from datetime import datetime, timedelta
 import pymongo
 from collections import defaultdict
 
@@ -34,14 +34,14 @@ class webpage_content_holder(db_base):
         self.create_index([(webpage_data.TIMESTAMP, pymongo.DESCENDING)], webpage_content_holder=system_statistics.DATA_EXPIRE_SECS)
 
     def _get_timestamp_in_datetime(self):
-        return datetime.now()
+        return datetime.now() + timedelta(hours=8)
 
     def rec_data(self, content, type, short_description=None):
         """Return sequence id of recorded content document."""
         timestamp = self._get_timestamp_in_datetime()
         content += u'\n\n網頁內容將在{}後清除。'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-        content += u'\n網頁紀錄時間: '.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-        content += u'\n網頁種類: '.format(unicode(type))
+        content += u'\n網頁紀錄時間: {}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+        content += u'\n網頁種類: {}'.format(unicode(type))
         return self.insert_one(webpage_data.init_by_field(timestamp, type, content, short_description)).inserted_seq_id
 
     def get_data(self, id):

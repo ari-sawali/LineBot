@@ -157,11 +157,9 @@ class text_msg_handler(object):
 
                 result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
 
-                text = u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
-                if results is not None and len(results) > 0:
-                    text += json.dump(result)
-                else:
-                    text += error.main.no_result()
+                text = u'目標資料庫指令:\n{}\n'.format(db_name)
+                text += u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
+                text += unicode(result)
             else:
                 text = error.main.lack_of_parameters(1)
         else:
