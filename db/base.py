@@ -37,7 +37,7 @@ class db_base(pymongo.collection.Collection):
             
             self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
-    def insert(self, doc_or_docs, manipulate = True, check_keys = True, continue_on_error = False, **kwargs):
+    def insert(self, doc_or_docs, manipulate=True, check_keys=True, continue_on_error=False, **kwargs):
         print 'MongoDB INSERT @{}.{}'.format(self._db_name, self._collection_name)
         return super(db_base, self).insert(doc_or_docs, manipulate, check_keys, continue_on_error, **kwargs)
 
@@ -74,11 +74,11 @@ class db_base(pymongo.collection.Collection):
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
-    def find_one_and_update(self, filter, update, projection = None, sort = None, upsert = False, return_document = ReturnDocument.BEFORE, **kwargs):
+    def find_one_and_update(self, filter, update, projection=None, sort=None, upsert = False, return_document = pymongo.ReturnDocument.BEFORE, **kwargs):
         print 'MongoDB FIND_ONE_AND_UPDATE @{}.{}'.format(self._db_name, self._collection_name)
         return super(db_base, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
 
-    def find_one(self, filter = None, *args, **kwargs):
+    def find_one(self, filter=None, *args, **kwargs):
         print 'MongoDB FIND_ONE @{}.{}'.format(self._db_name, self._collection_name)
         return super(db_base, self).find_one(filter, *args, **kwargs)
 
