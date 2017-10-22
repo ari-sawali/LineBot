@@ -117,25 +117,40 @@ class game_object_holder(db_base):
 
     def __init__(self, mongo_db_uri):
         super(game_object_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, game_object_holder.COLLECTION_NAME, False, [rps.CHAT_INSTANCE_ID])
+        self._cache_exist = {}
 
     def update_data(self, chat_instance_id, new_data):
+        self._set_cache_object_exist(chat_instance_id, True)
         self.find_one_and_replace({ rps.CHAT_INSTANCE_ID: chat_instance_id }, new_data)
         
     def delete_data(self, chat_instance_id):
+        self._set_cache_object_exist(chat_instance_id, False)
         self.delete_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
 
     def create_data(self, chat_instance_id, creator_id, creator_name, rock, paper, scissor):
         is_bot = bot.line_api_wrapper.is_valid_user_id(chat_instance_id)
 
         self.insert_one(rps(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
+        self._set_cache_object_exist(chat_instance_id, True)
 
     def get_data(self, chat_instance_id):
         """Return None if data not exists."""
-        find_result = self.find_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
-        if find_result is not None:
-            return rps(find_result)
+        exist = self._get_cache_object_exist(chat_instance_id)
+        if exist:
+            find_result = self.find_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
+            if find_result is not None:
+                return rps(find_result)
+            else:
+                self._set_cache_object_exist(chat_instance_id, False)
+                return None
         else:
             return None
+
+    def _set_cache_object_exist(self, gid, exist):
+        self._cache_exist[gid] = exist
+
+    def _get_cache_object_exist(self, gid):
+        return self._cache_exist.get(gid, False)
 
 class battle_item(ext.EnumWithName):
     __order__ = 'SCISSOR ROCK PAPER'
