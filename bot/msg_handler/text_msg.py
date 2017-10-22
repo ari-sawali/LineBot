@@ -197,9 +197,12 @@ class text_msg_handler(object):
             rep_type = db.word_type.determine_by_flag(flags[1])
         except db.word_type.UnknownFlagError:
             return error.auto_reply.illegal_flags(flags)
+
+        if linked is not None:
+            linked = linked.split(self._array_separator)
         
         # create and write
-        result = kwd_instance.insert_keyword(kw, rep, new_profile_uid, pinned, kw_type, rep_type, linked.split(self._array_separator), rep_att)
+        result = kwd_instance.insert_keyword(kw, rep, new_profile_uid, pinned, kw_type, rep_type, linked, rep_att)
 
         # check whether success
         if isinstance(result, (str, unicode)):
