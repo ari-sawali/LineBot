@@ -13,11 +13,12 @@ class db_base(pymongo.collection.Collection):
 
     def __init__(self, mongo_db_uri, db_name, collection_name, has_seq, index_col_list=None, codec_options=None, read_preference=None, write_concern=None, read_concern=None, **kwargs):
         self._has_seq = has_seq
+        self._db_name = db_name
         self._collection_name = collection_name
 
         mongo_client = pymongo.MongoClient(mongo_db_uri)
 
-        self._db = mongo_client.get_database(db_name)
+        self._db = mongo_client.get_database(self._db_name)
         super(db_base, self).__init__(self._db, collection_name, False, codec_options, read_preference, write_concern, read_concern, **kwargs)
 
         if index_col_list is None:
@@ -36,7 +37,12 @@ class db_base(pymongo.collection.Collection):
             
             self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
+    def insert(self, doc_or_docs, manipulate = True, check_keys = True, continue_on_error = False, **kwargs):
+        print 'MongoDB INSERT @{}.{}'.format(self._db_name, self._collection_name)
+        return super(db_base, self).insert(doc_or_docs, manipulate, check_keys, continue_on_error, **kwargs)
+
     def insert_one(self, document, bypass_document_validation=False):
+        print 'MongoDB INSERT_ONE @{}.{}'.format(self._db_name, self._collection_name)
         inserted_seq_id = db_base.NOT_EXIST_SEQ_ID
 
         if self._has_seq:
@@ -51,6 +57,7 @@ class db_base(pymongo.collection.Collection):
         return ExtendedInsertOneResult(result.inserted_id, result.acknowledged, inserted_seq_id)
 
     def insert_many(self, documents, ordered=True, bypass_document_validation=False):
+        print 'MongoDB INSERT_MANY @{}.{}'.format(self._db_name, self._collection_name)
         inserted_seq_ids = []
 
         if any(db_base.SEQUENCE in document for document in documents):
@@ -67,7 +74,21 @@ class db_base(pymongo.collection.Collection):
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
+    def find_one_and_update(self, filter, update, projection = None, sort = None, upsert = False, return_document = ReturnDocument.BEFORE, **kwargs):
+        print 'MongoDB FIND_ONE_AND_UPDATE @{}.{}'.format(self._db_name, self._collection_name)
+        return super(db_base, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
+
+    def find_one(self, filter = None, *args, **kwargs):
+        print 'MongoDB FIND_ONE @{}.{}'.format(self._db_name, self._collection_name)
+        return super(db_base, self).find_one(filter, *args, **kwargs)
+
+    def aggregate(self, pipeline, **kwargs):
+        print 'MongoDB AGGREGATE @{}.{}'.format(self._db_name, self._collection_name)
+        return super(db_base, self).aggregate(pipeline, **kwargs)
+
+
     def drop(self):
+        print 'MongoDB DROP @{}.{}'.format(self._db_name, self._collection_name)
         self._db.counter.delete_many({ '_id': self._collection_name })
         return super(db_base, self).drop()
 
@@ -88,6 +109,7 @@ class db_base(pymongo.collection.Collection):
         return ret[0]
 
     def _next_seq_array(self, length=1):
+        print 'MongoDB (Update Sequence Number of {}.{})'.format(self._db_name, self._collection_name)
         ret = self._db.counter.find_one_and_update({ db_base.COLLECTION_NAME: self.name }, { '$inc': { db_base.SEQUENCE: length }}, None, None, True, pymongo.ReturnDocument.BEFORE)
         new_seq_begin = ret[db_base.SEQUENCE] + 1
 
