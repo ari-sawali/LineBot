@@ -24,7 +24,6 @@ class text_msg_handler(object):
         self._config_manager = config_manager
 
         self._array_separator = self._config_manager.get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
-        print self._array_separator
 
         self._system_data = system_data
         self._system_config = db.system_config(mongo_db_uri)

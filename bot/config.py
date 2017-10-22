@@ -26,7 +26,9 @@ class config_manager(object):
         self._parser.read(file_path)
 
     def get(self, cat_enum, key_enum):
-        return self._parser.get(str(cat_enum), str(key_enum))
+        config = self._parser.get(str(cat_enum), str(key_enum))
+        if config.startswith('"') and config.endswith('"'):
+            config = config[1:-1]
 
     def getint(self, cat_enum, key_enum):
         return self._parser.getint(str(cat_enum), str(key_enum))
