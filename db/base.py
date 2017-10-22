@@ -37,12 +37,19 @@ class db_base(pymongo.collection.Collection):
             
             self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
+    def create_index(self, keys, **kwargs):
+        print 'MongoDB CREATE_INDEX @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).create_index(keys, **kwargs)
+
     def insert(self, doc_or_docs, manipulate=True, check_keys=True, continue_on_error=False, **kwargs):
         print 'MongoDB INSERT @{}.{}'.format(self._db_name, self._collection_name)
+
         return super(db_base, self).insert(doc_or_docs, manipulate, check_keys, continue_on_error, **kwargs)
 
     def insert_one(self, document, bypass_document_validation=False):
         print 'MongoDB INSERT_ONE @{}.{}'.format(self._db_name, self._collection_name)
+
         inserted_seq_id = db_base.NOT_EXIST_SEQ_ID
 
         if self._has_seq:
@@ -58,6 +65,7 @@ class db_base(pymongo.collection.Collection):
 
     def insert_many(self, documents, ordered=True, bypass_document_validation=False):
         print 'MongoDB INSERT_MANY @{}.{}'.format(self._db_name, self._collection_name)
+
         inserted_seq_ids = []
 
         if any(db_base.SEQUENCE in document for document in documents):
@@ -74,16 +82,49 @@ class db_base(pymongo.collection.Collection):
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
-    def find_one_and_update(self, filter, update, projection=None, sort=None, upsert = False, return_document = pymongo.ReturnDocument.BEFORE, **kwargs):
-        print 'MongoDB FIND_ONE_AND_UPDATE @{}.{}'.format(self._db_name, self._collection_name)
-        return super(db_base, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
+    def find(self, *args, **kwargs):
+        print 'MongoDB FIND @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).find(*args, **kwargs)
 
     def find_one(self, filter=None, *args, **kwargs):
         print 'MongoDB FIND_ONE @{}.{}'.format(self._db_name, self._collection_name)
+
         return super(db_base, self).find_one(filter, *args, **kwargs)
+
+    def find_one_and_replace(self, filter, replacement, projection = None, sort = None, upsert = False, return_document = pymongo.ReturnDocument.BEFORE, **kwargs):
+        print 'MongoDB FIND_ONE_AND_REPLACE @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).find_one_and_replace(filter, replacement, projection, sort, upsert, return_document, **kwargs)
+
+    def find_one_and_update(self, filter, update, projection=None, sort=None, upsert = False, return_document = pymongo.ReturnDocument.BEFORE, **kwargs):
+        print 'MongoDB FIND_ONE_AND_UPDATE @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
+
+    def update_one(self, filter, update, upsert = False, bypass_document_validation = False, collation = None):
+        print 'MongoDB UPDATE_ONE @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).update_one(filter, update, upsert, bypass_document_validation, collation)
+    
+    def update_many(self, filter, update, upsert = False, bypass_document_validation = False, collation = None):
+        print 'MongoDB UPDATE_MANY @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).update_many(filter, update, upsert, bypass_document_validation, collation)
+
+    def delete_one(self, filter, collation = None):
+        print 'MongoDB DELETE_ONE @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).delete_one(filter, collation)
+
+    def delete_many(self, filter, collation = None):
+        print 'MongoDB DELETE_MANY @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).delete_many(filter, collation)
 
     def aggregate(self, pipeline, **kwargs):
         print 'MongoDB AGGREGATE @{}.{}'.format(self._db_name, self._collection_name)
+
         return super(db_base, self).aggregate(pipeline, **kwargs)
 
 

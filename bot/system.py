@@ -147,7 +147,7 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
-        if isintance(title, str):
+        if isinstance(title, str):
             title = title.decode('utf-8')
 
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
