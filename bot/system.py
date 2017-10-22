@@ -150,6 +150,9 @@ class line_api_wrapper(object):
         if isinstance(title, str):
             title = title.decode('utf-8')
 
+        if isinstance(alt_text, str):
+            alt_text = alt_text.decode('utf-8')
+
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
         length_action_dict = len(data_dict)
