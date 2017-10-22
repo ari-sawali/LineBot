@@ -1,5 +1,5 @@
 from .keyword_dict import (
-    word_type, pair_data, group_dict_manager, PUBLIC_GROUP_ID, simplified_string, sticker_png_url
+    word_type, pair_data, group_dict_manager, PUBLIC_GROUP_ID, simplified_string, sticker_png_url, UnknownFlagError
 )
 
 from .keyword_dict_global import word_dict_global

@@ -195,7 +195,7 @@ class text_msg_handler(object):
         try:
             kw_type = db.word_type.determine_by_flag(flags[0])
             rep_type = db.word_type.determine_by_flag(flags[1])
-        except db.word_type.UnknownFlagError:
+        except db.UnknownFlagError:
             return error.auto_reply.illegal_flags(flags)
 
         if kw_type == db.word_type.STICKER and not bot.string_can_be_int(kw):
