@@ -62,7 +62,7 @@ class text_msg_handler(object):
             self._system_stats.command_called(cmd)
 
             # get function
-            cmd_function = getattr(foo, '_{}'.format(cmd))
+            cmd_function = getattr(self, '_{}'.format(cmd))
 
             # get permission
             if user_permission is bot.permission.RESTRICTED:
@@ -855,7 +855,7 @@ class game_msg_handler(object):
             self._line_api_wrapper.reply_message_text(token, params)
             return True
         else:
-            cmd_function = getattr(foo, '_{}'.format(cmd))
+            cmd_function = getattr(self, '_{}'.format(cmd))
 
             if user_permission is bot.permission.RESTRICTED:
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
