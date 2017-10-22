@@ -9,7 +9,7 @@ class error(object):
 
         @staticmethod
         def no_content():
-            return u'沒有內容。.'
+            return u'沒有內容。'
 
     class main(object):
         @staticmethod
