@@ -477,16 +477,10 @@ class group_dict_manager(db_base):
         rep_type = rep_data.reply_type
         rep = rep_data.reply
 
-        rep_att = rep_data.reply_attach_text
-        if rep_att is not None:
-            rep_att = u' + {}'.format(rep_att)
-        else:
-            rep_att = u''
-
         if rep_type == word_type.STICKER:
-            return u'(貼圖ID {}){}'.format(rep, rep_att)
+            return u'(貼圖ID {})'.format(rep)
         elif rep_type == word_type.PICTURE:
-            return u'(URL: {}){}'.format(rep, rep_att)
+            return u'(URL: {})'.format(rep)
         elif rep_type == word_type.TEXT:
             if simplify:
                 simplified_string(rep, simplify_max_length)
@@ -826,7 +820,7 @@ class pair_data(dict_like_mapping):
     def basic_text(self, display_status=False):
         kw = group_dict_manager._keyword_repr(self, False)
         rep = group_dict_manager._reply_repr(self, False)
-        rep_att = u'無' if self.reply_attach_text is None else self.reply_attach_text
+        rep_att = u'(無)' if self.reply_attach_text is None else self.reply_attach_text
         linked = u'、'.join(self.linked_words) if len(self.linked_words) > 0 else None
         affil_group = self.affiliated_group
         if affil_group == PUBLIC_GROUP_ID:
@@ -844,7 +838,7 @@ class pair_data(dict_like_mapping):
         text = u'#{}{}'.format(self.seq_id, status)
         text += u'\n關鍵字內容: {}'.format(kw)
         text += u'\n回覆內容: {}'.format(rep)
-        if self.reply_type == word_type.PICTURE:
+        if self.reply_type == word_type.PICTURE or self.reply_type == word_type.STICKER:
             text += u'\n附加回覆: {}'.format(rep_att)
         if linked is not None:
             text += u'\n相關關鍵字: {}'.format(linked)
