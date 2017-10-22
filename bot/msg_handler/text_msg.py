@@ -86,20 +86,20 @@ class text_msg_handler(object):
         source_type = bot.line_event_source_type.determine(src)
 
         if config is None:
-            allow_public = False
+            including_public = False
         else:
-            allow_public = config == db.config_type.ALL
+            including_public = config == db.config_type.ALL
 
         if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
         elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.USER:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), allow_public)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
         else:
             raise ValueError(error.main.miscellaneous(u'Unknown source type'))
 
         return kwd_instance
 
-    def _get_query_result(self, params, kwd_instance):
+    def _get_query_result(self, params, kwd_instance, exact_same):
         if params[2] is not None:
             if bot.string_can_be_int(params[1]) and bot.string_can_be_int(params[2]):
                 begin_index = int(params[1])
@@ -138,9 +138,9 @@ class text_msg_handler(object):
                     return error.main.incorrect_param(u'參數1', u'ID、UID(使用者)或GID(群組隸屬資料)')
         else:
             kw = params[1]
-            title = u'範圍: 【關鍵字】或【回覆】包含【{}】的回覆組。\n'.format(kw)
+            title = u'範圍: 【關鍵字】或【回覆】為【{}】的回覆組。\n'.format(kw, u'為' if exact_same else u'包含')
 
-            result_data = kwd_instance.search_pair_by_keyword(kw)
+            result_data = kwd_instance.search_pair_by_keyword(kw, exact_same)
 
         return result_data, title
 
@@ -299,7 +299,7 @@ class text_msg_handler(object):
         kwd_instance = self._get_kwd_instance(src)
 
         # create query result
-        query_result = self._get_query_result(params, kwd_instance)
+        query_result = self._get_query_result(params, kwd_instance, False)
         if isinstance(query_result[0], (str, unicode)):
             return query_result
 
@@ -318,7 +318,7 @@ class text_msg_handler(object):
         kwd_instance = self._get_kwd_instance(src)
 
         # create query result
-        query_result = self._get_query_result(params, kwd_instance)
+        query_result = self._get_query_result(params, kwd_instance, True)
         if isinstance(query_result[0], (str, unicode)):
             return query_result
         
@@ -553,25 +553,24 @@ class text_msg_handler(object):
                 token = params[2]
                 activate_result = self._group_manager.activate(gid, token)
                 text = u'公用資料庫啟用{}。'.format(u'成功' if activate_result else u'失敗')
-            else:
+            elif action == 'D':
                 if bot.line_api_wrapper.is_valid_user_id(params[2]):
-                    if action == 'D':
-                        target_uid = params[2]
-                        try:
-                            target_name = self._line_api_wrapper.profile_name(target_uid)
-                        except bot.UserProfileNotFoundError:
-                            return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
+                    target_uid = params[2]
+                    try:
+                        target_name = self._line_api_wrapper.profile_name(target_uid)
+                    except bot.UserProfileNotFoundError:
+                        return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
 
-                        try:
-                            self._group_manager.delete_permission(gid, setter_uid, target_uid)
-                            
-                            text = u'成員權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
-                        except db.InsufficientPermissionError:
-                            text = error.main.restricted()
-                    else:
-                        text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
+                    try:
+                        self._group_manager.delete_permission(gid, setter_uid, target_uid)
+                        
+                        text = u'成員權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
+                    except db.InsufficientPermissionError:
+                        text = error.main.restricted()
                 else:
-                    text = error.main.invalid_thing_with_correct_format(u'參數2', u'激活密鑰或合法使用者UID。')
+                    text = error.main.incorrect_param(u'參數2', u'合法使用者ID')
+            else:
+                text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
         elif params[1] is not None:
             invalid_cfg_type = error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
             cfg_type = params[1]

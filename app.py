@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # IMPORTANT: cache keyword_dict
+# IMPORTANT: use mail api to send error report
+# TODO: keyword pair global, local ranking
+# TODO: hide keyword pair from indexing
 # TODO: self silent (new db)
+
+# TODO: User Manual -> Group setting will affect on statistics
 
 import os, sys, errno
 import tempfile

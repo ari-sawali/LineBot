@@ -124,31 +124,32 @@ class group_dict_manager(db_base):
                          }"""
 
     # utilities
-    def __init__(self, mongo_db_uri, duplicate_cd_secs, repeat_call_cd_secs, group_id=PUBLIC_GROUP_ID, allow_public=False):
+    def __init__(self, mongo_db_uri, duplicate_cd_secs, repeat_call_cd_secs, group_id=PUBLIC_GROUP_ID, including_public=False):
         self._group_id = group_id
-        self._allow_public = allow_public
+        self._including_public = including_public
         self._duplicate_cd_secs = duplicate_cd_secs
         self._repeat_call_cd_secs = repeat_call_cd_secs
 
         super(group_dict_manager, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
 
-    def clone_instance(self, mongo_db_uri, group_id, is_allow_public=None):
-        if is_allow_public is not None:
-            allow_public = is_allow_public
+    def clone_instance(self, mongo_db_uri, group_id, including_public=None):
+        if including_public is not None:
+            including_public = including_public
         else:
-            allow_public = self._allow_public
-        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, allow_public)
+            including_public = self._including_public
+        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, including_public)
 
     def is_public_manager():
         return self._group_id == PUBLIC_GROUP_ID
 
     # override
     def aggregate(self, pipeline, **kwargs):
-        pipeline = [ { '$match': { pair_data.AFFILIATED_GROUP: self._group_id } } ] + pipeline
+        if not self._including_public:
+            pipeline = [ { '$match': { pair_data.AFFILIATED_GROUP: self._group_id } } ] + pipeline
         return super(group_dict_manager, self).aggregate(pipeline, **kwargs)
 
     def delete_many(self, filter, collation=None):
-        if self._allow_public:
+        if self._including_public:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -166,7 +167,7 @@ class group_dict_manager(db_base):
 
     def find(self, *args, **kwargs):
         if len(args) > 0:
-            if self._allow_public:
+            if self._including_public:
                 or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
                 if '$or' in args[0]:
@@ -179,7 +180,7 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).find(*args, **kwargs)
 
     def find_one(self, filter=None, *args, **kwargs):
-        if self._allow_public:
+        if self._including_public:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -192,7 +193,7 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).find_one(filter, *args, **kwargs)
 
     def find_one_and_update(self, filter, update, projection=None, sort=None, upsert=False, return_document=pymongo.ReturnDocument.BEFORE, **kwargs):
-        if self._allow_public:
+        if self._including_public:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -210,7 +211,7 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
 
     def count(self, filter=None, **kwargs):
-        if self._allow_public:
+        if self._including_public:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -358,16 +359,14 @@ class group_dict_manager(db_base):
         filter_dict = { pair_data.CREATOR: uid }
         return self._search(filter_dict)
 
-    def _search(self, filter_dict):
-        result = self.find(filter_dict)
-        return None if result.count() <= 0 else [pair_data(data) for data in result]
-
     def add_linked_word(self, id, word_or_list):
         """Return true if matched count is equal to modified count AND matched count is greater than 0"""
         if isinstance(word_or_list, (str, unicode)):
             word_or_list = [word_or_list]
 
-        result = self.update_one({ pair_data.SEQUENCE: id }, { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
+        result = self.update_one({ pair_data.SEQUENCE: id,
+                                   pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 } }}, 
+                                 { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def del_linked_word(self, id, word_or_list):
@@ -381,6 +380,10 @@ class group_dict_manager(db_base):
     def clear(self):
         """Return count of pair deleted."""
         return self.delete_many({ pair_data.AFFILIATED_GROUP: self._group_id }).deleted_count
+
+    def _search(self, filter_dict):
+        result = self.find(filter_dict)
+        return None if result.count() <= 0 else [pair_data(data) for data in result]
 
     # statistics (output dict)
     def most_used(self, including_disabled=False, limit=None):
