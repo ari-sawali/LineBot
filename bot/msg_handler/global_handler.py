@@ -282,7 +282,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SYSTEM COMMAND ###
         ########################################
 
-        terminate_2 = self._handle_text_sys_command(event, full_text)
+        terminate_2 = self._handle_text_sys_command(event, user_permission)
 
         if terminate_2:
             print 'terminate 2'
@@ -317,7 +317,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - TEXT CALCULATOR ###
         #########################################
 
-        terminate_5 = self._handle_text_str_calc(event, full_text)
+        terminate_5 = self._handle_text_str_calc(event)
 
         if terminate_5:
             print 'terminate 5'
@@ -458,6 +458,7 @@ class global_msg_handle(object):
         token = event.reply_token
         
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
+        user_permission = self._get_user_permission(src)
 
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###

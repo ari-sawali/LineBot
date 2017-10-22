@@ -139,7 +139,6 @@ class line_api_wrapper(object):
     def wrap_template_with_action(data_dict, alt_text, title):
         """
         data_dict should follow the format below, and the length of dict must less than or equals to 15. Result may be unexpected if the format is invalid.
-        { DISPLAY_TEXT: ACTION_MESSAGE }
 
         title will display as "{title} {index}", index is the index of carousel.
         title should be str type.
@@ -149,6 +148,8 @@ class line_api_wrapper(object):
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
 
+        data_dict = [(key, value) for key, value in data_dict.iteritems()]
+
         length_action_dict = len(data_dict)
 
         if length_action_dict > MAX_ACTIONS:
@@ -156,9 +157,6 @@ class line_api_wrapper(object):
 
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
-            print data_dict
-            print i
-            print MAX_ACTIONS_IN_CAROUSEL
             d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
 
             title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
