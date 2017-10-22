@@ -128,9 +128,10 @@ class text_msg_handler(object):
                         return error.line_bot_api.illegal_room_group_id(gid)
                 elif action == 'ID':
                     ids = params[2]
-                    id_list = ids.split(self._array_separator)
                     title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join(id_list))
                     if bot.string_can_be_int(ids.replace(self._array_separator, '')):
+                        if self._array_separator in pair_ids:
+                            id_list = ids.split(self._array_separator)
                         result_data = kwd_instance.search_pair_by_index(id_list)
                     else:
                         return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
