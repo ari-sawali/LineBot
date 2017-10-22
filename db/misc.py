@@ -3,13 +3,18 @@
 import error
 
 class FormattedStringResult(object):
-    def __init__(self, limited_list, full_list):
+    def __init__(self, limited_list, full_list, has_result=None):
         self._limited = '\n'.join(limited_list)
         self._full = '\n'.join(full_list)
-        self._has_result = False
+        if has_result is None:
+            self._has_result = len(limited_list) > 0 and len(full_list) > 0
+        else:
+            self._has_result = has_result
 
     @staticmethod
     def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None):
+        has_result = False
+
         _list_limited = []
         _list_full = []
 
@@ -31,7 +36,7 @@ class FormattedStringResult(object):
             _list_limited.append(no_res)
             _list_full.append(no_res)
         else:
-            self._has_result = True
+            has_result = True
             _list_full.append(u'共有{}筆結果\n'.format(count))
             
             if limit is not None:
@@ -52,7 +57,7 @@ class FormattedStringResult(object):
 
         print data_list
 
-        return FormattedStringResult(_list_limited, _list_full)
+        return FormattedStringResult(_list_limited, _list_full, has_result)
 
     @property
     def limited(self):
