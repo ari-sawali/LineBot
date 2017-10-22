@@ -229,7 +229,7 @@ class group_dict_manager(db_base):
         elif reply.replace(' ', '') == '':
             return error.main.invalid_thing_with_correct_format(u'回覆', u'字數大於0，但小於500字(中文250字)的字串', reply)
         elif not isinstance(linked_word, (list, tuple)):
-            if linked_word is None:
+            if linked_word is None or len(linked_word) < 1:
                 linked_word = []
             else:
                 raise ValueError('linked word should be list or tuple type.')
@@ -273,7 +273,7 @@ class group_dict_manager(db_base):
 
     def disable_keyword_by_id(self, id_or_id_list, disabler, pinned=False):
         """Return disabled data list in type pair_data. None if nothing updated."""
-        if isinstance(id_or_id_list, (int, long)):
+        if not isinstance(id_or_id_list, list):
             id_or_id_list = [id_or_id_list]
 
         print id_or_id_list
