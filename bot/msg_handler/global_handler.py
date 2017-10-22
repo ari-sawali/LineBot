@@ -306,7 +306,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_4 = self._handle_text_auto_reply(event, full_text, group_config)
+        terminate_4 = self._handle_text_auto_reply(event, group_config)
              
         if terminate_4:
             print 'terminate 4'
