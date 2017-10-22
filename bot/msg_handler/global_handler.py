@@ -226,7 +226,7 @@ class global_msg_handle(object):
             else:
                 text = result_str
                 
-            self._line_api_wrapper.reply_message(token, text) 
+            self._line_api_wrapper.reply_message(event.reply_token, text) 
             return True
 
         return False
