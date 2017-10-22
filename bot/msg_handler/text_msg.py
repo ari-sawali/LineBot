@@ -268,11 +268,11 @@ class text_msg_handler(object):
             if action == 'ID':
                 pair_ids = params[2]
 
-                print pair_ids
-                print self._array_separator
-
                 if bot.string_can_be_int(pair_ids.replace(self._array_separator, '')):
-                    disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids.split(self._array_separator), del_profile_uid, pinned)
+                    if self._array_separator in pair_ids:
+                        pair_ids = pair_ids.split(self._array_separator)
+
+                    disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids, del_profile_uid, pinned)
                 else:
                     return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
             else:
