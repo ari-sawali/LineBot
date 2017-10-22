@@ -96,7 +96,7 @@ class global_msg_handle(object):
         if rep_att is not None:
             rep_list.append(bot.line_api_wrapper.wrap_text_message(rep_att, self._webpage_generator))
 
-        if rep_link is not None:
+        if len(rep_link) > 0:
             # Max label text length is 20. Ref: https://developers.line.me/en/docs/messaging-api/reference/#template-action
             action_dict = { db.simplified_string(word, 12): word for word in rep_link }
             alt_text = u'相關字詞: {}'.format(u'、'.join(word for word in rep_link))

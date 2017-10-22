@@ -797,6 +797,7 @@ class pair_data(dict_like_mapping):
 
     @property
     def linked_words(self):
+        """Always not none, length will be 0 if nothing inside(empty array)."""
         return self[pair_data.PROPERTIES][pair_data.LINKED_WORDS]
 
     @property
