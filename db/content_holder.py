@@ -54,7 +54,7 @@ class webpage_content_holder(db_base):
 
     def get_error_page_list(self, limit=None):
         """Return list of webpage_data of error message webpage"""
-        find_cursor = self.find({ webpage_data.TYPE: webpage_content_type.ERROR }, sort={ webpage_data.SEQUENCE_ID: pymongo.DESCENDING })
+        find_cursor = self.find({ webpage_data.TYPE: webpage_content_type.ERROR }, sort=[(webpage_data.SEQUENCE_ID, pymongo.DESCENDING)])
         find_cursor = self.cursor_limit(find_cursor, limit)
         data_list = list(find_cursor)
         return [webpage_data(page) for page in data_list]
