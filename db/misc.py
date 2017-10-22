@@ -6,6 +6,7 @@ class FormattedStringResult(object):
     def __init__(self, limited_list, full_list):
         self._limited = '\n'.join(limited_list)
         self._full = '\n'.join(full_list)
+        self._has_result = False
 
     @staticmethod
     def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None):
@@ -30,6 +31,7 @@ class FormattedStringResult(object):
             _list_limited.append(no_res)
             _list_full.append(no_res)
         else:
+            self._has_result = True
             _list_full.append(u'共有{}筆結果\n'.format(count))
             
             if limit is not None:
@@ -59,6 +61,10 @@ class FormattedStringResult(object):
     @property
     def full(self):
         return self._full
+
+    @property
+    def has_result(self):
+        return self._has_result
 
     def __repr__(self):
         return u'LIMITED:\n{}\n\nFULL:\n{}'.format(self._limited, self._full).encode('utf-8')

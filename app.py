@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: cache keyword_dict
 # TODO: self silent (new db)
 
 import os, sys, errno
@@ -158,8 +159,8 @@ def callback():
     try:
         # IMPORTANT: Multithread disabled
 
-        # handle_pool.apply(handler.handle, args=(body, signature))
-        handler.handle(body, signature)
+        handle_pool.apply(handler.handle, args=(body, signature))
+        # handler.handle(body, signature)
     except exceptions.InvalidSignatureError:
         abort(400)
 

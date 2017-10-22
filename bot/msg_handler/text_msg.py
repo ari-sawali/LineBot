@@ -307,7 +307,26 @@ class text_msg_handler(object):
         output = db.keyword_dict.group_dict_manager.list_keyword(query_result[0], max_count, query_result[1], error.main.no_result(), str_length)
 
         text = output.limited
-        text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
+        if output.has_result:
+            text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
+        return text
+
+    def _I(self, src, params, key_permission_lv):
+        # assign instance to manage pair
+        kwd_instance = self._get_kwd_instance(src)
+
+        # create query result
+        query_result = self._get_query_result(params, kwd_instance)
+        if isinstance(query_result[0], (str, unicode)):
+            return query_result
+        
+        # process output
+        max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
+        output = db.keyword_dict.group_dict_manager.list_keyword_info(query_result[0], kwd_instance, self._line_api_wrapper, max_count, query_result[1], error.main.no_result())
+
+        text = output.limited
+        if output.has_result:
+            text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
         return text
 
     def _X(self, src, params, key_permission_lv):
@@ -397,23 +416,6 @@ class text_msg_handler(object):
         else:
             return error.main.lack_of_thing(u'參數')
 
-    def _I(self, src, params, key_permission_lv):
-        # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
-
-        # create query result
-        query_result = self._get_query_result(params, kwd_instance)
-        if isinstance(query_result[0], (str, unicode)):
-            return query_result
-        
-        # process output
-        max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
-        output = db.keyword_dict.group_dict_manager.list_keyword_info(query_result[0], kwd_instance, self._line_api_wrapper, max_count, query_result[1], error.main.no_result())
-
-        text = output.limited
-        text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
-        return text
-
     def _K(self, src, params, key_permission_lv):
         # assign instance to manage pair
         kwd_instance = self._get_kwd_instance(src)
@@ -500,8 +502,7 @@ class text_msg_handler(object):
         if bot.line_api_wrapper.is_valid_room_group_id(gid):
             group_data = self._group_manager.get_group_by_id(gid)
             return (bot.line_api_wrapper.wrap_text_message(group_data.get_status_string(), self._webpage_generator), 
-                    bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + gid },
-                                                                   u'快速查詢群組資料庫樣板', u'相關指令'))
+                    bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'GID' + text_msg_handler.SPLITTER + gid }, u'快速查詢群組資料庫樣板', u'相關指令'))
         else:
             return error.main.invalid_thing_with_correct_format(u'群組/房間ID', u'R或C開頭，並且長度為33字元', gid)
 
