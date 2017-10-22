@@ -66,9 +66,6 @@ class webpage_manager(object):
     def html_render(page_data):
         content = page_data.content
         title = unicode(page_data.content_type)
-        print page_data.content_type
-        print title
-        print unicode(db.webpage_content_type.LATEX).encode('utf-8')
 
         if page_data.content_type == db.webpage_content_type.LATEX:
             return render_template('LaTeX.html', LaTeX_script=content, Title=title)

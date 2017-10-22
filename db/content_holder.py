@@ -39,16 +39,16 @@ class webpage_content_holder(db_base):
     def rec_data(self, content, type, short_description=None):
         """Return sequence id of recorded content document."""
         timestamp = self._get_timestamp_in_datetime()
-        content += u'\n\n網頁內容將在{}後清除。'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-        content += u'\n網頁紀錄時間: {}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-        content += u'\n網頁種類: {}'.format(unicode(type))
         return self.insert_one(webpage_data.init_by_field(timestamp, type, content, short_description)).inserted_seq_id
 
     def get_data(self, id):
         """Return None if nothing found."""
         page_data = self.find_one({ webpage_data.SEQUENCE_ID: id })
         if page_data is not None:
-            return webpage_data(page_data)
+            data = webpage_data(page_data)
+            data.content += u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
+            data.content += u'\n\n網頁紀錄時間: {}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+            data.content += u'\n網頁種類: {}'.format(unicode(data.content_type))
         else:
             return None
 
@@ -116,7 +116,7 @@ class webpage_data(dict_like_mapping):
 
     @property
     def content_type(self):
-        return self[webpage_data.TYPE]
+        return webpage_content_type(self[webpage_data.TYPE])
 
     @property
     def content(self):
