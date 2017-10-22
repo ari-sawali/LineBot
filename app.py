@@ -293,7 +293,7 @@ def handle_join(event):
         group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
         group_action_dict = { '點此查看群組資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
         if group_data is None:
-            activation_token = global_handler._group_manager.new_data(cid, ADMIN_UID, db.config_type.ALL)
+            activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
             
             group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, '群組資料查閱快捷樣板', '相關指令')
