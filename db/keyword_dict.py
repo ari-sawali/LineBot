@@ -253,7 +253,7 @@ class group_dict_manager(db_base):
             if check_result > 0:
                 return error.main.miscellaneous(u'已存在置頂回覆組，無法覆寫。')
 
-        if self._group_id == PUBLIC_GROUP_ID:
+        if self._group_id == PUBLIC_GROUP_ID and pinned:
             return error.main.miscellaneous(u'公用資料庫無法製作置頂回覆組。')
 
         pair = pair_data.init_by_field(self._group_id, keyword, reply, datetime.now(), creator_id, kw_type, rep_type, pinned, linked_word, rep_attach_text, True)
