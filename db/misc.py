@@ -12,7 +12,7 @@ class FormattedStringResult(object):
         _list_limited = []
         _list_full = []
 
-        if not isinstance(append_first_list, list):
+        if append_first_list is not None and not isinstance(append_first_list, list):
             append_first_list = [append_first_list]
 
         if append_first_list is not None:
