@@ -207,7 +207,7 @@ class global_msg_handle(object):
     def _handle_text_auto_reply(self, event, config):
         """Return whether message has been replied. THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
         full_text = event.message.text
-        reply_data = self._get_kwd_instance(src, config).get_reply_data(full_text)
+        reply_data = self._get_kwd_instance(event.source, config).get_reply_data(full_text)
         if reply_data is not None:
             self._handle_auto_reply(event, reply_data)
             return True
