@@ -298,7 +298,7 @@ class kw_dict_mgr(db_base_obj):
         return text
 
     @staticmethod
-    def entry_detailed_info(kwd_mgr, line_api_proc, entry_row):
+    def entry_detailed_info(kwd_mgr, line_api_wrapper, entry_row):
         detailed = kw_dict_mgr.entry_basic_info(entry_row) + u'\n\n'
         detailed += u'屬性:\n'
         detailed += u'{} {} {}\n\n'.format(u'[ 置頂 ]' if entry_row[int(kwdict_col.admin)] else u'[ - ]',
@@ -310,13 +310,13 @@ class kw_dict_mgr(db_base_obj):
         if entry_row[int(kwdict_col.last_call)] is not None:
             detailed += u'最後呼叫時間:\n{}\n'.format(entry_row[int(kwdict_col.last_call)])
 
-        creator_profile = line_api_proc.profile(entry_row[int(kwdict_col.creator)])
+        creator_profile = line_api_wrapper.profile(entry_row[int(kwdict_col.creator)])
         detailed += u'\n製作者LINE使用者名稱:\n{}\n'.format(error.main.line_account_data_not_found() if creator_profile is None else creator_profile.display_name)
         detailed += u'製作者LINE UUID:\n{}\n'.format(entry_row[int(kwdict_col.creator)])
         detailed += u'製作時間:\n{}'.format(entry_row[int(kwdict_col.created_time)] + timedelta(hours=8))
 
         if entry_row[int(kwdict_col.deletor)] is not None:
-            deletor_profile = line_api_proc.profile(entry_row[int(kwdict_col.deletor)]) 
+            deletor_profile = line_api_wrapper.profile(entry_row[int(kwdict_col.deletor)]) 
             detailed += u'\n刪除者LINE使用者名稱:\n{}\n'.format(error.main.line_account_data_not_found() if deletor_profile is None else deletor_profile.display_name)
             detailed += u'刪除者LINE UUID:\n{}\n'.format(entry_row[int(kwdict_col.deletor)])
             detailed += u'刪除時間:\n{}'.format(entry_row[int(kwdict_col.disabled_time)])

@@ -487,7 +487,7 @@ class text_msg_handler(object):
         if params[1] is not None:
             gid = params[1]
         else:
-            gid = line_api_proc.source_channel_id(src)
+            gid = bot.line_api_wrapper.source_channel_id(src)
 
         if params[1] is None and bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             return error.main.incorrect_channel(False, True, True)
@@ -588,7 +588,7 @@ class text_msg_handler(object):
         return text
 
     def _H(self, src, params, key_permission_lv):
-        channel_id = line_api_proc.source_channel_id(src)
+        channel_id = bot.line_api_wrapper.source_channel_id(src)
 
         return str(bot.line_event_source_type.determine(src)), channel_id
 
