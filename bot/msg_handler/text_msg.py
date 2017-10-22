@@ -99,7 +99,7 @@ class text_msg_handler(object):
 
         return kwd_instance
 
-    def _get_query_result(self, params):
+    def _get_query_result(self, params, kwd_instance):
         if params[2] is not None:
             if bot.string_can_be_int(params[1]) and bot.string_can_be_int(params[2]):
                 begin_index = int(params[1])
@@ -297,7 +297,7 @@ class text_msg_handler(object):
         kwd_instance = self._get_kwd_instance(src)
 
         # create query result
-        query_result = self._get_query_result(params)
+        query_result = self._get_query_result(params, kwd_instance)
         if isinstance(query_result, (str, unicode)):
             return query_result
 
@@ -402,7 +402,7 @@ class text_msg_handler(object):
         kwd_instance = self._get_kwd_instance(src)
 
         # create query result
-        query_result = self._get_query_result(params)
+        query_result = self._get_query_result(params, kwd_instance)
         if isinstance(query_result, (str, unicode)):
             return query_result
         
