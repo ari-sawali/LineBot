@@ -223,9 +223,17 @@ def handle_text_message(event):
                 return
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
+            try:
+                ex_msg = ex.message.decode("utf-8")
+            except UnicodeEncodeError:
+                ex_msg = ex.message
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
         
-        error_msg += webpage_generator.rec_error(ex, traceback.format_exc().decode('utf-8'), bot.line_api_wrapper.source_channel_id(src))
+        try:
+            tb_text = traceback.format_exc().decode('utf-8')
+        except UnicodeEncodeError:
+            tb_text = ex.message
+        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src))
 
     if sys_config.get(db.config_data.REPLY_ERROR):
         line_api.reply_message_text(token, error_msg)
