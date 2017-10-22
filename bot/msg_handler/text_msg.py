@@ -151,8 +151,8 @@ class text_msg_handler(object):
                 self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
 
             if params[2] is not None:
-                db_name = params[2]
-                shell_cmd = params[1]
+                db_name = params[1]
+                shell_cmd = params[2]
 
                 result = self._pymongo_client.get_database(db_name).command(shell_cmd)
 
