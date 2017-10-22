@@ -178,27 +178,27 @@ def get_error_list():
 @app.route("/error/<seq_id>", methods=['GET'])
 def error_message_webpage(seq_id):
     content = webpage_generator.get_content(webpage_auto_gen.content_type.Error, seq_id)
-    return webpage_auto_gen.webpage.html_render(content, u'錯誤訊息')
+    return bot.webpage_manager.html_render(content, u'錯誤訊息')
 
 @app.route("/query/<seq_id>", methods=['GET'])
 def full_query(seq_id):
     content = webpage_generator.get_content(webpage_auto_gen.content_type.Query, seq_id)
-    return webpage_auto_gen.webpage.html_render(content, u'查詢結果')
+    return bot.webpage_manager.html_render(content, u'查詢結果')
 
 @app.route("/info/<seq_id>", methods=['GET'])
 def full_info(seq_id):
     content = webpage_generator.get_content(webpage_auto_gen.content_type.Info, seq_id)
-    return webpage_auto_gen.webpage.html_render(content, u'詳細資料')
+    return bot.webpage_manager.html_render(content, u'詳細資料')
 
 @app.route("/full/<seq_id>", methods=['GET'])
 def full_content(seq_id):
     content = webpage_generator.get_content(webpage_auto_gen.content_type.Text, seq_id)
-    return webpage_auto_gen.webpage.html_render(content, u'完整資訊')
+    return bot.webpage_manager.html_render(content, u'完整資訊')
 
 @app.route("/latex/<seq_id>", methods=['GET'])
 def latex_webpage(seq_id):
     latex_script = webpage_generator.get_content(webpage_auto_gen.content_type.LaTeX, seq_id)
-    return webpage_auto_gen.webpage.latex_render(latex_script)
+    return bot.webpage_manager.latex_render(latex_script)
 
 @app.route("/ranking/<type>", methods=['GET'])
 def full_ranking(type):
@@ -211,7 +211,7 @@ def full_ranking(type):
     else:
         content = error.webpage.no_content()
         
-    return webpage_auto_gen.webpage.html_render(content, u'完整排名')
+    return bot.webpage_manager.html_render(content, u'完整排名')
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
