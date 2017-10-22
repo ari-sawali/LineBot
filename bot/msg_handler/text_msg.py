@@ -329,7 +329,7 @@ class text_msg_handler(object):
 
         text = output.limited
         if output.has_result:
-            text += u'\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
+            text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
         return text
 
     def _I(self, src, params, key_permission_lv):

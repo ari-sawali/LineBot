@@ -641,7 +641,7 @@ class group_dict_manager(db_base):
             data = pair_data(data)
             return data.detailed_text(True, line_api_wrapper, kwd_mgr)
 
-        return FormattedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result)
+        return FormattedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result, '\n\n')
 
 def sticker_png_url(sticker_id):
     return 'https://sdl-stickershop.line.naver.jp/stickershop/v1/sticker/{}/android/sticker.png'.format(sticker_id)
@@ -873,7 +873,7 @@ class pair_data(dict_like_mapping):
 
         detailed = u''
         if include_basic:
-            detailed += self.basic_text() + u'\n\n'
+            detailed += self.basic_text() + u'\n'
 
         detailed += u'[ {} ] [ {} ]\n'.format(u'置頂' if self.pinned else u'-', u'失效' if self.disabled else u'-')
         detailed += u'呼叫次數: {}{}\n'.format(self.call_count, word_ranking)
