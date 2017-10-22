@@ -134,6 +134,7 @@ class db_base(pymongo.collection.Collection):
         return super(db_base, self).drop()
 
     def cursor_limit(self, cursor, limit=None, limit_default=None):
+        """Return splitted cursor."""
         if (isinstance(limit, (int, long)) ^ (limit is None)) and (isinstance(limit_default, (int, long)) ^ (limit_default is None)):
             if limit is not None:
                 return cursor.limit(limit)
