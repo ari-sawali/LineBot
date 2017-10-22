@@ -40,6 +40,8 @@ def object_to_json(o, indent=4, space=" ", newline="\n", level=0):
         ret += "true" if o else "false"
     elif isinstance(o, (int, long)):
         ret += str(o)
+    elif isinstance(o, datetime):
+        ret += o.strftime('%Y-%m-%d %H:%M:%S.%f')
     elif isinstance(o, float):
         ret += '%.7g' % o
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
