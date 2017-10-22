@@ -5,7 +5,7 @@
 # TODO: categorize error class
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing
-# TODO: self silent (new db)
+# TODO: self silent (new db), turn off auto upload
 
 # TODO: User Manual -> Group setting will affect on statistics
 
