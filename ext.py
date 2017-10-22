@@ -13,9 +13,7 @@ class EnumWithName(IntEnum):
         return self._value_
 
     def __str__(self):
-        print 'str'
         return self._name
 
     def __unicode__(self):
-        print 'unc'
         return unicode(self._name.decode('utf-8'))

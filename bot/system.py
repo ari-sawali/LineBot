@@ -164,7 +164,6 @@ class line_api_wrapper(object):
 
             column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
 
-        print column_list
         return TemplateSendMessage(alt_text=u'相關回覆組快捷樣板.\n{}'.format(alt_text), template=CarouselTemplate(columns=column_list))
     
     @staticmethod

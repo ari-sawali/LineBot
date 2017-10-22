@@ -103,6 +103,7 @@ class global_msg_handle(object):
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
         
+        print 'Reply list'
         print rep_list
         self._line_api_wrapper.reply_message(token, rep_list) 
 
@@ -293,7 +294,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GAME (RPS) ###
         ####################################
         
-        terminate_3 = self._handle_text_rps(event, full_text)
+        terminate_3 = self._handle_text_rps(event)
 
         if terminate_3 or group_config == db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
             print 'terminate 3'
@@ -347,7 +348,6 @@ class global_msg_handle(object):
     def _handle_sticker_data(self, event):
         """Return whether message has been replied."""
         if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
-            print 'IN'
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
 
