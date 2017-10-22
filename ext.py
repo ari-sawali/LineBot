@@ -29,13 +29,13 @@ def object_to_json(o, indent=4, space=" ", newline="\n", level=0):
             comma = ",\n"
             ret += space * indent * (level+1)
             ret += '"' + str(k) + '":' + space
-            ret += to_json(v, level + 1)
+            ret += object_to_json(v, level + 1)
 
         ret += newline + space * indent * level + "}"
     elif isinstance(o, basestring):
         ret += '"' + o + '"'
     elif isinstance(o, list):
-        ret += "[" + ",".join([to_json(e, level+1) for e in o]) + "]"
+        ret += "[" + ",".join([object_to_json(e, level+1) for e in o]) + "]"
     elif isinstance(o, bool):
         ret += "true" if o else "false"
     elif isinstance(o, int):
