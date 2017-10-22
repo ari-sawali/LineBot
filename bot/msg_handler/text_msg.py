@@ -50,7 +50,7 @@ class text_msg_handler(object):
         src_gid = bot.line_api_wrapper.source_channel_id(src)
         src_uid = bot.line_api_wrapper.source_user_id(src)
 
-        cmd, oth = msg_handler.split(full_org_text_without_head, text_msg_handler.SPLITTER, 2)
+        cmd, oth = split(full_org_text_without_head, text_msg_handler.SPLITTER, 2)
         cmd = cmd.replace(' ', '')
         params = text_msg_handler.split_verify(cmd, text_msg_handler.SPLITTER, oth)
 
