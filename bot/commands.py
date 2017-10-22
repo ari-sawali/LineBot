@@ -1,24 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum
+import ext
 
-class EnumWithName(IntEnum):
-    def __new__(cls, value, name):
-        member = int.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
-
-class permission(EnumWithName):
+class permission(ext.EnumWithName):
     RESTRICTED = -1, '限制用戶'
     USER = 0, '一般用戶'
     MODERATOR = 1, '副管理員'
@@ -43,7 +27,7 @@ class permission(EnumWithName):
     def __lt__(a, b):
         return int(a) < int(b)
 
-class cmd_category(EnumWithName):
+class cmd_category(ext.EnumWithName):
     MAIN = 0, '主要指令'
     EXTEND = 1, '延伸指令'
     GAME = 2, '遊戲用指令'

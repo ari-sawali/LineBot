@@ -65,7 +65,7 @@ class text_msg_handler(object):
             cmd_function = getattr(foo, '_{}'.format(cmd))
 
             # get permission
-            if user_permission == bot.permission.RESTRICTED:
+            if user_permission is bot.permission.RESTRICTED:
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
                 return True
 
@@ -87,7 +87,7 @@ class text_msg_handler(object):
         if source_type is bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
         elif source_type is bot.line_event_source_type.GROUP or source_type is bot.line_event_source_type.USER:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), config == db.config_type.ALL)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), config is db.config_type.ALL)
         else:
             raise ValueError(error.main.miscellaneous(u'Unknown source type'))
 
@@ -857,7 +857,7 @@ class game_msg_handler(object):
         else:
             cmd_function = getattr(foo, '_{}'.format(cmd))
 
-            if user_permission == bot.permission.RESTRICTED:
+            if user_permission is bot.permission.RESTRICTED:
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
                 return True
 

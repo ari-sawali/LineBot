@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-import enum
 from datetime import datetime, timedelta
 from collections import defaultdict
 from linebot import exceptions
@@ -17,6 +16,7 @@ from linebot.models import (
 )
 
 import db
+import ext
 
 class system_data(object):
     def __init__(self):
@@ -47,25 +47,10 @@ class system_data(object):
     def boot_up(self):
         return self._boot_up
 
-class line_event_source_type(enum.IntEnum):
+class line_event_source_type(ext.EnumWithName):
     USER = 0, '私訊'
     GROUP = 1, '群組'
     ROOM = 2, '房間'
-
-    def __new__(cls, value, name):
-        member = int.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
 
     @staticmethod
     def determine(event_source):

@@ -1,35 +1,19 @@
 # -*- coding: utf-8 -*-
-from enum import IntEnum
-
 import pymongo
 from datetime import timedelta, datetime
 
 from error import error
+import ext
 
 from .base import db_base, dict_like_mapping
 from .misc import FormattedStringResult
 
 PUBLIC_GROUP_ID = 'C--------------------------------'
 
-class word_type(IntEnum):
+class word_type(ext.EnumWithName):
     TEXT = 0, '文字'
     STICKER = 1, '貼圖'
     PICTURE = 2, '圖片'
-
-    def __new__(cls, value, name):
-        member = int.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
 
     @staticmethod
     def determine_by_flag(char):

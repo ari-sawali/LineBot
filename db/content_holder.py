@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import enum
 import time
+import enum
 from datetime import datetime
 import pymongo
 from collections import defaultdict
@@ -9,30 +9,15 @@ from .base import db_base, dict_like_mapping
 import error
 from tool import random_gen
 import bot
+import ext
 
 CONTENT_HOLDER_DB_NAME = 'content'
-
-class EnumWithName(enum.IntEnum):
-    def __new__(cls, value, name):
-        member = int.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
 
 ###############
 ### WEBPAGE ###
 ###############
 
-class webpage_content_type(EnumWithName):
+class webpage_content_type(ext.EnumWithName):
     ERROR = 0, '詳細錯誤紀錄'
     QUERY = 1, '資料查詢紀錄(簡略)'
     INFO = 2, '資料查詢紀錄(詳細)'
@@ -152,7 +137,7 @@ class game_object_holder(db_base):
         else:
             return None
 
-class battle_item(EnumWithName):
+class battle_item(ext.EnumWithName):
     __order__ = 'SCISSOR ROCK PAPER'
     ROCK = 1, '石頭'
     PAPER = 2, '布'

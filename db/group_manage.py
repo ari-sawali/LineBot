@@ -7,7 +7,7 @@ import urlparse
 import psycopg2
 from sqlalchemy.exc import IntegrityError
 import hashlib
-from enum import IntEnum
+import ext
 import pymongo
 import tool
 
@@ -16,52 +16,17 @@ from .base import db_base, dict_like_mapping
 from .misc import FormattedStringResult
 
 GROUP_DB_NAME = 'group'
-
-class EnumWithName(IntEnum):
-    def __new__(cls, value, name):
-        member = int.__new__(cls)
-        member._value_ = value
-        member._name = name
-        return member
-
-    def __int__(self):
-        return self.value
-
-    def __str__(self):
-        return self._name
-
-    def __unicode__(self):
-        return unicode(self._name.decode('utf-8'))
-
 ############
 ### ENUM ###
 ############
 
-class config_type(EnumWithName):
+class config_type(ext.EnumWithName):
     SILENCE = 0, '全靜音'
     SYS_ONLY = 1, '限指令'
     GROUP_DATABASE_ONLY = 2, '限群組庫'
     ALL = 3, '無限制'
 
-    def __gt__(a, b):
-        return int(a) > int(b)
-
-    def __ge__(a, b):
-        return int(a) >= int(b)
-
-    def __ne__(a, b):
-        return int(a) != int(b)
-
-    def __eq__(a, b):
-        return int(a) == int(b)
-
-    def __le__(a, b):
-        return int(a) <= int(b)
-
-    def __lt__(a, b):
-        return int(a) < int(b)
-
-class msg_type(EnumWithName):
+class msg_type(ext.EnumWithName):
     UNKNOWN = -1, '不明'
     TEXT = 0, '文字'
     STICKER = 1, '貼圖'

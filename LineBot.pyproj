@@ -53,6 +53,9 @@
     </Compile>
     <Compile Include="db\sys_stats.py" />
     <Compile Include="db_sql\sql.py" />
+    <Compile Include="ext.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tool\curr_exc\exceptions.py" />
     <Compile Include="tool\curr_exc\exchange.py" />
     <Compile Include="tool\curr_exc\__init__.py" />
