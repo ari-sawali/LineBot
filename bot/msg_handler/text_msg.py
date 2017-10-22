@@ -82,12 +82,18 @@ class text_msg_handler(object):
             
         return False
 
-    def _get_kwd_instance(self, src, config):
+    def _get_kwd_instance(self, src, config=None):
         source_type = bot.line_event_source_type.determine(src)
+
+        if config is None:
+            allow_public = False
+        else:
+            allow_public = config == db.config_type.ALL
+
         if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
         elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.USER:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), config == db.config_type.ALL)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), allow_public)
         else:
             raise ValueError(error.main.miscellaneous(u'Unknown source type'))
 
