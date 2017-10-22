@@ -275,7 +275,7 @@ class text_msg_handler(object):
 
                     disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids, del_profile_uid, pinned)
                 else:
-                    return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
+                    return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列')
             else:
                 return error.main.incorrect_param(u'參數1', u'ID')
         else:

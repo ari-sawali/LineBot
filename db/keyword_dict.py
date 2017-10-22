@@ -278,8 +278,6 @@ class group_dict_manager(db_base):
 
         id_or_id_list = [int(id) for id in id_or_id_list]
 
-        print id_or_id_list
-
         query_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
         return self._disable(query_dict, disabler, pinned)
 
@@ -580,7 +578,7 @@ class group_dict_manager(db_base):
         def format_string(data):
             kw = group_dict_manager._keyword_repr(data, True, simplify_max_string_length)
 
-            return u'#{} {} @{}\n'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
+            return u'#{} {} @{}'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
 
         return FormattedStringResult.init_by_field(data_list, format_string, limit)
 
@@ -633,7 +631,7 @@ class group_dict_manager(db_base):
             kw = group_dict_manager._keyword_repr(data, True, max_str_length)
             rep = group_dict_manager._reply_repr(data, True, max_str_length)
 
-            return u'#{}{}{} {} → {}\n'.format(data.seq_id, u'X' if data.disabled else u'', u'P' if data.pinned else u'', kw, rep)
+            return u'#{}{}{} {} → {}'.format(data.seq_id, u'X' if data.disabled else u'', u'P' if data.pinned else u'', kw, rep)
 
         return FormattedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result)
 
