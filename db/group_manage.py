@@ -170,7 +170,7 @@ class group_manager(db_base):
             result = self.update_one({ group_data.GROUP_ID: chat_instance_id },
                                      { '$inc': inc_dict }, False)
             if result.matched_count < 1:
-                raise ValueError(error.error.main.miscellaneous(u'Group data not registered.').encode('utf-8'))
+                self.new_data(gid)
 
     # statistics - message track
     def message_sum(self):
