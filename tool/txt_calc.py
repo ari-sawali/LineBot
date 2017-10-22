@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from multiprocessing import Process, Queue as MultiQueue
-import Queue
 
 from enum import Enum
 import re
@@ -87,8 +86,13 @@ class text_calculator(object):
     def _basic_calc_proc(self, init_time, text, debug, queue):
         result_data = calc_result_data(text)
         try:
-            result = float(sympy.sympify(text))
             start_time = init_time
+            result = ''
+
+            if 'result=' not in text:
+                exec('result={}'.format(text))
+            else:
+                exec(text)
 
             result_data.auto_record_time(start_time)
 

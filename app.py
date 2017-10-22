@@ -162,8 +162,6 @@ def callback():
 
     # handle webhook body
     try:
-        # IMPORTANT: Multithread disabled
-
         handle_pool.apply(handler.handle, args=(body, signature))
         # handler.handle(body, signature)
     except exceptions.InvalidSignatureError:
