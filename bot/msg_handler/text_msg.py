@@ -8,10 +8,9 @@ import pymongo
 import ast
 from linebot.models import TextSendMessage
 
-import db
 import tool
 from error import error
-import bot, db
+import bot, db, ext
 
 # IMPORTANT: JC P SYS will throw NotImplementedError
 
@@ -159,7 +158,7 @@ class text_msg_handler(object):
 
                 text = u'目標資料庫指令:\n{}\n'.format(db_name)
                 text += u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
-                text += unicode(result)
+                text += ext.object_to_json(result)
             else:
                 text = error.main.lack_of_parameters(1)
         else:
