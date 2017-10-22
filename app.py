@@ -176,28 +176,28 @@ def get_error_list():
     return webpage_generator.html_render_error_list(sys_data.boot_up, webpage_generator.get_error_dict())
 
 @app.route("/error/<seq_id>", methods=['GET'])
-def error_message_webpage(timestamp):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Error, timestamp)
+def error_message_webpage(seq_id):
+    content = webpage_generator.get_content(webpage_auto_gen.content_type.Error, seq_id)
     return webpage_auto_gen.webpage.html_render(content, u'錯誤訊息')
 
 @app.route("/query/<seq_id>", methods=['GET'])
-def full_query(timestamp):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Query, timestamp)
+def full_query(seq_id):
+    content = webpage_generator.get_content(webpage_auto_gen.content_type.Query, seq_id)
     return webpage_auto_gen.webpage.html_render(content, u'查詢結果')
 
 @app.route("/info/<seq_id>", methods=['GET'])
-def full_info(timestamp):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Info, timestamp)
+def full_info(seq_id):
+    content = webpage_generator.get_content(webpage_auto_gen.content_type.Info, seq_id)
     return webpage_auto_gen.webpage.html_render(content, u'詳細資料')
 
 @app.route("/full/<seq_id>", methods=['GET'])
-def full_content(timestamp):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Text, timestamp)
+def full_content(seq_id):
+    content = webpage_generator.get_content(webpage_auto_gen.content_type.Text, seq_id)
     return webpage_auto_gen.webpage.html_render(content, u'完整資訊')
 
 @app.route("/latex/<seq_id>", methods=['GET'])
-def latex_webpage(timestamp):
-    latex_script = webpage_generator.get_content(webpage_auto_gen.content_type.LaTeX, timestamp)
+def latex_webpage(seq_id):
+    latex_script = webpage_generator.get_content(webpage_auto_gen.content_type.LaTeX, seq_id)
     return webpage_auto_gen.webpage.latex_render(latex_script)
 
 @app.route("/ranking/<type>", methods=['GET'])
