@@ -148,7 +148,7 @@ class text_msg_handler(object):
     def _S(self, src, params, key_permission_lv):
         if key_permission_lv >= bot.commands.permission.BOT_ADMIN:
             if self._pymongo_client is None:
-                self._pymongo_client = pymongo.MongoClient(self.self._mongo_uri)
+                self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
 
             if params[2] is not None:
                 db_name = params[2]
