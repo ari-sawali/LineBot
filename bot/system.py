@@ -147,6 +147,8 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
+        if isintance(title, str):
+            title = title.decode('utf-8')
 
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
@@ -159,8 +161,8 @@ class line_api_wrapper(object):
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
             d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
 
-            title = '{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
-            explain_text = '#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
+            title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
+            explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
             action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d.iteritems()]
 
             column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
