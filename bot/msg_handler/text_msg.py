@@ -116,14 +116,14 @@ class text_msg_handler(object):
                     uid = params[2]
                     title = u'範圍: 【回覆組製作者UID】為【{}】的回覆組。\n'.format(uid)
                     if bot.line_api_wrapper.is_valid_user_id(uid):
-                        return kwd_instance.search_pair_by_creator(uid)
+                        result_data = kwd_instance.search_pair_by_creator(uid)
                     else:
                         return error.line_bot_api.illegal_user_id(uid)
                 elif action == 'GID':
                     gid = params[2]
                     title = u'範圍: 隸屬於【群組ID】為【{}】的回覆組。\n'.format(gid)
                     if bot.line_api_wrapper.is_valid_room_group_id(gid):
-                        return self._kwd_global.get_pairs_by_group_id(gid, True)
+                        result_data = self._kwd_global.get_pairs_by_group_id(gid, True)
                     else:
                         return error.line_bot_api.illegal_room_group_id(gid)
                 elif action == 'ID':
@@ -131,7 +131,7 @@ class text_msg_handler(object):
                     id_list = ids.split(self._array_separator)
                     title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join(id_list))
                     if bot.string_can_be_int(ids.replace(self._array_separator, '')):
-                        return kwd_instance.search_pair_by_index(id_list)
+                        result_data = kwd_instance.search_pair_by_index(id_list)
                     else:
                         return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
                 else:
@@ -140,7 +140,9 @@ class text_msg_handler(object):
             kw = params[1]
             title = u'範圍: 【關鍵字】或【回覆】包含【{}】的回覆組。\n'.format(kw)
 
-            return kwd_instance.search_pair_by_keyword(kw), title
+            result_data = kwd_instance.search_pair_by_keyword(kw)
+
+        return result_data, title
 
     # TEST: mongo shell command
     def _S(self, src, params, key_permission_lv):
@@ -298,7 +300,6 @@ class text_msg_handler(object):
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance)
-        print query_result
         if isinstance(query_result[0], (str, unicode)):
             return query_result
 
