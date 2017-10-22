@@ -881,6 +881,7 @@ class pair_data(dict_like_mapping):
         detailed += format_line_profile_with_time(u'製作', self.creator, self.created_time)
 
         if self.disabled:
+            detailed += u'\n'
             detailed += format_line_profile_with_time(u'刪除', self.disabler, self.disabled_time)
 
         return detailed
