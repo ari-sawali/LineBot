@@ -156,6 +156,9 @@ class line_api_wrapper(object):
 
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
+            print data_dict
+            print i
+            print MAX_ACTIONS_IN_CAROUSEL
             d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
 
             title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
