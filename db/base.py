@@ -128,6 +128,11 @@ class db_base(pymongo.collection.Collection):
 
         return super(db_base, self).aggregate(pipeline, **kwargs)
 
+    def count(self, filter = None, **kwargs):
+        print 'MongoDB COUNT @{}.{}'.format(self._db_name, self._collection_name)
+
+        return super(db_base, self).count(filter, **kwargs)
+
 
     def drop(self):
         print 'MongoDB DROP @{}.{}'.format(self._db_name, self._collection_name)
