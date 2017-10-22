@@ -287,7 +287,7 @@ class text_msg_handler(object):
             text += '\n'.join([data.basic_text(True) for data in disable_result_id_list])
             return text
         else:
-            if system.string_can_be_int(params[1]):
+            if bot.string_can_be_int(params[1]):
                 return error.main.miscellaneous(u'偵測到參數1是整數。若欲使用ID作為刪除根據，請參閱小水母使用說明。')
             else:
                 return error.main.pair_not_exist_or_insuffieicnt_permission()
