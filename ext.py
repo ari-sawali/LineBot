@@ -3,6 +3,7 @@
 import numpy
 from enum import IntEnum
 from datetime import datetime
+import bson
 
 class EnumWithName(IntEnum):
     def __new__(cls, value, name):
@@ -43,6 +44,8 @@ def object_to_json(o, indent=4, space=" ", newline="\n", level=0):
         ret += str(o)
     elif isinstance(o, datetime):
         ret += o.strftime('%Y-%m-%d %H:%M:%S.%f')
+    elif isinstance(o, bson.ObjectId):
+        ret += 'ObjectId(%s)' % o
     elif isinstance(o, float):
         ret += '%.7g' % o
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.integer):
