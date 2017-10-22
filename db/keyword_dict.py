@@ -276,6 +276,8 @@ class group_dict_manager(db_base):
         if isinstance(id_or_id_list, (int, long)):
             id_or_id_list = [id_or_id_list]
 
+        print id_or_id_list
+
         query_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
         return self._disable(query_dict, disabler, pinned)
 

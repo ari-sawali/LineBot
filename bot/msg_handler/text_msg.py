@@ -213,7 +213,7 @@ class text_msg_handler(object):
         if rep_type == db.word_type.PICTURE and not rep.startswith('https://'):
             return error.main.invalid_thing_with_correct_format(u'回覆', u'使用HTTPS通訊協定的圖片網址', rep)
 
-        if linked is not None:
+        if len(linked) > 0:
             linked = linked.split(self._array_separator)
         
         # create and write
