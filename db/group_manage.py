@@ -258,7 +258,7 @@ class group_manager(db_base):
 
                 text = u'頻道ID: {} 【{}】'.format(gid, activation_status)
                 text += u'\n收到:\n{}'.format('\n'.join(u'{} - {}(觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
-                text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}(觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.reply.iteritems()))
+                text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
                 return text
 
             return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text)
