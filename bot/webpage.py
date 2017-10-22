@@ -15,11 +15,7 @@ import db
 class webpage_manager(object):
     def __init__(self, flask_app, mongo_db_uri):
         self._flask_app = flask_app
-        self._route_method_name = {db.webpage_content_type.ERROR: 'error_message_webpage', 
-                                   db.webpage_content_type.INFO: 'full_info', 
-                                   db.webpage_content_type.LATEX: 'latex_webpage', 
-                                   db.webpage_content_type.QUERY: 'full_query', 
-                                   db.webpage_content_type.TEXT: 'full_content'}
+        self._route_method_name = 'get_webpage'
         self._error_list_route_name = 'get_error_list'
 
         self._system_stats = db.system_statistics(mongo_db_uri)
@@ -47,7 +43,7 @@ class webpage_manager(object):
         self._system_stats.webpage_viewed(type)
         with self._flask_app.app_context():
             webpage_id = self._content_holder.rec_data(content, type, short_description)
-            return url_for(self._route_method_name[type], seq_id=webpage_id)
+            return url_for(self._route_method_name, seq_id=webpage_id)
 
     def get_error_dict(self):
         """
@@ -55,24 +51,24 @@ class webpage_manager(object):
         """
         return OrderedDict({ u'{} - {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'), data.short_description): url_for(self._route_method_name[db.webpage_content_type.ERROR], seq_id=webpage_id) for data in self._content_holder.get_error_list() })
 
-    def get_content(self, type, id):
-        webpage_data = self._content_holder.get_data(type, id)
+    def get_webpage_data(self, id):
+        webpage_data = self._content_holder.get_data(id)
 
         if webpage_data is None:
             return error.webpage.no_content()
         else:
-            text = u'紀錄時間: {}\n'.format(webpage_data.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-            text += u'紀錄種類: {}\n\n'.format(unicode(webpage_data.webpage_content_type))
-            text += webpage_data.content
-            return content
+            
+            return text
 
     @staticmethod
-    def html_render(content, title=None):
-        return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
+    def html_render(page_data):
+        content = page_data.content
+        title = unicode(page_data.webpage_content_type)
 
-    @staticmethod
-    def latex_render(latex_script):
-        return render_template('LaTeX.html', LaTeX_script=latex_script)
+        if page_data.webpage_content_type == db.webpage_content_type.LATEX:
+            return render_template('LaTeX.html', LaTeX_script=content, Title=title)
+        else:
+            return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
 
     @staticmethod
     def html_render_error_list(boot_up, error_dict):

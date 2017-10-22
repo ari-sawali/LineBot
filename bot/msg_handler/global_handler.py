@@ -426,12 +426,12 @@ class global_msg_handle(object):
         if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
             upload_result = self._img_handle.upload_imgur(event.message)
 
-            rep_list = [bot.line_api_wrapper.wrap_text_message(u'檔案雜湊碼(SHA224)'), 
-                        bot.line_api_wrapper.wrap_text_message(image_sha)]
+            rep_list = [bot.line_api_wrapper.wrap_text_message(u'檔案雜湊碼(SHA224)', self._webpage_generator), 
+                        bot.line_api_wrapper.wrap_text_message(image_sha, self._webpage_generator)]
 
             if upload_result.image_url is not None:
-                rep_list.append(bot.line_api_wrapper.wrap_text_message(upload_result.result_string))
-                rep_list.append(bot.line_api_wrapper.wrap_text_message(upload_result.image_url))
+                rep_list.append(bot.line_api_wrapper.wrap_text_message(upload_result.result_string, self._webpage_generator))
+                rep_list.append(bot.line_api_wrapper.wrap_text_message(upload_result.image_url, self._webpage_generator))
 
             self._line_api_wrapper.reply_message(event.reply_token, rep_list)
             return True

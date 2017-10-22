@@ -444,11 +444,11 @@ class text_msg_handler(object):
             return error.main.incorrect_param(u'參數1(種類)', u'USER(使用者排行)、KW(關鍵字排行)或KWRC(呼叫時間排行)')
 
         # append full url
-        with self._flask_app.test_request_context():
-            text += u'\n\n完整使用者排名: {}\n完整關鍵字排名: {}\n完整最新呼叫表: {}'.format(
-                request.url_root + url_for('full_ranking', type='user')[1:],
-                request.url_root + url_for('full_ranking', type='used')[1:],
-                request.url_root + url_for('full_ranking', type='called')[1:])
+        # with self._flask_app.test_request_context():
+        #     text += u'\n\n完整使用者排名: {}\n完整關鍵字排名: {}\n完整最新呼叫表: {}'.format(
+        #         request.url_root + url_for('full_ranking', type='user')[1:],
+        #         request.url_root + url_for('full_ranking', type='used')[1:],
+        #         request.url_root + url_for('full_ranking', type='called')[1:])
 
         return text
 

@@ -173,43 +173,10 @@ def callback():
 def get_error_list():
     return webpage_generator.html_render_error_list(sys_data.boot_up, webpage_generator.get_error_dict())
 
-@app.route("/error/<seq_id>", methods=['GET'])
-def error_message_webpage(seq_id):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Error, seq_id)
-    return bot.webpage_manager.html_render(content, u'錯誤訊息')
-
-@app.route("/query/<seq_id>", methods=['GET'])
-def full_query(seq_id):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Query, seq_id)
-    return bot.webpage_manager.html_render(content, u'查詢結果')
-
-@app.route("/info/<seq_id>", methods=['GET'])
-def full_info(seq_id):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Info, seq_id)
-    return bot.webpage_manager.html_render(content, u'詳細資料')
-
-@app.route("/full/<seq_id>", methods=['GET'])
-def full_content(seq_id):
-    content = webpage_generator.get_content(webpage_auto_gen.content_type.Text, seq_id)
-    return bot.webpage_manager.html_render(content, u'完整資訊')
-
-@app.route("/latex/<seq_id>", methods=['GET'])
-def latex_webpage(seq_id):
-    latex_script = webpage_generator.get_content(webpage_auto_gen.content_type.LaTeX, seq_id)
-    return bot.webpage_manager.latex_render(latex_script)
-
-@app.route("/ranking/<type>", methods=['GET'])
-def full_ranking(type):
-    if type == 'user':
-        content = db.kw_dict_mgr.list_user_created_ranking(line_api, kwd.user_created_rank(50))
-    elif type == 'used':
-        content = db.kw_dict_mgr.list_keyword_ranking(kwd.order_by_usedrank(10000))
-    elif type == 'called':
-        content = db.kw_dict_mgr.list_keyword_recently_called(kwd.recently_called(10000))
-    else:
-        content = error.webpage.no_content()
-        
-    return bot.webpage_manager.html_render(content, u'完整排名')
+@app.route("/webpage/<seq_id>", methods=['GET'])
+def get_webpage(seq_id):
+    webpage_data = webpage_generator.get_webpage_data(seq_id)
+    return bot.webpage_manager.html_render(webpage_data)
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
