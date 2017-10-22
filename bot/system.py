@@ -159,13 +159,13 @@ class line_api_wrapper(object):
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
             d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
 
-            title = u'{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
-            explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
+            title = '{} {}'.format(title, i / MAX_ACTIONS_IN_CAROUSEL + 1)
+            explain_text = '#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
             action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d.iteritems()]
 
             column_list.append(CarouselColumn(text=explain_text, title=title, actions=action_list))
 
-        return TemplateSendMessage(alt_text=u'相關回覆組快捷樣板.\n{}'.format(alt_text), template=CarouselTemplate(columns=column_list))
+        return TemplateSendMessage(alt_text='相關回覆組快捷樣板.\n{}'.format(alt_text), template=CarouselTemplate(columns=column_list))
     
     @staticmethod
     def wrap_image_message(picture_url, preview_url=None):
