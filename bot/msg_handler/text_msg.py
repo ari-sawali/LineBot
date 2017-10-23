@@ -377,7 +377,7 @@ class text_msg_handler(object):
                     return error.main.restricted(int(low_perm))
                 result_ids = self._kwd_global.clone_from_group(gid, cid, uid, 'D' in flags, 'P' in flags)
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'群組/房間ID 或 ID陣列', clear_sha)
+                return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', gid)
         elif params[1] is not None:
             if key_permission_lv <= low_perm:
                 return error.main.restricted(int(low_perm) + 1)
@@ -396,7 +396,7 @@ class text_msg_handler(object):
 
                 return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取) 或 要複製的回覆組ID/ID陣列', clear_sha)
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取) 或 要複製的回覆組ID/ID陣列', params[1])
         else:
             return error.main.lack_of_thing(u'參數')
 
