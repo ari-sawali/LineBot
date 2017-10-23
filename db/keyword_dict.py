@@ -405,16 +405,8 @@ class group_dict_manager(db_base):
 
         return result
 
-    def rank_of_used_count(self, id):
-        return 1
-
-        associated_pair = self.find_one({ pair_data.SEQUENCE: id }, projection={ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: True })
-        if associated_pair is None:
-            return error.main.miscellaneous(u'指定的回覆組不存在。(ID: {})'.format(id))
-        else:
-            called_count = associated_pair[pair_data.STATISTICS][pair_data.CALLED_COUNT]
-            ranking = self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': called_count } }) + 1 
-            return ranking
+    def rank_of_used_count(self, count):
+        return self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': count } }) + 1 
 
     @staticmethod
     def _list_result(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None):
@@ -869,7 +861,7 @@ class pair_data(dict_like_mapping):
 
         word_ranking = u''
         if kwd_mgr is not None:
-            rank_result = kwd_mgr.rank_of_used_count(self.seq_id)
+            rank_result = kwd_mgr.rank_of_used_count(self.call_count)
             if isinstance(rank_result, (int, long)):
                 word_ranking = u' (第{}名)'.format(rank_result)
 
