@@ -32,6 +32,7 @@ class random_drawer(object):
     @staticmethod
     def draw_probability_string(probability, is_value=True, count=1, prediction_count=2):
         probability = float(probability)
+        count = int(count)
         if is_value:
             probability /= 100.0
         result_list = [random_drawer.draw_probability(probability, False) for i in range(count)]
