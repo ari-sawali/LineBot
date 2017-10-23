@@ -4,7 +4,7 @@ from .base import db_base, dict_like_mapping
 import pymongo.cursor
 import datetime
 
-from .keyword_dict import pair_data, group_dict_manager
+from .keyword_dict import pair_data, group_dict_manager, PUBLIC_GROUP_ID
 
 class word_dict_global(db_base):
     CLONE_TIMEOUT_SEC = 15
@@ -21,7 +21,12 @@ class word_dict_global(db_base):
         return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
 
     def clone_from_group(self, org_gid, new_gid, clone_executor, including_disabled=False, including_pinned=True):
-        """Return inserted sequence id(s)"""
+        """
+        Return inserted sequence id(s). 
+        Set org_gid to PUBLIC to clone from public
+        """
+        if org_gid == 'PUBLIC':
+            org_gid = PUBLIC_GROUP_ID
         filter_dict = { pair_data.AFFILIATED_GROUP: org_gid }
         return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
 
