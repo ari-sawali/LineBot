@@ -371,12 +371,6 @@ class group_dict_manager(db_base):
         result = self.update_one({ pair_data.SEQUENCE: id }, { '$pull': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
-    def clear(self):
-        """Return count of pair deleted."""
-        if self._group_id == PUBLIC_GROUP_ID:
-            raise ActionNotAllowed(error.main.miscellaneous(u'無法清除公用資料庫。'))
-        return self.delete_many().deleted_count
-
     def _search(self, filter_dict):
         result = self.find(filter_dict)
         return None if result.count() <= 0 else [pair_data(data) for data in result]

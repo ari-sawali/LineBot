@@ -387,11 +387,8 @@ class text_msg_handler(object):
                 ids = params[1]
                 result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), target_gid, uid, True, key_permission_lv >= low_perm)
             elif hashlib.sha224('clear').hexdigest() == params[1]:
-                # assign instance to manage pair
-                kwd_instance = self._get_kwd_instance(src)
-
                 try:
-                    clear_count = kwd_instance.clear()
+                    clear_count = self._kwd_global.clear()
                 except db.ActionNotAllowed as ex:
                     return ex.message
 

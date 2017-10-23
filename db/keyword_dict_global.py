@@ -3,6 +3,7 @@
 from .base import db_base, dict_like_mapping
 import pymongo.cursor
 import datetime
+import error
 
 from .keyword_dict import pair_data, group_dict_manager, PUBLIC_GROUP_ID
 
@@ -12,27 +13,37 @@ class word_dict_global(db_base):
     def __init__(self, mongo_db_uri):
         super(word_dict_global, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
 
-    def clone_by_id(self, id_or_id_list, new_gid, clone_executor, including_disabled=False, including_pinned=True):
+    def clone_by_id(self, id_or_id_list, target_gid, clone_executor, including_disabled=False, including_pinned=True):
         """Return inserted sequence id(s) Empty array if nothing cloned."""
         if isinstance(id_or_id_list, (int, long)):
             id_or_id_list = [id_or_id_list]
 
         id_or_id_list = [int(id) for id in id_or_id_list]
         filter_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
-        return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
+        return self._clone_to_group(filter_dict, target_gid, clone_executor, including_disabled, including_pinned)
 
-    def clone_from_group(self, org_gid, new_gid, clone_executor, including_disabled=False, including_pinned=True):
+    def clone_from_group(self, source_gid, target_gid, clone_executor, including_disabled=False, including_pinned=True):
         """
         Return inserted sequence id(s). Empty array if nothing cloned.
         Set org_gid to PUBLIC to clone from public.
         Set new_gid to PUBLIC to clone to public.
         """
-        if org_gid == 'PUBLIC':
-            org_gid = PUBLIC_GROUP_ID
-        if new_gid == 'PUBLIC':
-            new_gid = PUBLIC_GROUP_ID
-        filter_dict = { pair_data.AFFILIATED_GROUP: org_gid }
-        return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
+        if source_gid == 'PUBLIC':
+            source_gid = PUBLIC_GROUP_ID
+        if target_gid == 'PUBLIC':
+            target_gid = PUBLIC_GROUP_ID
+        filter_dict = { pair_data.AFFILIATED_GROUP: source_gid }
+        return self._clone_to_group(filter_dict, target_gid, clone_executor, including_disabled, including_pinned)
+
+    def clear(self, target_gid):
+        """Return count of pair disabled."""
+        if target_gid == 'PUBLIC':
+            raise db.ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
+
+        return self.update_many({ pair_data.AFFILIATED_GROUP: target_gid }, 
+                                { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,
+                                            pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.datetime.now(),
+                                            pair_data.STATISTICS + '.' + pair_data.DISABLER: clone_executor } }).modified_count
 
     def _clone_to_group(self, filter_dict, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """Return empty array if nothing cloned."""
