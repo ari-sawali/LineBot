@@ -35,7 +35,7 @@ class word_dict_global(db_base):
         filter_dict = { pair_data.AFFILIATED_GROUP: source_gid }
         return self._clone_to_group(filter_dict, target_gid, clone_executor, including_disabled, including_pinned)
 
-    def clear(self, target_gid):
+    def clear(self, target_gid, clone_executor):
         """Return count of pair disabled."""
         if target_gid == 'PUBLIC':
             raise db.ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
