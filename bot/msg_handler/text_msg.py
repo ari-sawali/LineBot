@@ -142,7 +142,7 @@ class text_msg_handler(object):
 
             result_data = kwd_instance.search_pair_by_keyword(kw, exact_same)
         else:
-            title = u'範圍: 可用回覆組。\n'.format(kw)
+            title = u'範圍: 可用回覆組。\n'
 
             result_data = kwd_instance.search_all_available_pair()
 
