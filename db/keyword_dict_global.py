@@ -48,6 +48,9 @@ class word_dict_global(db_base):
             { '$project': { '_seq': False, '_id': False } }
         ])
 
+        print list(aggr_cursor)
+        print filter_dict
+
         data_list = []
         affected_kw_list = []
         for result_data in aggr_cursor:
