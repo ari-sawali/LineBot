@@ -44,11 +44,6 @@ class word_dict_global(db_base):
 
         find_cursor = self.find(filter_dict).sort([(pair_data.SEQUENCE, pymongo.ASCENDING)])
 
-        print list(find_cursor)
-        print filter_dict
-
-        data_list = []
-        affected_kw_list = []
         for result_data in find_cursor:
             del result_data['_id']
             del result_data[pair_data.SEQUENCE]
@@ -59,6 +54,8 @@ class word_dict_global(db_base):
             if time.time() - _start_time > 15:
                 raise RuntimeError('Clone process timeout, try another clone method, or split the condition array.')
             
+        print data_list
+
         if len(data_list) > 0:
             self.update_many({ pair_data.KEYWORD: { '$in': affected_kw_list } }, 
                              { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,

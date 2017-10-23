@@ -80,6 +80,9 @@ class db_base(pymongo.collection.Collection):
             seq_ids = [db_base.NOT_EXIST_SEQ_ID for i in len(documents)]
 
         result = super(db_base, self).insert_many(documents, ordered, bypass_document_validation)
+
+        print documents
+        print data_list
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
