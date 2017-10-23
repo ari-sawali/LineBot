@@ -67,9 +67,6 @@ class word_dict_global(db_base):
                                          pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.datetime.now(),
                                          pair_data.STATISTICS + '.' + pair_data.DISABLER: clone_executor } })
 
-            # TODO: new pair is disabled if clone disabled pair
-            print data_list
-
             return self.insert_many(data_list).inserted_seq_ids
         else:
             return []

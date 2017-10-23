@@ -369,8 +369,8 @@ class text_msg_handler(object):
         uid = bot.line_api_wrapper.source_user_id(src)
 
         if params[2] is not None:
-            gid = params[1]
-            flags = params[2]
+            flags = params[1]
+            gid = params[2]
 
             if bot.line_api_wrapper.is_valid_room_group_id(gid) or gid == db.PUBLIC_GROUP_ID:
                 if key_permission_lv <= low_perm:
