@@ -40,7 +40,7 @@ class random_drawer(object):
 
         text = u'抽選機率【{:.2%}】'.format(probability)
         text += u'\n抽選結果【中{}次 | 失{}次】'.format(shot_count, result_list.count(False))
-        text += u'\n抽選紀錄【{}】'.format(u'、'.join(result_list))
+        text += u'\n抽選紀錄【{}】'.format(u'、'.join([unicode(result) for result in result_list]))
         text += u'\n實際中率【{:.2%}】'.format(shot_count / float(len(result_list)))
         for i in range(prediction_count):
             predicition_probability = (1 - (1 - probability) ** (count - i)) * probability ** i
