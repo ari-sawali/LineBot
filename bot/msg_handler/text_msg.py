@@ -648,7 +648,7 @@ class text_msg_handler(object):
     def _H(self, src, params, key_permission_lv):
         channel_id = bot.line_api_wrapper.source_channel_id(src)
 
-        return bot.line_api_wrapper.wrap_text_message(str(bot.line_event_source_type.determine(src)), self._webpage_generator), channel_id
+        return bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (str(bot.line_event_source_type.determine(src)), channel_id)
 
     def _SHA(self, src, params, key_permission_lv):
         target = params[1]
