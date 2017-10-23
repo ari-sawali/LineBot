@@ -40,7 +40,7 @@ class word_dict_global(db_base):
         if target_gid == 'PUBLIC':
             raise db.ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
 
-        return self.update_many({ pair_data.AFFILIATED_GROUP: target_gid }, 
+        return self.update_many({ pair_data.AFFILIATED_GROUP: target_gid, pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }, 
                                 { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,
                                             pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.datetime.now(),
                                             pair_data.STATISTICS + '.' + pair_data.DISABLER: clone_executor } }).modified_count

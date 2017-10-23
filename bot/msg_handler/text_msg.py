@@ -392,7 +392,10 @@ class text_msg_handler(object):
                 except db.ActionNotAllowed as ex:
                     return ex.message
 
-                return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
+                if clear_count > 0:
+                    return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
+                else:
+                    return u'沒有刪除任何回覆組。'
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取) 或 要複製的回覆組ID/ID陣列', params[1])
         else:
@@ -567,8 +570,13 @@ class text_msg_handler(object):
             return error.main.incorrect_channel(False, True, True)
 
         if bot.line_api_wrapper.is_valid_room_group_id(gid):
+            # assign instance to manage pair
+            kwd_instance = self._get_kwd_instance(src)
             group_data = self._group_manager.get_group_by_id(gid)
-            return (bot.line_api_wrapper.wrap_text_message(group_data.get_status_string(), self._webpage_generator), 
+
+            group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
+            
+            return (bot.line_api_wrapper.wrap_text_message(group_statistics, self._webpage_generator), 
                     bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'GID' + text_msg_handler.SPLITTER + gid }, u'快速查詢群組資料庫樣板', u'相關指令'))
         else:
             return error.main.invalid_thing_with_correct_format(u'群組/房間ID', u'R或C開頭，並且長度為33字元', gid)
