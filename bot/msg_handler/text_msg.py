@@ -104,7 +104,7 @@ class text_msg_handler(object):
             if bot.string_can_be_int(params[1]) and bot.string_can_be_int(params[2]):
                 begin_index = int(params[1])
                 end_index = int(params[2])
-                title = u'範圍: 【回覆組ID】介於【{}】和【{}】之間的回覆組。\n'.format(si, ei)
+                title = u'範圍: 【回覆組ID】介於【{}】和【{}】之間的回覆組。\n'.format(begin_index, end_index)
 
                 if end_index - begin_index < 0:
                     return error.main.incorrect_param(u'參數2', u'大於參數1的數字')
