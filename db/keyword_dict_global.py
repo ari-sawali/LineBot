@@ -40,7 +40,6 @@ class word_dict_global(db_base):
         if not including_disabled:
             filter_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = False
 
-
         find_cursor = self.find(filter_dict, projection={ '_id': False, pair_data.SEQUENCE: False })
 
         data_list = []

@@ -366,29 +366,26 @@ class text_msg_handler(object):
         else:
             cid = bot.line_api_wrapper.source_channel_id(src)
 
-        if params[2] is not None:
-            uid = bot.line_api_wrapper.source_user_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
 
-            ids_or_gid = params[1]
+        if params[2] is not None:
+            gid = params[1]
             flags = params[2]
 
-            if bot.line_api_wrapper.is_valid_room_group_id(ids_or_gid):
+            if bot.line_api_wrapper.is_valid_room_group_id(gid):
                 if key_permission_lv <= low_perm:
                     return error.main.restricted(int(low_perm))
-                result_ids = self._kwd_global.clone_from_group(ids_or_gid, cid, uid, 'D' in flags, 'P' in flags)
-            elif bot.string_can_be_int(ids_or_gid.replace(self._array_separator, '')):
-                result_ids = self._kwd_global.clone_by_id(ids_or_gid.split(self._array_separator), cid, uid, 'D' in flags, 'P' in flags)
+                result_ids = self._kwd_global.clone_from_group(gid, cid, uid, 'D' in flags, 'P' in flags)
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'群組/房間ID 或 ID陣列', clear_sha)
-
-            return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#'.format(id) for id in result_ids]))
         elif params[1] is not None:
-            clear_sha = params[1]
-
             if key_permission_lv <= low_perm:
                 return error.main.restricted(int(low_perm) + 1)
-
-            if hashlib.sha224('clear').hexdigest() == clear_sha:
+            
+            if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
+                ids = params[1]
+                result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), cid, uid, True, key_permission_lv >= low_perm)
+            elif hashlib.sha224('clear').hexdigest() == clear_sha:
                 # assign instance to manage pair
                 kwd_instance = self._get_kwd_instance(src)
 
@@ -402,6 +399,8 @@ class text_msg_handler(object):
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取)', clear_sha)
         else:
             return error.main.lack_of_thing(u'參數')
+
+        return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#'.format(id) for id in result_ids]))
 
     def _E(self, src, params, key_permission_lv):
         # assign instance to manage pair
