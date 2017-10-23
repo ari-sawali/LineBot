@@ -100,7 +100,7 @@ class error(object):
 
         @staticmethod
         def illegal_user_id(illegal_uid):
-            return error.main.invalid_thing_with_correct_format(u'LINE用戶ID', u'U開頭，並且長度為33字元，後32碼為0~9或a~f.', uid)
+            return error.main.invalid_thing_with_correct_format(u'LINE用戶ID', u'U開頭，並且長度為33字元，後32碼為0~9或a~f.', illegal_uid)
 
     class sys_command(object):
         def lack_of_parameters(indexs=None):

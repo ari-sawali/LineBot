@@ -478,12 +478,10 @@ class text_msg_handler(object):
         return text
 
     def _P(self, src, params, key_permission_lv):
-        wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS或EXC', params[1])
+        wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID。', params[1])
 
-        if params[1] is not None:
-            category = params[1]
-        else:
-            return wrong_param1
+        category = params[1]
+        gid = params[2]
 
         if category == 'MSG':
             limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
@@ -514,7 +512,34 @@ class text_msg_handler(object):
             usage_dict = self._oxr_client.get_usage_dict()
             text = tool.curr_exc.oxr.usage_str(usage_dict)
         else:
-            return wrong_param1
+            if category == bot.line_api_wrapper.is_valid_user_id(category):
+                uid = category
+                try:
+                    name = self._line_api_wrapper.profile_name(uid)
+                except bot.UserProfileNotFoundError:
+                    return error.main.line_account_data_not_found()
+
+                text = u'UID:\n{}\n名稱:\n{}'.format(uid, name)
+            elif category == bot.line_api_wrapper.is_valid_room_group_id(category):
+                gid = category
+
+                try:
+                    name = self._line_api_wrapper.profile_group(gid, uid)
+                except bot.UserProfileNotFoundError:
+                    pass
+                else:
+                    return u'Group ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
+
+                try:
+                    name = self._line_api_wrapper.profile_room(gid, uid)
+                except bot.UserProfileNotFoundError:
+                    pass
+                else:
+                    return u'Room ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
+
+                return error.main.line_account_data_not_found()
+            else:
+                return wrong_param1
 
         return text
 
@@ -623,7 +648,7 @@ class text_msg_handler(object):
     def _H(self, src, params, key_permission_lv):
         channel_id = bot.line_api_wrapper.source_channel_id(src)
 
-        return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (str(bot.line_event_source_type.determine(src)), channel_id)]
+        return [bot.line_api_wrapper.wrap_text_message(str(bot.line_event_source_type.determine(src), self._webpage_generator), channel_id)]
 
     def _SHA(self, src, params, key_permission_lv):
         target = params[1]
