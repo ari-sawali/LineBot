@@ -213,6 +213,7 @@ class group_dict_manager(db_base):
             else:
                 filter['$or'] = or_list
         else:
+            print self._group_id
             filter[pair_data.AFFILIATED_GROUP] = self._group_id
 
         return super(group_dict_manager, self).count(filter, **kwargs)
