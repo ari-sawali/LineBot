@@ -43,6 +43,7 @@ class word_dict_global(db_base):
             filter_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = False
 
         aggr_cursor = self.aggregate([
+            { '$match': filter_dict },
             { '$sort': { '_seq': pymongo.ASCENDING } },
             { '$project': { '_seq': False, '_id': False } }
         ])
