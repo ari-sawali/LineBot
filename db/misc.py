@@ -39,6 +39,8 @@ class FormattedStringResult(object):
             has_result = True
             _list_full.append(u'共有{}筆結果\n'.format(count))
             
+            print data_list
+
             if limit is not None:
                 _limited_data_list = data_list[:limit]
             else:
