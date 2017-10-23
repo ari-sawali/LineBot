@@ -109,7 +109,7 @@ class text_msg_handler(object):
                 if end_index - begin_index < 0:
                     return error.main.incorrect_param(u'參數2', u'大於參數1的數字')
                 else:
-                    return kwd_instance.search_pair_by_index(begin_index, end_index)
+                    result_data = kwd_instance.search_pair_by_index(begin_index, end_index)
             else:
                 action = params[1]
                 if action == 'UID':
