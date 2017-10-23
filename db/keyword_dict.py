@@ -354,7 +354,7 @@ class group_dict_manager(db_base):
 
     def search_pair_by_creator(self, uid):
         """Return none if nothing found, else return result in list of pair_data class"""
-        filter_dict = { pair_data.CREATOR: uid }
+        filter_dict = { pair_data.STATISTICS + '.' + pair_data.CREATOR: uid }
         return self._search(filter_dict)
 
     def add_linked_word(self, id, word_or_list):
