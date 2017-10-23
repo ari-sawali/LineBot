@@ -360,31 +360,31 @@ class text_msg_handler(object):
 
         if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or params[1] == u'PUBLIC':
-                cid = params.pop(1)
+                target_gid = params.pop(1)
             else:
                 return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID或PUBLIC(代表公用資料庫ID)。')
         else:
-            cid = bot.line_api_wrapper.source_channel_id(src)
+            target_gid = bot.line_api_wrapper.source_channel_id(src)
 
         uid = bot.line_api_wrapper.source_user_id(src)
 
         if params[2] is not None:
             flags = params[1]
-            gid = params[2]
+            source_gid = params[2]
 
-            if bot.line_api_wrapper.is_valid_room_group_id(gid) or gid == db.PUBLIC_GROUP_ID:
+            if bot.line_api_wrapper.is_valid_room_group_id(source_gid) or source_gid == u'PUBLIC':
                 if key_permission_lv <= low_perm:
                     return error.main.restricted(int(low_perm))
-                result_ids = self._kwd_global.clone_from_group(gid, cid, uid, 'D' in flags, 'P' in flags)
+                result_ids = self._kwd_global.clone_from_group(source_gid, target_gid, uid, 'D' in flags, 'P' in flags)
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', gid)
+                return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', source_gid)
         elif params[1] is not None:
             if key_permission_lv <= low_perm:
                 return error.main.restricted(int(low_perm) + 1)
             
             if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
                 ids = params[1]
-                result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), cid, uid, True, key_permission_lv >= low_perm)
+                result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), target_gid, uid, True, key_permission_lv >= low_perm)
             elif hashlib.sha224('clear').hexdigest() == params[1]:
                 # assign instance to manage pair
                 kwd_instance = self._get_kwd_instance(src)
