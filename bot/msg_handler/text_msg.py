@@ -802,8 +802,8 @@ class text_msg_handler(object):
             elif category == 'R':
                 last_pair_id = self._system_data.get_last_pair(bot.line_api_wrapper.source_channel_id(src))
                 if last_pair_id is not None:
-                    return [[bot.line_api_wrapper.wrap_text_message(u'最後呼叫回覆組ID: {}'.format(last_pair_id), self._webpage_generator), 
-                             bot.line_api_wrapper.wrap_template_with_action({ 
+                    return [bot.line_api_wrapper.wrap_text_message(u'最後呼叫回覆組ID: {}'.format(last_pair_id), self._webpage_generator), 
+                            bot.line_api_wrapper.wrap_template_with_action({ 
                                '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id),
                                '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id)
                            }, u'最後回覆組ID查詢快捷樣板', u'快速查詢')]
