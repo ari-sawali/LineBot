@@ -35,7 +35,12 @@ class word_dict_global(db_base):
     def _clone_to_group(self, filter_dict, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """Return empty array if nothing cloned."""
         import time
+
+        data_list = []
+        affected_kw_list = []
+
         _start_time = time.time()
+
         if not including_pinned:
             filter_dict[pair_data.PROPERTIES + '.' + pair_data.PINNED] = False
 
