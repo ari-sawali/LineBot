@@ -13,16 +13,17 @@ class word_dict_global(db_base):
         super(word_dict_global, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
 
     def clone_by_id(self, id_or_id_list, new_gid, clone_executor, including_disabled=False, including_pinned=True):
-        """Return inserted sequence id(s)"""
+        """Return inserted sequence id(s) Empty array if nothing cloned."""
         if isinstance(id_or_id_list, (int, long)):
             id_or_id_list = [id_or_id_list]
 
+        id_or_id_list = [int(id) for id in id_or_id_list]
         filter_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
         return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
 
     def clone_from_group(self, org_gid, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """
-        Return inserted sequence id(s). 
+        Return inserted sequence id(s). Empty array if nothing cloned.
         Set org_gid to PUBLIC to clone from public
         """
         if org_gid == 'PUBLIC':
@@ -32,6 +33,7 @@ class word_dict_global(db_base):
 
     # TEST: test disable duplicated keyword
     def _clone_to_group(self, filter_dict, new_gid, clone_executor, including_disabled=False, including_pinned=True):
+        """Return empty array if nothing cloned."""
         import time
         _start_time = time.time()
         if not including_pinned:
@@ -40,11 +42,14 @@ class word_dict_global(db_base):
         if not including_disabled:
             filter_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = False
 
-        find_cursor = self.find(filter_dict, projection={ '_id': False, pair_data.SEQUENCE: False })
+        aggr_cursor = self.aggregate([
+            { '$sort': { '_seq': pymongo.ASCENDING } },
+            { '$project': { '_seq': False, '_id': False } }
+        ])
 
         data_list = []
         affected_kw_list = []
-        for result_data in find_cursor:
+        for result_data in aggr_cursor:
             data = pair_data(result_data, True)
             affected_kw_list.append(data.keyword)
             data_list.append(data.clone(new_gid))
