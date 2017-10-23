@@ -44,6 +44,8 @@ class text_msg_handler(object):
 
     def handle_text(self, event, full_org_text_without_head, user_permission):
         """Return whether message has been replied"""
+        print user_permission
+
         token = event.reply_token
         text = event.message.text
         src = event.source
@@ -358,12 +360,11 @@ class text_msg_handler(object):
     def _X(self, src, params, key_permission_lv):
         low_perm = self._command_manager.get_command_data('X').lowest_permission
 
-        # check permission
-        if key_permission_lv >= low_perm:
-            return error.main.restricted(int(low_perm))
-
-        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER and bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            cid = params.pop(1)
+        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
+            if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+                cid = params.pop(1)
+            else:
+                return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID。')
         else:
             cid = bot.line_api_wrapper.source_channel_id(src)
 
