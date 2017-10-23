@@ -339,16 +339,16 @@ class group_dict_manager(db_base):
 
     def search_pair_by_index(self, start_id_or_id_list, end_id=None):
         """Return none if nothing found, else return result in list of pair_data class"""
-        if isinstance(start_id_or_id_list, list):
-            filter_dict = { pair_data.SEQUENCE: { '$in': start_id_or_id_list } }
-        else:
-            if end_id is None:
-                filter_dict = { pair_data.SEQUENCE: start_id_or_id_list }
-            else:
-                filter_dict = { pair_data.SEQUENCE: { '$gte': start_id_or_id_list, '$lte': end_id } }
-          
         if not isinstance(start_id_or_id_list, (int, long, list)) or (not isinstance(end_id, (int, long)) and end_id is not None):
             raise ValueError('Start index must be integer, long or list. End index must be integer or long.')
+
+        if isinstance(start_id_or_id_list, list):
+            filter_dict = { pair_data.SEQUENCE: { '$in': [int(id) for id in start_id_or_id_list] } }
+        else:
+            if end_id is None:
+                filter_dict = { pair_data.SEQUENCE: int(start_id_or_id_list) }
+            else:
+                filter_dict = { pair_data.SEQUENCE: { '$gte': int(start_id_or_id_list), '$lte': int(end_id) } }
 
         return self._search(filter_dict)
 
