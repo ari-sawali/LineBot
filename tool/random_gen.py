@@ -37,7 +37,7 @@ class random_drawer(object):
         count = int(count)
         if is_value:
             probability /= 100.0
-        result_list = {i: random_drawer.draw_probability(probability, False) for i in range(1, count)}
+        result_list = {i: random_drawer.draw_probability(probability, False) for i in range(1, count + 1)}
         shot_count = sum(x for x in result_list.values())
         miss_count = count - shot_count
 
