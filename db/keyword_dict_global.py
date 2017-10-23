@@ -53,6 +53,8 @@ class word_dict_global(db_base):
         """Return empty array if nothing cloned."""
         import time
 
+        print new_gid
+
         data_list = []
         affected_kw_list = []
 
