@@ -744,7 +744,7 @@ class text_msg_handler(object):
 
                 if not bot.string_can_be_float(probability):
                     text = error.main.incorrect_param(u'參數1(機率)', u'百分比加上符號%')
-                elif not bot.string_can_be_float(scout_count):
+                elif not bot.string_can_be_int(scout_count):
                     text = error.main.incorrect_param(u'參數2(抽籤次數)', u'整數')
                 elif int(scout_count) > 999999:
                     text = error.main.invalid_thing_with_correct_format(u'參數2(抽籤次數)', u'小於999999的整數', scout_count)
