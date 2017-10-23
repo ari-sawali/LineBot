@@ -401,10 +401,12 @@ class text_msg_handler(object):
             return error.main.lack_of_thing(u'參數')
 
         if len(result_ids) > 0:
+            first_id_str = str(result_ids[0])
+            last_id_str = str(result_ids[-1])
             return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids])), self._webpage_generator),
                     bot.line_api_wrapper.wrap_template_with_action({
-                        u'回覆組資料查詢(簡略)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + result_ids[0] + text_msg_handler.SPLITTER + result_ids[-1],
-                        u'回覆組資料查詢(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + result_ids[0] + text_msg_handler.SPLITTER + result_ids[-1]} ,u'新建回覆組相關指令樣板', u'相關指令')]
+                        u'回覆組資料查詢(簡略)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + first_id_str + text_msg_handler.SPLITTER + result_ids[-1],
+                        u'回覆組資料查詢(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + last_id_str + text_msg_handler.SPLITTER + result_ids[-1]} ,u'新建回覆組相關指令樣板', u'相關指令')]
         else:
             return u'回覆組複製失敗。'
 
