@@ -782,9 +782,9 @@ class text_msg_handler(object):
             if category == 'S':
                 last_sticker = self._system_data.get_last_sticker(bot.line_api_wrapper.source_channel_id(src))
                 if last_sticker is not None:
-                    text = u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker)
+                    return u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker)
                 else:
-                    text = error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+                    return error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'P':
                 last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
                 if last_pic_sha is not None:
