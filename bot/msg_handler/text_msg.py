@@ -775,29 +775,33 @@ class text_msg_handler(object):
 
         return text
 
-    def _STK(self, src, params, key_permission_lv):
-        last_sticker = self._system_data.get_last_sticker(bot.line_api_wrapper.source_channel_id(src))
-        if last_sticker is not None:
-            text = u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker)
-        else:
-            text = error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID。如果已經有貼過貼圖，則可能是因為機器人剛剛才啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+    def _L(self, src, params, key_permission_lv):
+        if params[1] is not None:
+            category = params[1]
 
-        return text
-
-    def _PIC(self, src, params, key_permission_lv):
-        last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
-        if last_pic_sha is not None:
-            text = u'最後圖片雜湊碼(SHA224)'
-            return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)]
+            if category == 'S':
+                last_sticker = self._system_data.get_last_sticker(bot.line_api_wrapper.source_channel_id(src))
+                if last_sticker is not None:
+                    text = u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker)
+                else:
+                    text = error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            elif category == 'P':
+                last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
+                if last_pic_sha is not None:
+                    text = u'最後圖片雜湊碼(SHA224)'
+                    return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)]
+                else:
+                    return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            elif category == 'R':
+                last_pair_id = self._system_data.get_last_pair(bot.line_api_wrapper.source_channel_id(src))
+                if last_pair_id is not None:
+                    return u'最後呼叫回覆組ID: {}'.format(last_pair_id)
+                else:
+                    return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            else:
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)或R(最後回覆組)', params[1])
         else:
-            return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊。如果已經有貼過圖片，則可能是因為機器人剛剛才啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
-
-    def _PAIR(self, src, params, key_permission_lv):
-        last_pair_id = self._system_data.get_last_pair(bot.line_api_wrapper.source_channel_id(src))
-        if last_pair_id is not None:
-            return u'最後呼叫回覆組ID: {}'.format(last_pair_id)
-        else:
-            return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID。如果已經有使用過回覆組，則可能是因為機器人剛剛才啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            return error.main.lack_of_thing(u'參數')
              
     def _T(self, src, params, key_permission_lv):
         from urllib import quote
