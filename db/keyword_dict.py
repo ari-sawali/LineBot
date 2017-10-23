@@ -151,15 +151,7 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).aggregate(pipeline, **kwargs)
 
     def delete_many(self, filter, collation=None):
-        if self._including_public:
-            or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
-
-            if '$or' in filter:
-                filter['$or'].extend(or_list)
-            else:
-                filter['$or'] = or_list
-        else:
-            filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        filter[pair_data.AFFILIATED_GROUP] = self._group_id
 
         return super(group_dict_manager, self).delete_many(filter, collation)
 
@@ -383,7 +375,7 @@ class group_dict_manager(db_base):
         """Return count of pair deleted."""
         if self._group_id == PUBLIC_GROUP_ID:
             raise ActionNotAllowed(error.main.miscellaneous(u'無法清除公用資料庫。'))
-        return self.delete_many({ pair_data.AFFILIATED_GROUP: self._group_id }).deleted_count
+        return self.delete_many().deleted_count
 
     def _search(self, filter_dict):
         result = self.find(filter_dict)

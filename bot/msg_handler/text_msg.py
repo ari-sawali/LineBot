@@ -374,6 +374,8 @@ class text_msg_handler(object):
             flags = params[2]
 
             if bot.line_api_wrapper.is_valid_room_group_id(ids_or_gid):
+                if key_permission_lv >= low_perm:
+                    return error.main.restricted(int(low_perm))
                 result_ids = self._kwd_global.clone_from_group(ids_or_gid, cid, uid, 'D' in flags, 'P' in flags)
             elif bot.string_can_be_int(ids_or_gid.replace(self._array_separator, '')):
                 result_ids = self._kwd_global.clone_by_id(ids_or_gid.split(self._array_separator), cid, uid, 'D' in flags, 'P' in flags)
@@ -383,6 +385,9 @@ class text_msg_handler(object):
             return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#'.format(id) for id in result_ids]))
         elif params[1] is not None:
             clear_sha = params[1]
+
+            if key_permission_lv >= low_perm:
+                return error.main.restricted(int(low_perm) + 1)
 
             if hashlib.sha224('clear').hexdigest() == clear_sha:
                 # assign instance to manage pair
