@@ -34,7 +34,7 @@ class random_drawer(object):
         probability = float(probability)
         if is_value:
             probability /= 100.0
-        result_list = [result for result in random_drawer.draw_probability(probability, False)]
+        result_list = [random_drawer.draw_probability(probability, False) for i in range(count)]
         shot_count = result_list.count(True)
 
         text = u'抽選機率【{:.2%}】'.format(probability)
