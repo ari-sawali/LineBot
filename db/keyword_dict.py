@@ -406,7 +406,7 @@ class group_dict_manager(db_base):
         return result
 
     def rank_of_used_count(self, count):
-        return self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': count } }) + 1 
+        return 1
 
     @staticmethod
     def _list_result(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None):
