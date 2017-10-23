@@ -767,7 +767,7 @@ class text_msg_handler(object):
             elif params[1].endswith('%') and params[1].count('%') == 1:
                 probability = params[1].replace('%', '')
 
-                text = tool.random_drawer.draw_probability_string(probability)
+                text = tool.random_drawer.draw_probability_string(probability, True, 1, 1)
             else:
                 text = error.main.invalid_thing(u'參數1', params[1])
         else:
