@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
+import requests
 from datetime import datetime, timedelta
 from collections import defaultdict
 from linebot import exceptions
