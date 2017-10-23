@@ -785,7 +785,7 @@ class text_msg_handler(object):
                     return [bot.line_api_wrapper.wrap_text_message(u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker), self._webpage_generator), 
                             bot.line_api_wrapper.wrap_template_with_action({ 
                                '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_sticker),
-                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_sticker)
+                               '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_sticker)
                            }, u'最後貼圖相關回覆組快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
@@ -795,7 +795,7 @@ class text_msg_handler(object):
                     text = u'最後圖片雜湊碼(SHA224)'
                     return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)] + [bot.line_api_wrapper.wrap_template_with_action({ 
                                '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_pic_sha),
-                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_pic_sha)
+                               '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_pic_sha)
                            }, u'最後圖片雜湊相關回覆組快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
@@ -805,7 +805,7 @@ class text_msg_handler(object):
                     return [bot.line_api_wrapper.wrap_text_message(u'最後呼叫回覆組ID: {}'.format(last_pair_id), self._webpage_generator), 
                             bot.line_api_wrapper.wrap_template_with_action({ 
                                '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id),
-                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id)
+                               '回覆組資料(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id)
                            }, u'最後回覆組ID查詢快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
