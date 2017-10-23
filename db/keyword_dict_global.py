@@ -73,6 +73,11 @@ class word_dict_global(db_base):
                 raise RuntimeError('Clone process timeout, try another clone method, or split the condition array.')
 
         print filter_dict
+        print data_list
+        print new_gid
+        print clone_executor
+        print including_disabled
+        print including_pinned
 
         if len(data_list) > 0:
             self.update_many({ pair_data.KEYWORD: { '$in': affected_kw_list } }, 
