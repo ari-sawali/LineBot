@@ -17,6 +17,7 @@ from .base import db_base, dict_like_mapping
 from .misc import FormattedStringResult
 
 GROUP_DB_NAME = 'group'
+
 ############
 ### ENUM ###
 ############
