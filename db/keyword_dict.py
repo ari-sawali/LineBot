@@ -406,6 +406,8 @@ class group_dict_manager(db_base):
         return result
 
     def rank_of_used_count(self, id):
+        return 1
+
         associated_pair = self.find_one({ pair_data.SEQUENCE: id }, projection={ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: True })
         if associated_pair is None:
             return error.main.miscellaneous(u'指定的回覆組不存在。(ID: {})'.format(id))
