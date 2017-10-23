@@ -133,7 +133,7 @@ class text_msg_handler(object):
                     if bot.string_can_be_int(ids.replace(self._array_separator, '')):
                         result_data = kwd_instance.search_pair_by_index(id_list)
                     else:
-                        return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
+                        return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列')
                 else:
                     return error.main.incorrect_param(u'參數1', u'ID、UID(使用者)或GID(群組隸屬資料)')
         elif params[1] is not None:

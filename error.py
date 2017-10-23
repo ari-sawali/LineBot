@@ -96,7 +96,7 @@ class error(object):
 
         @staticmethod
         def illegal_room_group_id(illegal_gid):
-            return error.main.invalid_thing_with_correct_format(u'LINE房間/群組', u'C(群組)或R(房間)開頭，並且長度為33字元，後32碼為0~9或a~f.', uid)
+            return error.main.invalid_thing_with_correct_format(u'LINE房間/群組', u'C(群組)或R(房間)開頭，並且長度為33字元，後32碼為0~9或a~f.', illegal_gid)
 
         @staticmethod
         def illegal_user_id(illegal_uid):
