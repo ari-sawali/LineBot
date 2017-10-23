@@ -145,7 +145,6 @@ class group_manager(db_base):
                 return self.get_group_config_type(gid)
 
     def get_user_permission(self, gid, uid):
-
         if uid == self._ADMIN_UID:
             return bot.permission.BOT_ADMIN
 

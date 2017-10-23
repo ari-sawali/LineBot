@@ -44,8 +44,6 @@ class text_msg_handler(object):
 
     def handle_text(self, event, full_org_text_without_head, user_permission):
         """Return whether message has been replied"""
-        print user_permission
-
         token = event.reply_token
         text = event.message.text
         src = event.source
@@ -375,7 +373,7 @@ class text_msg_handler(object):
             flags = params[2]
 
             if bot.line_api_wrapper.is_valid_room_group_id(ids_or_gid):
-                if key_permission_lv >= low_perm:
+                if key_permission_lv <= low_perm:
                     return error.main.restricted(int(low_perm))
                 result_ids = self._kwd_global.clone_from_group(ids_or_gid, cid, uid, 'D' in flags, 'P' in flags)
             elif bot.string_can_be_int(ids_or_gid.replace(self._array_separator, '')):
@@ -387,7 +385,7 @@ class text_msg_handler(object):
         elif params[1] is not None:
             clear_sha = params[1]
 
-            if key_permission_lv >= low_perm:
+            if key_permission_lv <= low_perm:
                 return error.main.restricted(int(low_perm) + 1)
 
             if hashlib.sha224('clear').hexdigest() == clear_sha:
