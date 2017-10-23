@@ -580,7 +580,7 @@ class group_dict_manager(db_base):
         result = KeywordDictionaryStatistics()
 
         result.pair_count = self.count()
-        result.pair_count_disabled = self.count({ pair_data.PROPERTIES + '.' + pair_data.DISABLED: False })
+        result.pair_count_disabled = self.count({ pair_data.PROPERTIES + '.' + pair_data.DISABLED: True })
 
         SUM_USED_COUNT = 'sum_ct'
         result.used_count = self.aggregate([
