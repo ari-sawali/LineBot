@@ -20,7 +20,7 @@ class word_dict_global(db_base):
             id_or_id_list = [id_or_id_list]
 
         if target_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
-            target_gid == PUBLIC_GROUP_ID
+            target_gid = PUBLIC_GROUP_ID
 
         id_or_id_list = [int(id) for id in id_or_id_list]
         filter_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
