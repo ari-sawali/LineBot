@@ -402,7 +402,7 @@ class text_msg_handler(object):
 
         if len(result_ids) > 0:
             return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids]))
-        else
+        else:
             return u'回覆組複製失敗。'
 
     def _E(self, src, params, key_permission_lv):
