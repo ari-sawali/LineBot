@@ -2,6 +2,7 @@
 import os, sys
 import json
 from datetime import datetime, timedelta
+import hashlib
 
 from flask import request, url_for
 import pymongo
@@ -408,7 +409,7 @@ class text_msg_handler(object):
                         u'回覆組資料查詢(簡略)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + first_id_str + text_msg_handler.SPLITTER + last_id_str,
                         u'回覆組資料查詢(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + first_id_str + text_msg_handler.SPLITTER + last_id_str} ,u'新建回覆組相關指令樣板', u'相關指令')]
         else:
-            return u'回覆組複製失敗。'
+            return u'回覆組複製失敗。回覆組來源沒有符合條件的回覆組可供複製。'
 
     def _E(self, src, params, key_permission_lv):
         # assign instance to manage pair

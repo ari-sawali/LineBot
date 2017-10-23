@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: increase speed of calling ranking by pair
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # TODO: categorize error class
