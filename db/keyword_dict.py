@@ -612,8 +612,8 @@ class group_dict_manager(db_base):
         text_to_join = []
 
         text_to_join.append(u'{}組 (失效{}) | {}次 | {:.2f}次/組 | 可用率{:.2%}'.format(result.pair_count, result.pair_count_disabled, result.used_count, result.avg, result.usable_rate))
-        text_to_join.append(u'關鍵字種類: {}'.format(' | '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.keyword_type_count.iteritems()])))
-        text_to_join.append(u'回覆種類: {}'.format(' | '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.reply_type_count.iteritems()])))
+        text_to_join.append(u'關鍵字種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.keyword_type_count.iteritems()])))
+        text_to_join.append(u'回覆種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.reply_type_count.iteritems()])))
 
         return '\n'.join(text_to_join)
 
