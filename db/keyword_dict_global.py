@@ -24,10 +24,13 @@ class word_dict_global(db_base):
     def clone_from_group(self, org_gid, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """
         Return inserted sequence id(s). Empty array if nothing cloned.
-        Set org_gid to PUBLIC to clone from public
+        Set org_gid to PUBLIC to clone from public.
+        Set new_gid to PUBLIC to clone to public.
         """
         if org_gid == 'PUBLIC':
             org_gid = PUBLIC_GROUP_ID
+        if new_gid == 'PUBLIC':
+            new_gid = PUBLIC_GROUP_ID
         filter_dict = { pair_data.AFFILIATED_GROUP: org_gid }
         return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
 
@@ -63,6 +66,9 @@ class word_dict_global(db_base):
                              { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,
                                          pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.datetime.now(),
                                          pair_data.STATISTICS + '.' + pair_data.DISABLER: clone_executor } })
+
+            # TODO: new pair is disabled if clone disabled pair
+            print data_list
 
             return self.insert_many(data_list).inserted_seq_ids
         else:
