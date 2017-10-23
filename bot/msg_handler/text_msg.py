@@ -359,7 +359,7 @@ class text_msg_handler(object):
         low_perm = self._command_manager.get_command_data('X').lowest_permission
 
         if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
-            if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or params[1] == u'PUBLIC':
                 cid = params.pop(1)
             else:
                 return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID或PUBLIC(代表公用資料庫ID)。')
@@ -385,7 +385,7 @@ class text_msg_handler(object):
             if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
                 ids = params[1]
                 result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), cid, uid, True, key_permission_lv >= low_perm)
-            elif hashlib.sha224('clear').hexdigest() == clear_sha:
+            elif hashlib.sha224('clear').hexdigest() == params[1]:
                 # assign instance to manage pair
                 kwd_instance = self._get_kwd_instance(src)
 
@@ -396,7 +396,7 @@ class text_msg_handler(object):
 
                 return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取)', clear_sha)
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'"clear"的SHA雜湊(可藉由JC SHA獲取) 或 要複製的回覆組ID/ID陣列', clear_sha)
         else:
             return error.main.lack_of_thing(u'參數')
 
