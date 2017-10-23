@@ -401,7 +401,7 @@ class text_msg_handler(object):
             return error.main.lack_of_thing(u'參數')
 
         if len(result_ids) > 0:
-            return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#'.format(id) for id in result_ids]))
+            return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids]))
 
     def _E(self, src, params, key_permission_lv):
         # assign instance to manage pair

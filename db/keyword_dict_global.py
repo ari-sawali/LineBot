@@ -57,6 +57,8 @@ class word_dict_global(db_base):
             if time.time() - _start_time > 15:
                 raise RuntimeError('Clone process timeout, try another clone method, or split the condition array.')
             
+        print data_list
+
         if len(data_list) > 0:
             self.update_many({ pair_data.KEYWORD: { '$in': affected_kw_list } }, 
                              { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,
