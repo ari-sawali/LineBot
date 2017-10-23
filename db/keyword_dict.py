@@ -352,6 +352,10 @@ class group_dict_manager(db_base):
 
         return self._search(filter_dict)
 
+    def search_all_available_pair(self):
+        """Return none if nothing found, else return result in list of pair_data class"""
+        return self._search({})
+
     def search_pair_by_creator(self, uid):
         """Return none if nothing found, else return result in list of pair_data class"""
         filter_dict = { pair_data.STATISTICS + '.' + pair_data.CREATOR: uid }

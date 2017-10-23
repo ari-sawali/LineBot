@@ -136,11 +136,15 @@ class text_msg_handler(object):
                         return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列。')
                 else:
                     return error.main.incorrect_param(u'參數1', u'ID、UID(使用者)或GID(群組隸屬資料)')
-        else:
+        elif params[1] is not None:
             kw = params[1]
-            title = u'範圍: 【關鍵字】或【回覆】為【{}】的回覆組。\n'.format(kw, u'為' if exact_same else u'包含')
+            title = u'範圍: 【關鍵字】或【回覆】{}【{}】的回覆組。\n'.format(u'為' if exact_same else u'包含', kw)
 
             result_data = kwd_instance.search_pair_by_keyword(kw, exact_same)
+        else:
+            title = u'範圍: 可用回覆組。\n'.format(kw)
+
+            result_data = kwd_instance.search_all_available_pair()
 
         return result_data, title
 
