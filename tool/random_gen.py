@@ -23,7 +23,7 @@ class random_drawer(object):
     @staticmethod
     def draw_text_string(text_list):
         result = random_drawer.draw_from_list(text_list)
-        return text = u'抽選項目【{}】\n抽選結果【{}】'.format(u'、'.join(text_list), result)
+        return u'抽選項目【{}】\n抽選結果【{}】'.format(u'、'.join(text_list), result)
 
     @staticmethod
     def draw_probability(probability, is_value=True):
