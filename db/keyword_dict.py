@@ -205,16 +205,18 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
 
     def count(self, filter=None, **kwargs):
-        if filter is not None:
-            if self._including_public:
-                or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
+        if filter is None:
+            filter = {}
 
-                if '$or' in filter:
-                    filter['$or'].extend(or_list)
-                else:
-                    filter['$or'] = or_list
+        if self._including_public:
+            or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
+
+            if '$or' in filter:
+                filter['$or'].extend(or_list)
             else:
-                filter[pair_data.AFFILIATED_GROUP] = self._group_id
+                filter['$or'] = or_list
+        else:
+            filter[pair_data.AFFILIATED_GROUP] = self._group_id
 
         return super(group_dict_manager, self).count(filter, **kwargs)
 
