@@ -42,18 +42,11 @@ class word_dict_global(db_base):
         if not including_disabled:
             filter_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = False
 
-        aggr_cursor = self.aggregate([
-            { '$match': filter_dict },
-            { '$sort': { '_seq': pymongo.ASCENDING } },
-            { '$project': { '_seq': False, '_id': False } }
-        ])
-
-        print list(aggr_cursor)
-        print filter_dict
+        find_cursor = self.find(filter_dict).sort([(pair_data.SEQUENCE, pymongo.ASCENDING)])
 
         data_list = []
         affected_kw_list = []
-        for result_data in aggr_cursor:
+        for result_data in find_cursor:
             data = pair_data(result_data, True)
             affected_kw_list.append(data.keyword)
             data_list.append(data.clone(new_gid))
