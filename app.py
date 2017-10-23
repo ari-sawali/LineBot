@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: increase speed of calling ranking by pair
+# IMPORTANT: Make structure of last items
 # IMPORTANT: cache keyword_dict
+# IMPORTANT: increase speed of calling ranking by pair
 # IMPORTANT: use mail api to send error report
-# TODO: categorize error class
 # TODO: keyword pair global, local ranking
-# TODO: hide keyword pair from indexing
+# TODO: hide keyword pair from indexing(Q I)
 # TODO: self silent (new db), turn off auto upload
-
-# TODO: User Manual -> Group setting will affect on statistics
 
 import os, sys, errno
 import tempfile

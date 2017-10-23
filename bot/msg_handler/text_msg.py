@@ -85,6 +85,7 @@ class text_msg_handler(object):
 
     def _get_kwd_instance(self, src, config=None):
         source_type = bot.line_event_source_type.determine(src)
+        print bot.line_api_wrapper.source_channel_id(src)
 
         if config is None:
             including_public = False
@@ -510,7 +511,7 @@ class text_msg_handler(object):
         elif category == 'KW':
             kwd_instance = self._get_kwd_instance(src)
         
-            if kwd_instance.is_public_manager():
+            if kwd_instance.can_see_public():
                 instance_type = u'公用回覆組資料庫'
             else:
                 instance_type = u'群組回覆組資料庫'
@@ -782,20 +783,30 @@ class text_msg_handler(object):
             if category == 'S':
                 last_sticker = self._system_data.get_last_sticker(bot.line_api_wrapper.source_channel_id(src))
                 if last_sticker is not None:
-                    return u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker)
+                    return [u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker), 
+                            bot.line_api_wrapper.wrap_template_with_action({ 
+                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_sticker),
+                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_sticker)
+                           }, u'最後貼圖相關回覆組快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'P':
                 last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
                 if last_pic_sha is not None:
                     text = u'最後圖片雜湊碼(SHA224)'
-                    return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)]
+                    return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)] + [bot.line_api_wrapper.wrap_template_with_action({ 
+                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_pic_sha),
+                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_pic_sha)
+                           }, u'最後圖片雜湊相關回覆組快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'R':
                 last_pair_id = self._system_data.get_last_pair(bot.line_api_wrapper.source_channel_id(src))
                 if last_pair_id is not None:
-                    return u'最後呼叫回覆組ID: {}'.format(last_pair_id)
+                    return [u'最後呼叫回覆組ID: {}'.format(last_pair_id), bot.line_api_wrapper.wrap_template_with_action({ 
+                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id),
+                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id)
+                           }, u'最後回覆組ID查詢快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             else:
