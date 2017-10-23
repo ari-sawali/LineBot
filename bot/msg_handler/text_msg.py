@@ -782,7 +782,7 @@ class text_msg_handler(object):
         last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
         if last_pic_sha is not None:
             text = u'最後圖片雜湊碼(SHA224)'
-            return text, last_pic_sha
+            return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)]
         else:
             return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊。如果已經有貼過圖片，則可能是因為機器人剛剛才啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
 
