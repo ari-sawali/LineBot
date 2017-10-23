@@ -44,9 +44,14 @@ class word_dict_global(db_base):
 
         find_cursor = self.find(filter_dict).sort([(pair_data.SEQUENCE, pymongo.ASCENDING)])
 
+        print list(find_cursor)
+        print filter_dict
+
         data_list = []
         affected_kw_list = []
         for result_data in find_cursor:
+            del result_data['_id']
+            del result_data[pair_data.SEQUENCE]
             data = pair_data(result_data, True)
             affected_kw_list.append(data.keyword)
             data_list.append(data.clone(new_gid))
