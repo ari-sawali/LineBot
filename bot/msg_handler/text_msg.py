@@ -186,7 +186,9 @@ class text_msg_handler(object):
         kw = params[2].replace('\\n', '\n')
         rep = params[3].replace('\\n', '\n')
         linked = params[4]
-        rep_att = params[5].replace('\\n', '\n')
+        rep_att = params[5]
+        if rep_att is not None:
+            rep_att = rep_att.replace('\\n', '\n')
 
         # checking flags is legal
         if len(flags) != 2:
