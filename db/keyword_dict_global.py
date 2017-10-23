@@ -5,7 +5,7 @@ import pymongo.cursor
 import datetime
 import error
 
-from .keyword_dict import pair_data, group_dict_manager, PUBLIC_GROUP_ID
+from .keyword_dict import pair_data, group_dict_manager, PUBLIC_GROUP_ID, ActionNotAllowed
 
 class word_dict_global(db_base):
     CLONE_TIMEOUT_SEC = 15
@@ -42,7 +42,7 @@ class word_dict_global(db_base):
     def clear(self, target_gid, clone_executor):
         """Return count of pair disabled."""
         if target_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
-            raise db.ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
+            raise ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
 
         return self.update_many({ pair_data.AFFILIATED_GROUP: target_gid, pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }, 
                                 { '$set': { pair_data.PROPERTIES + '.' + pair_data.DISABLED: True,
@@ -52,8 +52,6 @@ class word_dict_global(db_base):
     def _clone_to_group(self, filter_dict, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """Return empty array if nothing cloned."""
         import time
-
-        print new_gid
 
         data_list = []
         affected_kw_list = []
@@ -77,13 +75,6 @@ class word_dict_global(db_base):
 
             if time.time() - _start_time > 15:
                 raise RuntimeError('Clone process timeout, try another clone method, or split the condition array.')
-
-        print filter_dict
-        print data_list
-        print new_gid
-        print clone_executor
-        print including_disabled
-        print including_pinned
 
         if len(data_list) > 0:
             self.update_many({ pair_data.KEYWORD: { '$in': affected_kw_list } }, 
