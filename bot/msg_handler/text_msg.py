@@ -360,7 +360,7 @@ class text_msg_handler(object):
         low_perm = self._command_manager.get_command_data('X').lowest_permission
 
         if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
-            if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or params[1] == u'PUBLIC':
+            if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or params[1] == db.word_dict_global.CODE_OF_PUBLIC_GROUP:
                 target_gid = params.pop(1)
             else:
                 return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID或PUBLIC(代表公用資料庫ID)。')
@@ -373,7 +373,7 @@ class text_msg_handler(object):
             flags = params[1]
             source_gid = params[2]
 
-            if bot.line_api_wrapper.is_valid_room_group_id(source_gid) or source_gid == u'PUBLIC':
+            if bot.line_api_wrapper.is_valid_room_group_id(source_gid) or source_gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP:
                 if key_permission_lv <= low_perm:
                     return error.main.restricted(int(low_perm))
                 result_ids = self._kwd_global.clone_from_group(source_gid, target_gid, uid, 'D' in flags, 'P' in flags)

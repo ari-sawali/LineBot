@@ -9,6 +9,7 @@ from .keyword_dict import pair_data, group_dict_manager, PUBLIC_GROUP_ID
 
 class word_dict_global(db_base):
     CLONE_TIMEOUT_SEC = 15
+    CODE_OF_PUBLIC_GROUP = 'PUBLIC'
 
     def __init__(self, mongo_db_uri):
         super(word_dict_global, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
@@ -17,6 +18,9 @@ class word_dict_global(db_base):
         """Return inserted sequence id(s) Empty array if nothing cloned."""
         if isinstance(id_or_id_list, (int, long)):
             id_or_id_list = [id_or_id_list]
+
+        if target_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
+            target_gid == PUBLIC_GROUP_ID
 
         id_or_id_list = [int(id) for id in id_or_id_list]
         filter_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
@@ -28,16 +32,16 @@ class word_dict_global(db_base):
         Set org_gid to PUBLIC to clone from public.
         Set new_gid to PUBLIC to clone to public.
         """
-        if source_gid == 'PUBLIC':
+        if source_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
             source_gid = PUBLIC_GROUP_ID
-        if target_gid == 'PUBLIC':
+        if target_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
             target_gid = PUBLIC_GROUP_ID
         filter_dict = { pair_data.AFFILIATED_GROUP: source_gid }
         return self._clone_to_group(filter_dict, target_gid, clone_executor, including_disabled, including_pinned)
 
     def clear(self, target_gid, clone_executor):
         """Return count of pair disabled."""
-        if target_gid == 'PUBLIC':
+        if target_gid == word_dict_global.CODE_OF_PUBLIC_GROUP:
             raise db.ActionNotAllowed(error.error.main.miscellaneous(u'無法清除公用資料庫。'))
 
         return self.update_many({ pair_data.AFFILIATED_GROUP: target_gid, pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }, 
