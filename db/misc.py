@@ -47,7 +47,7 @@ class FormattedStringResult(object):
             for index, data in enumerate(data_list):
                 data = string_format_function(data)
 
-                if index < limit:
+                if limit is None or index < limit:
                     _list_limited.append(data)
 
                 _list_full.append(data)

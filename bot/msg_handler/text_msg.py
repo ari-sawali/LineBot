@@ -357,8 +357,12 @@ class text_msg_handler(object):
         if key_permission_lv >= low_perm:
             return error.main.restricted(int(low_perm))
 
-        if params[2] is not None:
+        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER and bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            cid = params.pop(1)
+        else:
             cid = bot.line_api_wrapper.source_channel_id(src)
+
+        if params[2] is not None:
             uid = bot.line_api_wrapper.source_user_id(src)
 
             ids_or_gid = params[1]
@@ -379,7 +383,10 @@ class text_msg_handler(object):
                 # assign instance to manage pair
                 kwd_instance = self._get_kwd_instance(src)
 
-                clear_count = kwd_instance.clear()
+                try:
+                    clear_count = kwd_instance.clear()
+                except db.ActionNotAllowed as ex:
+                    return ex.message
 
                 return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
             else:

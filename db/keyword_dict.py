@@ -27,8 +27,12 @@ class word_type(ext.EnumWithName):
             raise UnknownFlagError()
 
 class UnknownFlagError(Exception):
-        def __init__(self, *args):
-            super(UnknownFlagError, self).__init__(*args)
+    def __init__(self, *args):
+        super(UnknownFlagError, self).__init__(*args)
+
+class ActionNotAllowed(Exception):
+    def __init__(self, *args):
+        return super(ActionNotAllowed, self).__init__(*args)
 
 class group_dict_manager(db_base):
     WORD_DICT_DB_NAME = 'word_dict'
@@ -373,6 +377,8 @@ class group_dict_manager(db_base):
 
     def clear(self):
         """Return count of pair deleted."""
+        if self._group_id == PUBLIC_GROUP_ID:
+            raise ActionNotAllowed(error.main.miscellaneous(u'無法清除公用資料庫。'))
         return self.delete_many({ pair_data.AFFILIATED_GROUP: self._group_id }).deleted_count
 
     def _search(self, filter_dict):
@@ -406,6 +412,7 @@ class group_dict_manager(db_base):
         return result
 
     def rank_of_used_count(self, count):
+        # https://stackoverflow.com/questions/25843255/mongodb-aggregate-count-on-multiple-fields-simultaneously
         return self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': count } }) + 1 
 
     @staticmethod
