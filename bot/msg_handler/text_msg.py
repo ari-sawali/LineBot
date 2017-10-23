@@ -362,7 +362,7 @@ class text_msg_handler(object):
             if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
                 cid = params.pop(1)
             else:
-                return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID。')
+                return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID或PUBLIC(代表公用資料庫ID)。')
         else:
             cid = bot.line_api_wrapper.source_channel_id(src)
 
@@ -372,7 +372,7 @@ class text_msg_handler(object):
             gid = params[1]
             flags = params[2]
 
-            if bot.line_api_wrapper.is_valid_room_group_id(gid):
+            if bot.line_api_wrapper.is_valid_room_group_id(gid) or gid == db.PUBLIC_GROUP_ID:
                 if key_permission_lv <= low_perm:
                     return error.main.restricted(int(low_perm))
                 result_ids = self._kwd_global.clone_from_group(gid, cid, uid, 'D' in flags, 'P' in flags)
@@ -401,7 +401,12 @@ class text_msg_handler(object):
             return error.main.lack_of_thing(u'參數')
 
         if len(result_ids) > 0:
-            return u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids]))
+            id_array_str = self._array_separator.join(result_ids[0])
+
+            return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids])), self._webpage_generator),
+                    bot.line_api_wrapper.wrap_template_with_action({
+                        u'回覆組資料查詢(簡略)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + result_ids[0] + text_msg_handler.SPLITTER + result_ids[-1],
+                        u'回覆組資料查詢(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + result_ids[0] + text_msg_handler.SPLITTER + result_ids[-1]} ,u'新建回覆組相關指令樣板', u'相關指令')]
         else:
             return u'回覆組複製失敗。'
 

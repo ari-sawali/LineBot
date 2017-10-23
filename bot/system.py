@@ -140,6 +140,7 @@ class line_api_wrapper(object):
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
         """
         data_dict should follow the format below, and the length of dict must less than or equals to 15. Result may be unexpected if the format is invalid.
+            {label: message}
 
         title will display as "{title} {index}", index is the index of carousel.
         title should be str type.

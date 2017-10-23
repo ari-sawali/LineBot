@@ -31,7 +31,6 @@ class word_dict_global(db_base):
         filter_dict = { pair_data.AFFILIATED_GROUP: org_gid }
         return self._clone_to_group(filter_dict, new_gid, clone_executor, including_disabled, including_pinned)
 
-    # TEST: test disable duplicated keyword
     def _clone_to_group(self, filter_dict, new_gid, clone_executor, including_disabled=False, including_pinned=True):
         """Return empty array if nothing cloned."""
         import time
@@ -58,8 +57,6 @@ class word_dict_global(db_base):
 
             if time.time() - _start_time > 15:
                 raise RuntimeError('Clone process timeout, try another clone method, or split the condition array.')
-            
-        print data_list
 
         if len(data_list) > 0:
             self.update_many({ pair_data.KEYWORD: { '$in': affected_kw_list } }, 
