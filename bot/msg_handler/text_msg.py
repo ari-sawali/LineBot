@@ -183,10 +183,10 @@ class text_msg_handler(object):
             return error.line_bot_api.illegal_user_id(new_profile_uid)
         
         flags = params[1]
-        kw = params[2]
-        rep = params[3]
+        kw = params[2].replace('\\n', '\n')
+        rep = params[3].replace('\\n', '\n')
         linked = params[4]
-        rep_att = params[5]
+        rep_att = params[5].replace('\\n', '\n')
 
         # checking flags is legal
         if len(flags) != 2:
