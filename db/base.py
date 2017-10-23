@@ -82,7 +82,7 @@ class db_base(pymongo.collection.Collection):
         result = super(db_base, self).insert_many(documents, ordered, bypass_document_validation)
 
         print documents
-        print data_list
+        print seq_ids
         
         return ExtendedInsertManyResult(result.inserted_ids, result.acknowledged, seq_ids)
 
