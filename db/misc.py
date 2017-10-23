@@ -44,8 +44,13 @@ class FormattedStringResult(object):
             else:
                 _limited_data_list = data_list
 
-            _list_limited.extend([string_format_function(data) for data in _limited_data_list])
-            _list_full.extend([string_format_function(data) for data in data_list])
+            for index, data in enumerate(data_list):
+                data = string_format_function(data)
+
+                if index < limit:
+                    _list_limited.append(data)
+
+                _list_full.append(data)
 
             if limit is not None:
                 data_left = count - limit
