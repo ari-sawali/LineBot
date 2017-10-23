@@ -13,7 +13,7 @@ class random_drawer(object):
     @staticmethod
     def draw_number_string(start, end):
         result = random_drawer.draw_number(start, end)
-        text = u'抽選範圍【{}~{}】\n抽選結果【{}】'.format(start, end, result)
+        return u'抽選範圍【{}~{}】\n抽選結果【{}】'.format(start, end, result)
         
     @staticmethod
     def draw_from_list(text_list):

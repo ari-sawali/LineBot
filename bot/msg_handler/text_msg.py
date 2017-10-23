@@ -753,9 +753,9 @@ class text_msg_handler(object):
             else:
                 start_index = params[1]
                 end_index = params[2]
-                if not start_index.isnumeric():
+                if not bot.string_can_be_int(start_index):
                     text = error.main.invalid_thing_with_correct_format(u'起始抽籤數字', u'整數', start_index)
-                elif not end_index.isnumeric():
+                elif not bot.string_can_be_int(end_index):
                     text = error.main.invalid_thing_with_correct_format(u'終止抽籤數字', u'整數', start_index)
                 else:
                     text = tool.random_drawer.draw_number_string(start_index, end_index)
