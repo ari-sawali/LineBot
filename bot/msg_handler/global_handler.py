@@ -255,7 +255,6 @@ class global_msg_handle(object):
             print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
-        print 'pass 0'
 
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
@@ -266,7 +265,6 @@ class global_msg_handle(object):
             print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
-        print 'pass 1'
 
         ############################################
         ######## ASSIGN NECESSARY VARIABLES ########
@@ -283,8 +281,7 @@ class global_msg_handle(object):
 
         if terminate_2:
             print 'terminate 2'
-            return 
-        print 'pass 2'
+            return
 
         #########################################
         ### TERMINATE CHECK - TEXT CALCULATOR ###
@@ -295,8 +292,7 @@ class global_msg_handle(object):
         if terminate_3:
             print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
-            return 
-        print 'pass 3'
+            return
 
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
@@ -308,7 +304,6 @@ class global_msg_handle(object):
             print 'terminate 4'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
-        print 'pass 4'
 
         ########################################
         ### TERMINATE CHECK - SYSTEM COMMAND ###
@@ -320,7 +315,6 @@ class global_msg_handle(object):
             print 'terminate 5'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
             return
-        print 'pass 5'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -331,7 +325,6 @@ class global_msg_handle(object):
         if terminate_6:
             print 'terminate 6'
             return
-        print 'pass 6'
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
 
@@ -397,7 +390,6 @@ class global_msg_handle(object):
             print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
-        print 'pass 0'
 
         ############################################
         ######## ASSIGN NECESSARY VARIABLES ########
@@ -414,8 +406,7 @@ class global_msg_handle(object):
 
         if terminate_1:
             print 'terminate 1'
-            return 
-        print 'pass 1'
+            return
 
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
@@ -427,7 +418,6 @@ class global_msg_handle(object):
             print 'terminate 2'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
-        print 'pass 2'
 
         ######################################
         ### TERMINATE CHECK - STICKER DATA ###
@@ -439,7 +429,6 @@ class global_msg_handle(object):
             print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
-        print 'pass 3'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -449,8 +438,7 @@ class global_msg_handle(object):
 
         if terminate_4:
             print 'terminate 4'
-            return 
-        print 'pass 4'
+            return
 
         self._group_manager.log_message_activity(cid, db.msg_type.STICKER)
 
@@ -501,7 +489,6 @@ class global_msg_handle(object):
             print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
-        print 'pass 0'
 
         ############################################
         ######## ASSIGN NECESSARY VARIABLES ########
@@ -520,8 +507,7 @@ class global_msg_handle(object):
 
         if terminate_1:
             print 'terminate 1'
-            return 
-        print 'pass 1'
+            return
 
         ######################################
         ### TERMINATE CHECK - UPLOAD IMAGE ###
@@ -533,7 +519,6 @@ class global_msg_handle(object):
             print 'terminate 2'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE, db.msg_type.TEXT, 1, 4)
             return
-        print 'pass 2'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -544,6 +529,5 @@ class global_msg_handle(object):
         if terminate_3:
             print 'pass 3'
             return
-        print 'pass 3'
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
