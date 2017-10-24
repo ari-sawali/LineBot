@@ -631,7 +631,7 @@ class user_data_manager(db_base):
             self._cache[group_id] = {new_user_data[user_data.USER_ID]: new_user_data}
 
     def _del_cache(self, group_id, uid):
-        if group_id in self._cache:
+        if group_id in self._cache and uid in self._cache[group_id]:
             del self._cache[group_id][uid]
 
     def _get_cache_by_id(self, group_id, user_id):
