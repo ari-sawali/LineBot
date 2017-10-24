@@ -11,6 +11,7 @@
 # TODO: message activity tracking
 # TODO: self diagnostic
 # UNDONE: group_data will save empty mem field in database
+# UNDONE: game_msg_handler Shorten + Modulize
 
 import os, sys, errno
 import tempfile

@@ -149,7 +149,6 @@ class text_msg_handler(object):
 
         return result_data, title
 
-    # TEST: mongo shell command
     def _S(self, src, params, key_permission_lv):
         if key_permission_lv >= bot.commands.permission.BOT_ADMIN:
             if self._pymongo_client is None:
@@ -572,7 +571,7 @@ class text_msg_handler(object):
         if bot.line_api_wrapper.is_valid_room_group_id(gid):
             # assign instance to manage pair
             kwd_instance = self._get_kwd_instance(src)
-            group_data = self._group_manager.get_group_by_id(gid)
+            group_data = self._group_manager.get_group_by_id(gid, True)
 
             group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
             
@@ -622,7 +621,7 @@ class text_msg_handler(object):
                 try:
                     self._group_manager.set_permission(gid, setter_uid, target_uid, permission)
                     
-                    text = u'成員權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限代碼: {}'.format(setter_uid, setter_name, target_name, target_uid, permission)
+                    text = u'成員權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限: {}'.format(setter_uid, setter_name, target_name, target_uid, permission)
                 except db.InsufficientPermissionError:
                     text = error.main.restricted()
             else:
@@ -934,7 +933,6 @@ class text_msg_handler(object):
         params.insert(0, None)
         return params
 
-# UNDONE: Shorten + Modulize
 class game_msg_handler(object):
     HEAD = 'G'
     SPLITTER = '\n'
