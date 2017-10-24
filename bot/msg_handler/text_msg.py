@@ -890,11 +890,11 @@ class text_msg_handler(object):
             vars = params[1]
             eq = params[2]
 
-            calc_result = self._string_calculator.calculate(calc_str, self._system_config.get(db.config_data.CALCULATOR_DEBUG), True, tool.calc_type.algebraic_equations)
+            calc_result = self._string_calculator.calculate(vars + text_msg_handler.SPLITTER + eq, self._system_config.get(db.config_data.CALCULATOR_DEBUG), True, tool.calc_type.ALGEBRAIC_EQUATIONS)
         elif params[1] is not None:
             formula = params[1]
 
-            calc_result = self._string_calculator.calculate(calc_str, self._system_config.get(db.config_data.CALCULATOR_DEBUG), True, tool.calc_type.polynomial_factorization)
+            calc_result = self._string_calculator.calculate(formula, self._system_config.get(db.config_data.CALCULATOR_DEBUG), True, tool.calc_type.POLYNOMIAL_FACTORIZATION)
         else:
             return error.main.unable_to_determine()
 

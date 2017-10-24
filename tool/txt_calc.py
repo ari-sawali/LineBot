@@ -11,10 +11,10 @@ from math import *
 import sympy
 
 class calc_type(Enum):
-    unknown = -1
-    normal = 0
-    polynomial_factorization = 1
-    algebraic_equations = 2
+    UNKNOWN = -1
+    NORMAL = 0
+    POLYNOMIAL_FACTORIZATION = 1
+    ALGEBRAIC_EQUATIONS = 2
 
 class text_calculator(object):
     EQUATION_KEYWORD = '=0'
@@ -43,7 +43,7 @@ class text_calculator(object):
                 if sympy_calc:
                     calc_type_var = self._sympy_calculate_type(text)
 
-                    if calc_type_var == calc_type.unknown:
+                    if calc_type_var == calc_type.UNKNOWN:
                         result_data.success = False
                         result_data.calc_result = error.string_calculator.unknown_calculate_type()
 
@@ -51,7 +51,7 @@ class text_calculator(object):
 
                     calc_proc = self._get_calculate_proc(calc_type_var, (init_time, text, debug, self._queue))
                 else:
-                    calc_proc = self._get_calculate_proc(calc_type.normal, (init_time, text, debug, self._queue))
+                    calc_proc = self._get_calculate_proc(calc_type.NORMAL, (init_time, text, debug, self._queue))
             else:
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
             calc_proc.start()
@@ -74,11 +74,11 @@ class text_calculator(object):
         """
         args_tuple: (init_time, text, debug, self._queue)
         """
-        if type_enum == calc_type.normal:
+        if type_enum == calc_type.NORMAL:
             return Process(target=self._basic_calc_proc, args=args_tuple)
-        elif type_enum == calc_type.algebraic_equations:
+        elif type_enum == calc_type.ALGEBRAIC_EQUATIONS:
             return Process(target=self._algebraic_equations, args=args_tuple)
-        elif type_enum == calc_type.polynomial_factorization:
+        elif type_enum == calc_type.POLYNOMIAL_FACTORIZATION:
             return Process(target=self._polynomial_factorization, args=args_tuple)
         else:
             raise Exception('Process not defined.')
@@ -222,11 +222,11 @@ class text_calculator(object):
 
     def _sympy_calculate_type(self, text):
         if text_calculator.EQUATION_KEYWORD in text and '\n' in text:
-            return calc_type.algebraic_equations
+            return calc_type.ALGEBRAIC_EQUATIONS
         elif text_calculator.EQUATION_KEYWORD not in text and '\n' not in text:
-            return calc_type.polynomial_factorization
+            return calc_type.POLYNOMIAL_FACTORIZATION
         else:
-            return calc_type.unknown
+            return calc_type.UNKNOWN
 
     @staticmethod
     def remove_non_digit(text):
