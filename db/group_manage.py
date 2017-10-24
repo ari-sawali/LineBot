@@ -114,7 +114,7 @@ class group_manager(db_base):
         setup_result = self.find_one_and_update(
             { '$or': [{ group_data.SPECIAL_USER + '.' + group_data.ADMINS: uid },
                       { group_data.SPECIAL_USER + '.' + group_data.MODERATORS: { '$elemMatch': { '$eq': [uid] } } }] },
-                      { group_data.GROUP_ID: gid }},
+                      { group_data.GROUP_ID: gid }],
             { '$set': { group_data.CONFIG_TYPE: config_type }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         if setup_result is not None:
