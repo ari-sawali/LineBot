@@ -290,7 +290,7 @@ def handle_image_message(event):
 
 @handler.add(FollowEvent)
 def handle_follow(event):
-    line_api.reply_message(event.reply_token, bot.line_api_wrapper.introduction_template(), event.source)
+    line_api.reply_message(event.reply_token, bot.line_api_wrapper.introduction_template())
 
 
 @handler.add(JoinEvent)
