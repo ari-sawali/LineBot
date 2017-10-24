@@ -270,7 +270,7 @@ class global_msg_handle(object):
 
         terminate_1 = self._terminate()
         
-        if (terminate_1 or group_config == db.config_type.SILENCE) and not full_text.startswith(text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'GA'):
+        if (terminate_1 or group_config <= db.config_type.SILENCE) and not full_text.startswith(text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'GA'):
             print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
@@ -282,7 +282,7 @@ class global_msg_handle(object):
 
         terminate_2 = self._handle_text_sys_command(event, user_permission)
 
-        if terminate_2:
+        if terminate_2 or group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
             print 'terminate 2'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
             return
@@ -294,7 +294,7 @@ class global_msg_handle(object):
         
         terminate_3 = self._handle_text_rps(event)
 
-        if terminate_3 or group_config == db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
+        if terminate_3:
             print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
@@ -386,7 +386,7 @@ class global_msg_handle(object):
         
         terminate_0 = self._terminate()
         
-        if terminate_0 or group_config == db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
+        if terminate_0 or group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
 
@@ -395,7 +395,7 @@ class global_msg_handle(object):
         ####################################
 
         terminate_1 = self._handle_sticker_rps(event, sticker_id)
-        if terminate_1 or group_config == db.config_type.SYS_ONLY:
+        if terminate_1 or group_config <= db.config_type.SYS_ONLY:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return 
 
@@ -464,7 +464,7 @@ class global_msg_handle(object):
         
         terminate_0 = self._terminate()
         
-        if terminate_0 or group_config == db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
+        if terminate_0 or group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
 
