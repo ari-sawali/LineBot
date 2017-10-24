@@ -657,8 +657,6 @@ class text_msg_handler(object):
 
             change_result = self._group_manager.set_config_type(gid, cfg_type, setter_uid)
 
-            print change_result.encode('utf-8')
-
             if change_result:
                 text = u'群組自動回覆設定已更改為【{}】。'.format(unicode(cfg_type))
             else:
