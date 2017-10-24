@@ -46,6 +46,7 @@ class command_object(object):
         """Required Permission"""
         return self._lowest_permission_required
 
+# MAX_PARAM_COUNT includes parameter which will be popped
 cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, permission.BOT_ADMIN), 
              'A': command_object(3, 5, cmd_category.MAIN), 
              'M': command_object(3, 5, cmd_category.MAIN, permission.MODERATOR), 
@@ -58,7 +59,7 @@ cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, permission.BOT_ADMIN),
              'K': command_object(1, 2, cmd_category.MAIN),
              'P': command_object(1, 2, cmd_category.EXTEND), 
              'G': command_object(0, 1, cmd_category.EXTEND), 
-             'GA': command_object(1, 3, cmd_category.EXTEND, permission.MODERATOR),  
+             'GA': command_object(1, 4, cmd_category.EXTEND, permission.MODERATOR),  
              'H': command_object(0, 0, cmd_category.EXTEND), 
              'SHA': command_object(1, 1, cmd_category.EXTEND), 
              'O': command_object(1, 1, cmd_category.EXTEND), 
