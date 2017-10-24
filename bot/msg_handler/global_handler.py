@@ -269,7 +269,6 @@ class global_msg_handle(object):
         ####################################################
 
         terminate_1 = self._terminate()
-        
         if (terminate_1 or group_config <= db.config_type.SILENCE) and not full_text.startswith(text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'GA'):
             print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)

@@ -638,8 +638,14 @@ class user_data_manager(db_base):
         if group_id in self._cache:
             return self._cache[group_id].get(user_id, None)
         else:
-            self._set_cache(group_id, self.find_one({ user_data.GROUP: group_id, user_data.USER_ID: user_id }))
-            return self._get_cache_by_id(group_id, user_id)
+            u_data = self.find_one({ user_data.GROUP: group_id, user_data.USER_ID: user_id })
+            if u_data is not None:
+                self._set_cache(group_id, u_data)
+                return self._get_cache_by_id(group_id, user_id)
+            else:
+                self._set_cache(group_id, user_data.init_by_field(user_id, group_id, bot.permission.USER))
+                return self._get_cache_by_id(group_id, user_id)
+
 
     def _get_cache_by_permission(self, group_id, permission_lv):
         if group_id in self._cache:
