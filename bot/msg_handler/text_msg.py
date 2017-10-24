@@ -612,6 +612,14 @@ class text_msg_handler(object):
                     return error.line_bot_api.unable_to_receive_user_id()
                 
                 try:
+                    permission = bot.permission(int(permission))
+                except ValueError:
+                    return error.main.invalid_thing_with_correct_format(u'參數3', u'權限等級(整數)', permission)
+
+                if permission > bot.permission.ADMIN:
+                    return error.main.miscellaneous(u'最高可設定權限為【群組管理員】(等級2)。')
+
+                try:
                     self._group_manager.set_permission(gid, setter_uid, target_uid, permission)
                     
                     text = u'成員權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限代碼: {}'.format(setter_uid, setter_name, target_name, target_uid, permission)
