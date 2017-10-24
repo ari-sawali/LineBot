@@ -646,15 +646,14 @@ class text_msg_handler(object):
                 text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
         elif params[1] is not None:
             cfg_type = params[1]
-            invalid_cfg_type = error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
         
             if not bot.string_can_be_int(cfg_type):
-                return invalid_cfg_type
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
         
             try:
-                cfg_type = db.config_type(cfg_type)
+                cfg_type = db.config_type(int(cfg_type))
             except ValueError:
-                return invalid_cfg_type
+                return error.main.miscellaneous(u'群組設定代碼不合法，請確認代碼有效後重試。')
 
             change_result = self._group_manager.set_config_type(gid, cfg_type, setter_uid)
         
