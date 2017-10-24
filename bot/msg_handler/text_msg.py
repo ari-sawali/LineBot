@@ -645,8 +645,8 @@ class text_msg_handler(object):
             else:
                 text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
         elif params[1] is not None:
-            invalid_cfg_type = error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
             cfg_type = params[1]
+            invalid_cfg_type = error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
         
             if not bot.string_can_be_int(cfg_type):
                 return invalid_cfg_type
