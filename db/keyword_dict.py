@@ -583,42 +583,52 @@ class group_dict_manager(db_base):
         result.pair_count_disabled = self.count({ pair_data.PROPERTIES + '.' + pair_data.DISABLED: True })
 
         SUM_USED_COUNT = 'sum_ct'
+
+        ######################
+        ### GETTING RESULT ###
+        ######################
+
         try:
-            aggr_result = self.aggregate([
+            result.used_count = self.aggregate([
                 { '$project': { pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: True }  }, 
                 { '$group': {
                     '_id': 1,
                     SUM_USED_COUNT: { '$sum': '$' + pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT }
-                } }
+                    } }
             ]).next()[SUM_USED_COUNT]
+
+            aggregate_type_group_dict = {str(type_num): { '$sum': '$' + str(type_num) } for type_num in list(map(int, word_type)) }
+            aggregate_type_group_dict['_id'] = None
+            
+            aggregate_kw_type_project_dict = {str(type_num): { '$cond': [{ '$eq': ['$' + pair_data.PROPERTIES + '.' + pair_data.KEYWORD_TYPE, type_num] }, 1, 0] } for type_num in list(map(int,    word_type)) }
+            aggregate_rep_type_project_dict = {str(type_num): { '$cond': [{ '$eq': ['$' + pair_data.PROPERTIES + '.' + pair_data.REPLY_TYPE, type_num] }, 1, 0] } for type_num in list(map(int,     word_type)) }
+
+            result.keyword_type_count = self.aggregate([
+                { '$project': aggregate_kw_type_project_dict },
+                { '$group': aggregate_type_group_dict }
+            ]).next()
+            del result.keyword_type_count['_id']
+
+            result.reply_type_count = self.aggregate([
+                { '$project': aggregate_rep_type_project_dict },
+                { '$group': aggregate_type_group_dict }
+            ]).next()
+            del result.reply_type_count['_id']
         except StopIteration:
-            aggr_result = 0
+            result = KeywordDictionaryStatistics()
 
-        result.used_count = aggr_result
-
-        aggregate_type_group_dict = {str(type_num): { '$sum': '$' + str(type_num) } for type_num in list(map(int, word_type)) }
-        aggregate_type_group_dict['_id'] = None
-        
-        aggregate_kw_type_project_dict = {str(type_num): { '$cond': [{ '$eq': ['$' + pair_data.PROPERTIES + '.' + pair_data.KEYWORD_TYPE, type_num] }, 1, 0] } for type_num in list(map(int, word_type)) }
-        aggregate_rep_type_project_dict = {str(type_num): { '$cond': [{ '$eq': ['$' + pair_data.PROPERTIES + '.' + pair_data.REPLY_TYPE, type_num] }, 1, 0] } for type_num in list(map(int, word_type)) }
-
-        result.keyword_type_count = self.aggregate([
-            { '$project': aggregate_kw_type_project_dict },
-            { '$group': aggregate_type_group_dict }
-        ]).next()
-        del result.keyword_type_count['_id']
-
-        result.reply_type_count = self.aggregate([
-            { '$project': aggregate_rep_type_project_dict },
-            { '$group': aggregate_type_group_dict }
-        ]).next()
-        del result.reply_type_count['_id']
+        #####################
+        ### STRING OUTPUT ###
+        #####################
 
         text_to_join = []
 
         text_to_join.append(u'{}組 (失效{}) | {}次 | {:.2f}次/組 | 可用率{:.2%}'.format(result.pair_count, result.pair_count_disabled, result.used_count, result.avg, result.usable_rate))
-        text_to_join.append(u'關鍵字種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.keyword_type_count.iteritems()])))
-        text_to_join.append(u'回覆種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.reply_type_count.iteritems()])))
+        if result.keyword_type_count is None:
+            text_to_join.append(u'沒有統計資料。')
+        else:
+            text_to_join.append(u'關鍵字種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.keyword_type_count.iteritems()])))
+            text_to_join.append(u'回覆種類: {}'.format(' '.join([u'{} {}組'.format(unicode(word_type(int(type))), count) for type, count in result.reply_type_count.iteritems()])))
 
         return '\n'.join(text_to_join)
 
@@ -992,7 +1002,10 @@ class KeywordDictionaryStatistics(dict_like_mapping):
 
     @property
     def usable_rate(self):
-        return 1.0 - self[KeywordDictionaryStatistics.PAIR_COUNT_DISABLED] / float(self[KeywordDictionaryStatistics.PAIR_COUNT])
+        try:
+            return 1.0 - self[KeywordDictionaryStatistics.PAIR_COUNT_DISABLED] / float(self[KeywordDictionaryStatistics.PAIR_COUNT])
+        except ZeroDivisionError:
+            return 0.0
 
     @property
     def used_count(self):
@@ -1004,7 +1017,10 @@ class KeywordDictionaryStatistics(dict_like_mapping):
 
     @property
     def avg(self):
-        return self[KeywordDictionaryStatistics.USED_COUNT] / float(self[KeywordDictionaryStatistics.PAIR_COUNT])
+        try:
+            return self[KeywordDictionaryStatistics.USED_COUNT] / float(self[KeywordDictionaryStatistics.PAIR_COUNT])
+        except ZeroDivisionError:
+            return 0.0
 
     @property
     def keyword_type_count(self):
