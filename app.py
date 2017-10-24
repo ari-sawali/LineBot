@@ -4,11 +4,13 @@
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: increase speed of calling ranking by pair
 # IMPORTANT: use mail api to send error report
+# IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
 # TODO: self silent (new db), turn off auto upload
 # TODO: message activity tracking
 # TODO: self diagnostic
+# UNDONE: group_data will save empty mem field in database
 
 import os, sys, errno
 import tempfile

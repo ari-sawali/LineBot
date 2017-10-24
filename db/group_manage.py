@@ -557,7 +557,7 @@ class user_data_manager(db_base):
         if self._ADMIN_UID is None:
             print 'Specify bot admin uid as environment variable "ADMIN_UID".'
             sys.exit(1)
-        self._set_cache()
+        self._cache = {}
 
     def new_data(self, group_id, setter_uid, target_uid, target_permission_lv):
         """
@@ -566,8 +566,9 @@ class user_data_manager(db_base):
         Raise InsufficientPermissionError if action is not allowed.
         """
         if setter_uid == target_uid and self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
-            self.insert_one(user_data.init_by_field(target_uid, group_id, target_permission_lv))
-            self._set_cache()
+            new_user_data = user_data.init_by_field(target_uid, group_id, target_permission_lv)
+            self._set_cache(group_id, new_user_data)
+            self.insert_one(new_user_data)
         else:
             raise InsufficientPermissionError()
 
@@ -583,35 +584,35 @@ class user_data_manager(db_base):
 
         if self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             self.delete_one({ user_data.USER_ID: target_uid, user_data.GROUP: group_id })
-            self._set_cache()
+            self._del_cache(group_id, target_uid)
         else:
             raise InsufficientPermissionError()
 
     def set_permission(self, group_id, setter_uid, target_uid, new_lv):
         """Raise InsufficientPermissionError if action is not allowed."""
         if self._check_action_is_allowed(setter_uid, group_id, new_lv):
-            self.update_one({ user_data.USER_ID: target_uid, user_data.GROUP: group_id },
-                            { user_data.PERMISSION_LEVEL: new_lv }, True)
-            self._set_cache()
+            updated_data = self.find_one_and_update({ user_data.USER_ID: target_uid, user_data.GROUP: group_id },
+                                                    { user_data.PERMISSION_LEVEL: new_lv }, None, None, True, pymongo.ReturnDocument.AFTER)
+            self._set_cache(group_id, updated_data)
         else:
             raise InsufficientPermissionError()
 
     def get_user_data(self, group_id, uid):
         """Return None if nothing found."""
-        result = next((item for item in self._cache if item[user_data.USER_ID] == uid and item[user_data.GROUP] == group_id), None) 
+        result = self._get_cache_by_id(group_id, uid)
         if result is None:
             return None
         else:
             return user_data(result)
 
     def get_data_by_permission(self, group_id, permission_lv):
-        return list(user_data(item) for item in self._cache if item.permission_level == permission_lv and item.group == group_id)
+        return self._get_cache_by_permission(group_id, permission_lv)
 
     def _check_action_is_allowed(self, uid, group_id, action_permission):
         if uid == self._ADMIN_UID:
             return True
 
-        u_data = next((item for item in self._cache if item[user_data.USER_ID] == uid and item[user_data.GROUP] == group_id), None) 
+        u_data = self._get_cache_by_id(group_id, uid)
         if u_data is not None:
             u_data = user_data(u_data)
 
@@ -623,8 +624,27 @@ class user_data_manager(db_base):
         else:
             return False
 
-    def _set_cache(self):
-        self._cache = [user_data(data) for data in self.find()]
+    def _set_cache(self, group_id, new_user_data):
+        if group_id in self._cache and new_user_data.user_id in self._cache[group_id]:
+            self._cache[group_id][new_user_data.user_id] = new_user_data
+        else:
+            self._cache[group_id] = {new_user_data.user_id: new_user_data}
+
+    def _del_cache(self, group_id, uid):
+        if group_id in self._cache:
+            del self._cache[group_id][uid]
+
+    def _get_cache_by_id(self, group_id, user_id):
+        if group_id in self._cache:
+            return self._cache[group_id].get(user_id, None)
+        else:
+            return None
+
+    def _get_cache_by_permission(self, group_id, permission_lv):
+        if group_id in self._cache:
+            return list(user_data(item) for item in self._cache[group_id].itervalues() if item.permission_level == permission_lv and item.group == group_id)
+        else:
+            return []
 
 class user_data(dict_like_mapping):
     """
