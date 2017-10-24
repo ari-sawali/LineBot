@@ -66,7 +66,7 @@ cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, permission.BOT_ADMIN),
              'L': command_object(1, 1, cmd_category.EXTEND),
              'T': command_object(1, 1, cmd_category.EXTEND),
              'C': command_object(0, 3, cmd_category.EXTEND),
-             'FX': command_object(0, 1, cmd_category.EXTEND),
+             'FX': command_object(1, 2, cmd_category.EXTEND),
              'N': command_object(1, 1, cmd_category.EXTEND),
              'RPS': command_object(0, 4, cmd_category.GAME) }
 
