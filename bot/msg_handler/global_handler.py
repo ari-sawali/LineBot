@@ -174,14 +174,14 @@ class global_msg_handle(object):
 
         return False
 
-    def _handle_text_sys_command(self, event, user_permission):
+    def _handle_text_sys_command(self, event, user_permission, group_config_type):
         """Return whether message has been replied."""
         full_text = event.message.text
         if bot.msg_handler.global_msg_handle.SPLITTER in full_text:
             head, content = split(full_text, global_msg_handle.SPLITTER, 2)
 
             if head == text_msg_handler.HEAD:
-                return self._txt_handle.handle_text(event, content, user_permission)
+                return self._txt_handle.handle_text(event, content, user_permission, group_config_type)
             elif head == game_msg_handler.HEAD:
                 return self._game_handle.handle_text(event, content, user_permission)
 
@@ -309,7 +309,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SYSTEM COMMAND ###
         ########################################
 
-        terminate_5 = self._handle_text_sys_command(event, user_permission)
+        terminate_5 = self._handle_text_sys_command(event, user_permission, group_config)
 
         if terminate_5 or group_config <= db.config_type.SYS_ONLY:
             print 'terminate 5'

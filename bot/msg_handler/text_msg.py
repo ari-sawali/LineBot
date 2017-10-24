@@ -43,7 +43,7 @@ class text_msg_handler(object):
         
         self._pymongo_client = None
 
-    def handle_text(self, event, full_org_text_without_head, user_permission):
+    def handle_text(self, event, full_org_text_without_head, user_permission, group_config_type):
         """Return whether message has been replied"""
         token = event.reply_token
         text = event.message.text
@@ -71,7 +71,7 @@ class text_msg_handler(object):
                 return True
 
             # handle command
-            handle_result = cmd_function(src, params, user_permission)
+            handle_result = cmd_function(src, params, user_permission, group_config_type)
 
             # reply handle result
             if isinstance(handle_result, (str, unicode)):
@@ -83,17 +83,13 @@ class text_msg_handler(object):
             
         return False
 
-    def _get_kwd_instance(self, src, config=None):
+    def _get_kwd_instance(self, src, config):
         source_type = bot.line_event_source_type.determine(src)
 
         if config is None:
             including_public = False
         else:
             including_public = config == db.config_type.ALL
-
-        print config
-        print type(config)
-        print including_public
 
         if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
@@ -153,7 +149,7 @@ class text_msg_handler(object):
 
         return result_data, title
 
-    def _S(self, src, params, key_permission_lv):
+    def _S(self, src, params, key_permission_lv, group_config_type):
         if key_permission_lv >= bot.commands.permission.BOT_ADMIN:
             if self._pymongo_client is None:
                 self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
@@ -174,7 +170,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _A(self, src, params, key_permission_lv, pinned=False):
+    def _A(self, src, params, key_permission_lv, group_config_type, pinned=False):
         # try to get complete profile
         try:
             new_profile_uid = bot.line_api_wrapper.source_user_id(src)
@@ -199,7 +195,7 @@ class text_msg_handler(object):
             return error.auto_reply.illegal_flags(flags)
 
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # checking type of keyword and reply
         try:
@@ -236,7 +232,7 @@ class text_msg_handler(object):
         else:
             raise ValueError('Unknown type of return result.')
 
-    def _M(self, src, params, key_permission_lv):
+    def _M(self, src, params, key_permission_lv, group_config_type):
         low_perm = self._command_manager.get_command_data('M').lowest_permission
 
         # check permission
@@ -254,9 +250,9 @@ class text_msg_handler(object):
         if not bot.line_api_wrapper.is_valid_user_id(new_profile_uid):
             return error.line_bot_api.illegal_user_id(new_profile_uid)
 
-        return self._A(src, params, key_permission_lv, True)
+        return self._A(src, params, key_permission_lv, group_config_type, True)
 
-    def _D(self, src, params, key_permission_lv, pinned=False):
+    def _D(self, src, params, key_permission_lv, group_config_type, pinned=False):
         # try to get complete profile
         try:
             del_profile_uid = bot.line_api_wrapper.source_user_id(src)
@@ -269,7 +265,7 @@ class text_msg_handler(object):
             return error.line_bot_api.illegal_user_id(del_profile_uid)
 
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # disable keyword
         if params[2] is not None:
@@ -320,11 +316,11 @@ class text_msg_handler(object):
         if not bot.line_api_wrapper.is_valid_user_id(disabler_uid):
             return error.line_bot_api.illegal_user_id(disabler_uid)
 
-        return self._D(src, params, key_permission_lv, True)
+        return self._D(src, params, key_permission_lv, group_config_type, True)
 
-    def _Q(self, src, params, key_permission_lv):
+    def _Q(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, False)
@@ -341,9 +337,9 @@ class text_msg_handler(object):
             text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
         return text
 
-    def _I(self, src, params, key_permission_lv):
+    def _I(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, True)
@@ -359,7 +355,7 @@ class text_msg_handler(object):
             text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
         return text
 
-    def _X(self, src, params, key_permission_lv):
+    def _X(self, src, params, key_permission_lv, group_config_type):
         low_perm = self._command_manager.get_command_data('X').lowest_permission
 
         if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
@@ -414,9 +410,9 @@ class text_msg_handler(object):
         else:
             return u'回覆組複製失敗。回覆組來源沒有符合條件的回覆組可供複製。'
 
-    def _E(self, src, params, key_permission_lv):
+    def _E(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         action = params[1]
         id = params[2]
@@ -464,9 +460,9 @@ class text_msg_handler(object):
         else:
             return error.main.lack_of_thing(u'參數')
 
-    def _K(self, src, params, key_permission_lv):
+    def _K(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src)
+        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # assign parameters
         ranking_type = params[1]
@@ -497,7 +493,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _P(self, src, params, key_permission_lv):
+    def _P(self, src, params, key_permission_lv, group_config_type):
         wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID。', params[1])
 
         category = params[1]
@@ -511,7 +507,7 @@ class text_msg_handler(object):
             text = tracking_string_obj.limited
             text += u'\n\n完整資訊URL: {}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
-            kwd_instance = self._get_kwd_instance(src)
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
         
             if kwd_instance.can_see_public():
                 instance_type = u'公用回覆組資料庫'
@@ -563,7 +559,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _G(self, src, params, key_permission_lv):
+    def _G(self, src, params, key_permission_lv, group_config_type):
         if params[1] is not None:
             gid = params[1]
         else:
@@ -574,7 +570,7 @@ class text_msg_handler(object):
 
         if bot.line_api_wrapper.is_valid_room_group_id(gid):
             # assign instance to manage pair
-            kwd_instance = self._get_kwd_instance(src)
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
             group_data = self._group_manager.get_group_by_id(gid, True)
 
             group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
@@ -584,7 +580,7 @@ class text_msg_handler(object):
         else:
             return error.main.invalid_thing_with_correct_format(u'群組/房間ID', u'R或C開頭，並且長度為33字元', gid)
 
-    def _GA(self, src, params, key_permission_lv):
+    def _GA(self, src, params, key_permission_lv, group_config_type):
         low_perm = self._command_manager.get_command_data('GA').lowest_permission
 
         if not key_permission_lv >= low_perm:
@@ -680,12 +676,12 @@ class text_msg_handler(object):
 
         return text
 
-    def _H(self, src, params, key_permission_lv):
+    def _H(self, src, params, key_permission_lv, group_config_type):
         channel_id = bot.line_api_wrapper.source_channel_id(src)
 
         return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (str(bot.line_event_source_type.determine(src)), channel_id)]
 
-    def _SHA(self, src, params, key_permission_lv):
+    def _SHA(self, src, params, key_permission_lv, group_config_type):
         target = params[1]
 
         if target is not None:
@@ -695,7 +691,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _O(self, src, params, key_permission_lv):
+    def _O(self, src, params, key_permission_lv, group_config_type):
         voc = params[1]
 
         if not self._oxford_dict.enabled:
@@ -749,7 +745,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _RD(self, src, params, key_permission_lv):
+    def _RD(self, src, params, key_permission_lv, group_config_type):
         if params[2] is not None:
             if params[1].endswith('%') and params[1].count('%') == 1:
                 probability = params[1].replace('%', '')
@@ -788,7 +784,7 @@ class text_msg_handler(object):
 
         return text
 
-    def _L(self, src, params, key_permission_lv):
+    def _L(self, src, params, key_permission_lv, group_config_type):
         if params[1] is not None:
             category = params[1]
 
@@ -827,7 +823,7 @@ class text_msg_handler(object):
         else:
             return error.main.lack_of_thing(u'參數')
              
-    def _T(self, src, params, key_permission_lv):
+    def _T(self, src, params, key_permission_lv, group_config_type):
         from urllib import quote
 
         if params[1] is not None:
@@ -848,7 +844,7 @@ class text_msg_handler(object):
         
         return quote(text)
 
-    def _C(self, src, params, key_permission_lv):
+    def _C(self, src, params, key_permission_lv, group_config_type):
         if params[3] is not None:
             amount = params[1]
             source_currency = params[2]
@@ -892,7 +888,7 @@ class text_msg_handler(object):
 
         return text
              
-    def _FX(self, src, params, key_permission_lv):
+    def _FX(self, src, params, key_permission_lv, group_config_type):
         if params[2] is not None:
             vars = params[1]
             eq = params[2]
@@ -916,7 +912,7 @@ class text_msg_handler(object):
 
         return text
              
-    def _N(self, src, params, key_permission_lv):
+    def _N(self, src, params, key_permission_lv, group_config_type):
         if params[1] is not None:
             texts = params[1]
             
