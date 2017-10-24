@@ -626,7 +626,7 @@ class user_data_manager(db_base):
 
     def _set_cache(self, group_id, new_user_data):
         if group_id in self._cache and new_user_data[user_data.USER_ID] in self._cache[group_id]:
-            self._cache[group_id][new_user_data.user_id] = new_user_data
+            self._cache[group_id][new_user_data[user_data.USER_ID]] = new_user_data
         else:
             self._cache[group_id] = {new_user_data[user_data.USER_ID]: new_user_data}
 
