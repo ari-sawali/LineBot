@@ -181,7 +181,7 @@ def get_error_list():
 @app.route("/webpage/<seq_id>", methods=['GET'])
 def get_webpage(seq_id):
     webpage_data = webpage_generator.get_webpage_data(seq_id)
-    return bot.webpage_manager.html_render(webpage_data)
+    return bot.webpage_manager.render_webpage(webpage_data)
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):

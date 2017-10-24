@@ -63,7 +63,7 @@ class webpage_manager(object):
             return webpage_data
 
     @staticmethod
-    def html_render(page_data):
+    def render_webpage(page_data):
         content = page_data.content
         title = unicode(page_data.content_type)
 

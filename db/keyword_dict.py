@@ -583,13 +583,18 @@ class group_dict_manager(db_base):
         result.pair_count_disabled = self.count({ pair_data.PROPERTIES + '.' + pair_data.DISABLED: True })
 
         SUM_USED_COUNT = 'sum_ct'
-        result.used_count = self.aggregate([
-            { '$project': { pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: True }  }, 
-            { '$group': {
-                '_id': 1,
-                SUM_USED_COUNT: { '$sum': '$' + pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT }
-            } }
-        ]).next()[SUM_USED_COUNT]
+        try:
+            aggr_result = self.aggregate([
+                { '$project': { pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: True }  }, 
+                { '$group': {
+                    '_id': 1,
+                    SUM_USED_COUNT: { '$sum': '$' + pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT }
+                } }
+            ]).next()[SUM_USED_COUNT]
+        except StopIteration:
+            aggr_result = 0
+
+        result.used_count = aggr_result
 
         aggregate_type_group_dict = {str(type_num): { '$sum': '$' + str(type_num) } for type_num in list(map(int, word_type)) }
         aggregate_type_group_dict['_id'] = None

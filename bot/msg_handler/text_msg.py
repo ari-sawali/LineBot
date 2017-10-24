@@ -908,7 +908,7 @@ class text_msg_handler(object):
             text = result_str
 
         if calc_result.latex_avaliable:
-            text += u'\nLaTeX URL:\n{}'.format(self._webpage_generator.rec_webpage(calc_result.latex, db.webpage_content_type.TEXT))
+            text += u'\nLaTeX URL:\n{}'.format(self._webpage_generator.rec_webpage(calc_result.latex, db.webpage_content_type.LATEX))
 
         return text
              
