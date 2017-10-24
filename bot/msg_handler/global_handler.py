@@ -32,9 +32,9 @@ class global_msg_handle(object):
             print 'Define COMMAND_INTERCEPT in environment variable to switch message interception.'
             sys.exit(1)
 
-        self._silence_key = os.getenv('ADMIN_SHA', None)
+        self._silence_key = os.getenv('COMMAND_SILENCE', None)
         if self._silence_key is None:
-            print 'Define ADMIN_SHA in environment variable to switch text message handling.'
+            print 'Define COMMAND_SILENCE in environment variable to switch text message handling.'
             sys.exit(1)
 
         self._calc_debug_key = os.getenv('COMMAND_CALC_DEBUG', None)
