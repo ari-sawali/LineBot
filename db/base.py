@@ -159,7 +159,10 @@ class db_base(pymongo.collection.Collection):
     def _next_seq_array(self, length=1):
         print 'MongoDB (Update Sequence Number of {}.{})'.format(self._db_name, self._collection_name)
         ret = self._db.counter.find_one_and_update({ db_base.COLLECTION_NAME: self.name }, { '$inc': { db_base.SEQUENCE: length }}, None, None, True, pymongo.ReturnDocument.BEFORE)
-        new_seq_begin = ret[db_base.SEQUENCE] + 1
+        if ret is not None:
+            new_seq_begin = ret[db_base.SEQUENCE] + 1
+        else:
+            new_seq_begin = length
 
         return [i for i in range(new_seq_begin, new_seq_begin + length)]
 
