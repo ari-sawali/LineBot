@@ -113,7 +113,7 @@ class group_manager(db_base):
 
         filter_dict = { group_data.GROUP_ID: gid }
 
-        if gid != self._ADMIN_UID:
+        if uid != self._ADMIN_UID:
             filter_dict['$or'] = [{ group_data.SPECIAL_USER + '.' + group_data.ADMINS: uid },
                                   { group_data.SPECIAL_USER + '.' + group_data.MODERATORS: { '$elemMatch': { '$eq': uid } } }]
 
