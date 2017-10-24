@@ -682,7 +682,7 @@ class user_data(dict_like_mapping):
 
     @property
     def permission_level(self):
-        return self[user_data.PERMISSION_LEVEL]
+        return permission(self[user_data.PERMISSION_LEVEL])
 
     @property
     def group(self):
