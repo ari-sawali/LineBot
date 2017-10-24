@@ -71,7 +71,7 @@ class webpage_manager(object):
 
         if page_data.content_type == db.webpage_content_type.LATEX:
             latex_script, normal_content = content.split(webpage_manager.LATEX_SPLITTER)
-            return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=normal_content, Title=title)
+            return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=normal_content.replace(' ', '&nbsp;').split('\n'), Title=title)
         else:
             return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
 

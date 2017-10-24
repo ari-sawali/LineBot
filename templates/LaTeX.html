@@ -13,7 +13,9 @@
     $${{ LaTeX_script }}$$
     <br />
     <p>
-        {{ Contents }}
+        {% for Content in Contents -%}
+        {{ Content|safe }}<br />
+        {%- endfor %}
     </p>
 </body>
 </html>
