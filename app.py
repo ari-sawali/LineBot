@@ -7,6 +7,8 @@
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
 # TODO: self silent (new db), turn off auto upload
+# TODO: message activity tracking
+# TODO: self diagnostic
 
 import os, sys, errno
 import tempfile
