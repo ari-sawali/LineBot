@@ -13,6 +13,8 @@ from error import error
 import db
 
 class webpage_manager(object):
+    LATEX_SPLITTER = '(LaTeX_END)'
+
     def __init__(self, flask_app, mongo_db_uri):
         self._flask_app = flask_app
         self._route_method_name = 'get_webpage'
@@ -68,7 +70,8 @@ class webpage_manager(object):
         title = unicode(page_data.content_type)
 
         if page_data.content_type == db.webpage_content_type.LATEX:
-            return render_template('LaTeX.html', LaTeX_script=content, Title=title)
+            latex_script, normal_content = content.split(webpage_manager.LATEX_SPLITTER)
+            return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=normal_content, Title=title)
         else:
             return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
 
