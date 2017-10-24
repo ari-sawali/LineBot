@@ -606,7 +606,6 @@ class user_data_manager(db_base):
             return user_data(result)
 
     def get_data_by_permission(self, group_id, permission_lv):
-        print self._get_cache_by_permission(group_id, permission_lv)
         return self._get_cache_by_permission(group_id, permission_lv)
 
     def _check_action_is_allowed(self, uid, group_id, action_permission):
@@ -639,13 +638,20 @@ class user_data_manager(db_base):
         if group_id in self._cache:
             return self._cache[group_id].get(user_id, None)
         else:
-            return None
+            self._set_cache(group_id, self.find_one({ user_data.GROUP: group_id, user_data.USER_ID: user_id }))
+            return self._get_cache_by_id(group_id, user_id)
 
     def _get_cache_by_permission(self, group_id, permission_lv):
         if group_id in self._cache:
             return list(user_data(item) for item in self._cache[group_id].itervalues() if item.permission_level == permission_lv and item.group == group_id)
         else:
-            return []
+            find_data = list(self.find({ user_data.GROUP: group_id }))
+            if len(find_data) > 0:
+                for data in find_data:
+                    self._set_cache(group_id, data)
+                return self._get_cache_by_permission(group_id, permission_lv)
+            else:
+                return []
 
 class user_data(dict_like_mapping):
     """
