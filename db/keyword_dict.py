@@ -477,7 +477,7 @@ class group_dict_manager(db_base):
             return u'(URL: {})'.format(rep)
         elif rep_type == word_type.TEXT:
             if simplify:
-                simplified_string(rep, simplify_max_length)
+                rep = simplified_string(rep, simplify_max_length)
             return rep
         else:
             raise ValueError('Undefined reply type.')
