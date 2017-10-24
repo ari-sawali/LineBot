@@ -453,10 +453,6 @@ class group_dict_manager(db_base):
         kw = kw_data.keyword
         kw_type = kw_data.keyword_type
 
-        print simplify
-        print simplify_max_length
-        print kw
-
         if kw_type == word_type.STICKER:
             return u'(貼圖ID {})'.format(kw)
         elif kw_type == word_type.PICTURE:
@@ -465,7 +461,7 @@ class group_dict_manager(db_base):
             return u'(圖片雜湊 {})'.format(kw)
         elif kw_type == word_type.TEXT:
             if simplify:
-                simplified_string(kw, simplify_max_length)
+                kw = simplified_string(kw, simplify_max_length)
             return kw
         else:
             raise ValueError('Undefined keyword type.')
@@ -649,7 +645,6 @@ def simplified_string(s, max_length=8):
     s = s.replace('\n', '\\n')
     if len(s) > (max_length + 3):
         s = s[:max_length] + '...'
-    print s
     return s
 
 class pair_data(dict_like_mapping):
