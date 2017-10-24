@@ -276,16 +276,16 @@ class global_msg_handle(object):
             return
         print 'pass 1'
 
-        ########################################
-        ### TERMINATE CHECK - SYSTEM COMMAND ###
-        ########################################
+        #########################################
+        ### TERMINATE CHECK - TEXT CALCULATOR ###
+        #########################################
 
-        terminate_2 = self._handle_text_sys_command(event, user_permission)
+        terminate_2 = self._handle_text_str_calc(event)
 
-        if terminate_2 or group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
+        if terminate_2:
             print 'terminate 2'
-            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
-            return
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
+            return 
         print 'pass 2'
 
         ####################################
@@ -300,27 +300,27 @@ class global_msg_handle(object):
             return
         print 'pass 3'
 
+        ########################################
+        ### TERMINATE CHECK - SYSTEM COMMAND ###
+        ########################################
+
+        terminate_4 = self._handle_text_sys_command(event, user_permission)
+
+        if terminate_4 or group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
+            print 'terminate 4'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
+            return
+        print 'pass 4'
+
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_4 = self._handle_text_auto_reply(event, group_config)
+        terminate_5 = self._handle_text_auto_reply(event, group_config)
              
-        if terminate_4:
-            print 'terminate 4'
-            return
-        print 'pass 4'
-
-        #########################################
-        ### TERMINATE CHECK - TEXT CALCULATOR ###
-        #########################################
-
-        terminate_5 = self._handle_text_str_calc(event)
-
         if terminate_5:
             print 'terminate 5'
-            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
-            return 
+            return
         print 'pass 5'
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
@@ -387,8 +387,10 @@ class global_msg_handle(object):
         terminate_0 = self._terminate()
         
         if terminate_0 or group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED:
+            print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
+        print 'pass 0'
 
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
@@ -396,8 +398,10 @@ class global_msg_handle(object):
 
         terminate_1 = self._handle_sticker_rps(event, sticker_id)
         if terminate_1 or group_config <= db.config_type.SYS_ONLY:
+            print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
-            return 
+            return
+        print 'pass 1'
 
         ######################################
         ### TERMINATE CHECK - STICKER DATA ###
@@ -405,8 +409,10 @@ class global_msg_handle(object):
 
         terminate_2 = self._handle_sticker_data(event)
         if terminate_2:
+            print 'terminate 2'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
-            return 
+            return
+        print 'pass 2'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -414,7 +420,9 @@ class global_msg_handle(object):
 
         terminate_3 = self._handle_sticker_auto_reply(event, group_config)
         if terminate_3:
+            print 'terminate 3'
             return 
+        print 'pass 3'
 
         self._group_manager.log_message_activity(cid, db.msg_type.STICKER)
 
@@ -465,8 +473,10 @@ class global_msg_handle(object):
         terminate_0 = self._terminate()
         
         if terminate_0 or group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED:
+            print 'terminate 0'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
+        print 'pass 0'
 
         ############################################
         ######## ASSIGN NECESSARY VARIABLES ########
@@ -482,8 +492,10 @@ class global_msg_handle(object):
         terminate_1 = self._handle_image_upload(event, image_sha)
         
         if terminate_1:
+            print 'terminate 1'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE, db.msg_type.TEXT, 1, 4)
             return
+        print 'pass 1'
 
         ####################################
         ### TERMINATE CHECK - AUTO REPLY ###
@@ -492,6 +504,8 @@ class global_msg_handle(object):
         terminate_2 = self._handle_image_auto_reply(event, image_sha, group_config)
              
         if terminate_2:
+            print 'pass 1'
             return
+        print 'pass 2'
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
