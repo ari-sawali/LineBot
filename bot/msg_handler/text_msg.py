@@ -605,6 +605,9 @@ class text_msg_handler(object):
             permission = params[3]
 
             if action == 'S':
+                if not bot.line_api_wrapper.is_valid_user_id(target_uid):
+                    return error.line_bot_api.illegal_user_id(target_uid)
+
                 try:
                     target_name = self._line_api_wrapper.profile_name(target_uid)
                 except bot.UserProfileNotFoundError:
