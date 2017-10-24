@@ -635,8 +635,8 @@ class user_data_manager(db_base):
             del self._cache[group_id][uid]
 
     def _get_cache_by_id(self, group_id, user_id):
-        if group_id in self._cache:
-            return self._cache[group_id].get(user_id, None)
+        if group_id in self._cache and user_id in self._cache[group_id]:
+            return self._cache[group_id][user_id]
         else:
             u_data = self.find_one({ user_data.GROUP: group_id, user_data.USER_ID: user_id })
             if u_data is not None:
