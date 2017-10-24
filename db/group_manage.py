@@ -116,7 +116,7 @@ class group_manager(db_base):
                       { group_data.SPECIAL_USER + '.' + group_data.MODERATORS: { '$elemMatch': { '$eq': uid } } }],
               group_data.GROUP_ID: gid
             },
-            { '$set': { group_data.CONFIG_TYPE: config_type }, None, None, False, pymongo.ReturnDocument.AFTER)
+            { '$set': { group_data.CONFIG_TYPE: config_type } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         if setup_result is not None:
             return True
