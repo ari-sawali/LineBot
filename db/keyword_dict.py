@@ -405,7 +405,7 @@ class group_dict_manager(db_base):
         return result
 
     def rank_of_used_count(self, count):
-        # https://stackoverflow.com/questions/25843255/mongodb-aggregate-count-on-multiple-fields-simultaneously
+        # TODO: https://stackoverflow.com/questions/25843255/mongodb-aggregate-count-on-multiple-fields-simultaneously
         return self.count({ pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT: { '$gt': count } }) + 1 
 
     @staticmethod

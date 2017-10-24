@@ -181,7 +181,7 @@ class group_manager(db_base):
             result = self.update_one({ group_data.GROUP_ID: chat_instance_id },
                                      { '$inc': inc_dict }, False)
             if result.matched_count < 1:
-                self.new_data(gid)
+                self.new_data(chat_instance_id)
 
     # statistics - message track
     def message_sum(self):

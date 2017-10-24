@@ -12,6 +12,7 @@
 # TODO: self diagnostic
 # UNDONE: group_data will save empty mem field in database
 # UNDONE: game_msg_handler Shorten + Modulize
+# UNDONE: find related pair of sticker (using global keyword dict manager)
 
 import os, sys, errno
 import tempfile
