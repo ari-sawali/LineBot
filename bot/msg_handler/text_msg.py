@@ -91,6 +91,8 @@ class text_msg_handler(object):
         else:
             including_public = config == db.config_type.ALL
 
+        print config
+        print type(config)
         print including_public
 
         if source_type == bot.line_event_source_type.USER:
