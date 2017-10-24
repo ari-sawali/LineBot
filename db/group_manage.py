@@ -646,10 +646,9 @@ class user_data_manager(db_base):
                 self._set_cache(group_id, user_data.init_by_field(user_id, group_id, bot.permission.USER))
                 return self._get_cache_by_id(group_id, user_id)
 
-
     def _get_cache_by_permission(self, group_id, permission_lv):
         if group_id in self._cache:
-            return list(user_data(item) for item in self._cache[group_id].itervalues() if item.permission_level == permission_lv and item.group == group_id)
+            return list(user_data(item) for item in self._cache[group_id].itervalues() if item[user_data.PERMISSION_LEVEL] == permission_lv and item[user_data.GROUP] == group_id)
         else:
             find_data = list(self.find({ user_data.GROUP: group_id }))
             if len(find_data) > 0:
