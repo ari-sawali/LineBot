@@ -91,12 +91,14 @@ class text_msg_handler(object):
         else:
             including_public = config == db.config_type.ALL
 
+        print including_public
+
         if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
         elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
         else:
-            raise ValueError(error.main.miscellaneous(u'Unknown source type'))
+            raise ValueError(error.main.miscellaneous(u'Unknown source type.'))
 
         return kwd_instance
 
