@@ -372,9 +372,9 @@ class group_data(dict_like_mapping):
         return text
 
     def get_group_members_string(self):
-        text = u'管理員:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.ADMINS]))
-        text += u'\n副管:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.MODERATORS]))
-        text += u'\n限制用戶:\n{}'.format('\n'.join(self[group_data.SPECIAL_USER][group_data.RESTRICTS]))
+        text = u'管理員:\n{}'.format('\n'.join([data.user_id for data in self[group_data.SPECIAL_USER][group_data.ADMINS]]))
+        text += u'\n副管:\n{}'.format('\n'.join([data.user_id for data in self[group_data.SPECIAL_USER][group_data.MODERATORS]]))
+        text += u'\n限制用戶:\n{}'.format('\n'.join([data.user_id for data in self[group_data.SPECIAL_USER][group_data.RESTRICTS]]))
 
         return text
 
