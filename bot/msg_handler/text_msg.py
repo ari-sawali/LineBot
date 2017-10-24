@@ -652,7 +652,7 @@ class text_msg_handler(object):
                 return invalid_cfg_type
         
             try:
-                cfg_type = config_type(cfg_type)
+                cfg_type = db.config_type(cfg_type)
             except ValueError:
                 return invalid_cfg_type
 
