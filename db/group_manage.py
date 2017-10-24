@@ -120,6 +120,7 @@ class group_manager(db_base):
         setup_result = self.find_one_and_update(filter_dict, { '$set': { group_data.CONFIG_TYPE: config_type } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         if setup_result is not None:
+            self._set_cache_config(gid, config_type)
             return True
         else:
             return error.error.main.incorrect_password_or_insufficient_permission()

@@ -264,10 +264,6 @@ class global_msg_handle(object):
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
         user_permission = self._get_user_permission(src)
 
-        print int(group_config)
-        print int(db.config_type.SYS_ONLY)
-        print group_config <= db.config_type.SYS_ONLY
-
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
         ####################################################
