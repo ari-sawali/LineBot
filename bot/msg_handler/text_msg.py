@@ -603,7 +603,7 @@ class text_msg_handler(object):
         if params[3] is not None:
             action = params[1]
             target_uid = params[2]
-            permission = parmas[3]
+            permission = params[3]
 
             if action == 'S':
                 try:
