@@ -111,12 +111,13 @@ class group_manager(db_base):
         if len(gid) != group_manager.ID_LENGTH:
             return None
 
-        setup_result = self.find_one_and_update(
-            { '$or': [{ group_data.SPECIAL_USER + '.' + group_data.ADMINS: uid },
-                      { group_data.SPECIAL_USER + '.' + group_data.MODERATORS: { '$elemMatch': { '$eq': uid } } }],
-              group_data.GROUP_ID: gid
-            },
-            { '$set': { group_data.CONFIG_TYPE: config_type } }, None, None, False, pymongo.ReturnDocument.AFTER)
+        filter_dict = { group_data.GROUP_ID: gid }
+
+        if gid != self._ADMIN_UID:
+            filter_dict['$or'] = [{ group_data.SPECIAL_USER + '.' + group_data.ADMINS: uid },
+                                  { group_data.SPECIAL_USER + '.' + group_data.MODERATORS: { '$elemMatch': { '$eq': uid } } }]
+
+        setup_result = self.find_one_and_update(filter_dict, { '$set': { group_data.CONFIG_TYPE: config_type } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         if setup_result is not None:
             return True
