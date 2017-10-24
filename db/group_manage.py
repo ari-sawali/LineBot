@@ -606,6 +606,7 @@ class user_data_manager(db_base):
             return user_data(result)
 
     def get_data_by_permission(self, group_id, permission_lv):
+        print self._get_cache_by_permission(group_id, permission_lv)
         return self._get_cache_by_permission(group_id, permission_lv)
 
     def _check_action_is_allowed(self, uid, group_id, action_permission):
