@@ -656,7 +656,9 @@ class text_msg_handler(object):
                 return error.main.miscellaneous(u'群組設定代碼不合法，請確認代碼有效後重試。')
 
             change_result = self._group_manager.set_config_type(gid, cfg_type, setter_uid)
-        
+
+            print change_result
+
             if change_result:
                 text = u'群組自動回覆設定已更改為【{}】。'.format(unicode(cfg_type))
             else:

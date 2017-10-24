@@ -119,6 +119,10 @@ class group_manager(db_base):
 
         setup_result = self.find_one_and_update(filter_dict, { '$set': { group_data.CONFIG_TYPE: config_type } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
+        print filter_dict
+        print config_type
+        print setup_result
+
         if setup_result is not None:
             return True
         else:
