@@ -2,7 +2,6 @@
 
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: Q/I Regex literal
-
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
@@ -14,6 +13,7 @@
 # UNDONE: group_data will save empty mem field in database
 # UNDONE: game_msg_handler Shorten + Modulize
 # UNDONE: find related pair of sticker (using global keyword dict manager)
+# UNDONE: increase performance of handling message (not multi processing)
 # UNDONE: increase performance of calling ranking by pair (integrate?)
 # UNDONE: increase performance of getting multi user's profile (multi process/thread?)
 

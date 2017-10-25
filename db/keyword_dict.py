@@ -573,7 +573,8 @@ class group_dict_manager(db_base):
         simplify_max_string_length = 5
 
         def format_string(data):
-            kw = group_dict_manager._keyword_repr(pair_data(data), True, simplify_max_string_length)
+            data = pair_data(data)
+            kw = group_dict_manager._keyword_repr(data, True, simplify_max_string_length)
 
             return u'#{} {} @{}'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
 
