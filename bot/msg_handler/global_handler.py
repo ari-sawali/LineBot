@@ -56,7 +56,7 @@ class global_msg_handle(object):
 
     def _handle_auto_reply(self, event, reply_data):
         """THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
-        self._system_data.set_last_pair(bot.line_api_wrapper.source_channel_id(event.source), reply_data.seq_id)
+        self._system_data.set(bot.system_data_category.LAST_PAIR_ID, bot.line_api_wrapper.source_channel_id(event.source), reply_data.seq_id)
         src = event.source
         msg = event.message
 
@@ -275,7 +275,7 @@ class global_msg_handle(object):
         group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
 
-        self._system_data.set_last_uid(cid, uid)
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
@@ -382,7 +382,6 @@ class global_msg_handle(object):
         cid = bot.line_api_wrapper.source_channel_id(src)
         
         self._print_intercepted(event)
-        self._system_data.set_last_sticker(cid, sticker_id)
         
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
@@ -401,6 +400,8 @@ class global_msg_handle(object):
 
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
         user_permission = self._get_user_permission(src)
+
+        self._system_data.set(bot.system_data_category.LAST_STICKER, cid, sticker_id)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
@@ -482,6 +483,7 @@ class global_msg_handle(object):
     def handle_image(self, event):
         src = event.source
         token = event.reply_token
+        cid = bot.line_api_wrapper.source_channel_id(src)
 
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
@@ -498,10 +500,11 @@ class global_msg_handle(object):
         ######## ASSIGN NECESSARY VARIABLES ########
         ############################################
 
-        group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
+        group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
         image_sha = self._img_handle.image_sha224_of_message(event.message)
-        self._system_data.set_last_pic_sha(bot.line_api_wrapper.source_channel_id(event.source), image_sha)
+        
+        self._system_data.set(bot.system_data_category.LAST_PIC_SHA, cid, image_sha)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###

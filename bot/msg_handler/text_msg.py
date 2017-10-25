@@ -822,7 +822,6 @@ class text_msg_handler(object):
         return text
 
     def _L(self, src, params, key_permission_lv, group_config_type):
-        # assign instance to manage pair
         if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
             target_gid = params.pop(1)
         else:

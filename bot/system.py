@@ -43,7 +43,7 @@ class system_data(object):
             system_data_category.LAST_UID: self._last_uid
         }
 
-    def set(category_enum, cid, content):
+    def set(self, category_enum, cid, content):
         d = self._field_dict[category_enum]
 
         if cid not in d:
@@ -52,44 +52,8 @@ class system_data(object):
         d[cid].append(content)
         self._field_dict[category_enum] = d
 
-    def get(category_enum, cid):
+    def get(self, category_enum, cid):
         return self._field_dict[category_enum].get(cid)
-
-    def set_last_sticker(self, cid, stk_id):
-        if cid not in self._last_sticker:
-            self._last_sticker[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
-
-        self._last_sticker[cid].append(stk_id)
-
-    def get_last_stickers(self, cid):
-        return self._last_sticker.get(cid)
-
-    def set_last_pic_sha(self, cid, sha):
-        if cid not in self._last_pic_sha:
-            self._last_pic_sha[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
-
-        self._last_pic_sha[cid].append(sha)
-
-    def get_last_pic_shas(self, cid):
-        return self._last_pic_sha.get(cid)
-
-    def set_last_pair(self, cid, pair_id):
-        if cid not in self._last_pair:
-            self._last_pair[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
-
-        self._last_pair[cid].append(pair_id)
-
-    def get_last_pairs(self, cid):
-        return self._last_pair.get(cid)
-
-    def set_last_uid(self, cid, uid):
-        if cid not in self._last_uid:
-            self._last_uid[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
-
-        self._last_uid[cid].append(uid)
-
-    def get_last_uids(self, cid):
-        return self._last_uid.get(cid)
 
     @property
     def boot_up(self):
