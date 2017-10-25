@@ -527,6 +527,11 @@ class text_msg_handler(object):
     def _P(self, src, params, key_permission_lv, group_config_type):
         wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID', params[1])
 
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            target_gid = params.pop(1)
+        else:
+            target_gid = None
+
         category = params[1]
         gid = params[2]
 
@@ -537,12 +542,11 @@ class text_msg_handler(object):
         
             text = u'為避免訊息過長洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
-            # assign instance to manage pair
-            if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+            if target_gid is not None:
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, target_gid, group_config_type == db.config_type.ALL)
             else:
                 kwd_instance = self._get_kwd_instance(src, group_config_type)
-        
+
             if kwd_instance.is_public:
                 instance_type = u'公用'
             else:
@@ -569,28 +573,29 @@ class text_msg_handler(object):
         else:
             uid = category
             if bot.line_api_wrapper.is_valid_user_id(uid):
+                if target_gid is not None:
+                    try:
+                        name = self._line_api_wrapper.profile_group(target_gid, uid)
+                    except bot.UserProfileNotFoundError:
+                        pass
+                    else:
+                        return u'群組ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(target_gid, uid, name)
+
+                    try:
+                        name = self._line_api_wrapper.profile_room(target_gid, uid)
+                    except bot.UserProfileNotFoundError:
+                        pass
+                    else:
+                        return u'房間ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(target_gid, uid, name)
+
+                    return error.main.line_account_data_not_found()
+
                 try:
                     name = self._line_api_wrapper.profile_name(uid)
                 except bot.UserProfileNotFoundError:
                     return error.main.line_account_data_not_found()
 
                 text = u'UID:\n{}\n名稱:\n{}'.format(uid, name)
-            elif gid is not None and bot.line_api_wrapper.is_valid_room_group_id(gid):
-                try:
-                    name = self._line_api_wrapper.profile_group(gid, uid)
-                except bot.UserProfileNotFoundError:
-                    pass
-                else:
-                    return u'群組ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
-
-                try:
-                    name = self._line_api_wrapper.profile_room(gid, uid)
-                except bot.UserProfileNotFoundError:
-                    pass
-                else:
-                    return u'房間ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
-
-                return error.main.line_account_data_not_found()
             else:
                 return wrong_param1
 
