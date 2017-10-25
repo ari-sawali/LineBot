@@ -27,7 +27,7 @@ from urlparse import urlparse
 from datetime import datetime
 from error import error
 from flask import Flask, request, url_for
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool
 
 # import custom module
 import bot
@@ -64,7 +64,7 @@ from imgur.helpers.error import ImgurClientError
 
 # Main initialization
 app = Flask(__name__)
-handle_pool = ThreadPool(processes=4)
+handle_pool = Pool(4)
 
 # Databases initialization
 import pymongo
