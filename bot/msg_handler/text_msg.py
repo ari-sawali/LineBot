@@ -247,7 +247,7 @@ class text_msg_handler(object):
         low_perm = self._command_manager.get_command_data('M').lowest_permission
 
         # check permission
-        if key_permission_lv >= low_perm:
+        if not key_permission_lv >= low_perm:
             return error.main.restricted(int(low_perm))
 
         # check whether profile data is reachable
@@ -316,7 +316,7 @@ class text_msg_handler(object):
         low_perm = self._command_manager.get_command_data('R').lowest_permission
 
         # check permission
-        if key_permission_lv >= low_perm:
+        if not key_permission_lv >= low_perm:
             return error.main.restricted(int(low_perm))
 
         # check whether profile data is reachable
