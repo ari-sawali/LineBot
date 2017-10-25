@@ -189,8 +189,16 @@ class text_msg_handler(object):
             kwd_instance = self._get_kwd_instance(src, group_config_type)
         
         flags = params[1]
-        kw = params[2].replace('\\n', '\n')
-        rep = params[3].replace('\\n', '\n')
+        kw = params[2]
+        if kw is not None:
+            kw = kw.replace('\\n', '\n')
+        else:
+            return error.main.invalid_thing(u'參數2', u'非空字串')
+        rep = params[3]
+        if rep is not None:
+            rep = rep.replace('\\n', '\n')
+        else:
+            return error.main.invalid_thing(u'參數3', u'非空字串')
         linked = params[4]
         rep_att = params[5]
         if rep_att is not None:
