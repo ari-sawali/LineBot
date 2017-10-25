@@ -173,6 +173,8 @@ class group_dict_manager(db_base):
                     args[0]['$or'] = or_list
             else:
                 args[0][pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            args = ({ pair_data.AFFILIATED_GROUP: self._group_id })
         
         return super(group_dict_manager, self).find(*args, **kwargs)
 
