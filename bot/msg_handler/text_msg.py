@@ -543,10 +543,14 @@ class text_msg_handler(object):
             else:
                 kwd_instance = self._get_kwd_instance(src, group_config_type)
         
-            if kwd_instance.can_see_public():
-                instance_type = u'公用回覆組資料庫'
+            if kwd_instance.is_public:
+                instance_type = u'公用'
             else:
-                instance_type = u'群組回覆組資料庫'
+                instance_type = u'群組'
+                if kwd_instance.including_public:
+                    instance_type += u'+公用'
+
+            instance_type += u'回覆組資料庫'
                 
             text = u'【{}相關統計資料】\n'.format(instance_type)
             text += kwd_instance.get_statistics_string()

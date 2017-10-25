@@ -141,8 +141,13 @@ class group_dict_manager(db_base):
             including_public = self._including_public
         return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, including_public)
 
-    def is_public_manager():
+    @property
+    def is_public(self):
         return self._group_id == PUBLIC_GROUP_ID
+
+    @property
+    def including_public(self):
+        return self._including_public
 
     # override
     def aggregate(self, pipeline, **kwargs):
