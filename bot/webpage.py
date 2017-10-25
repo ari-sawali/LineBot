@@ -33,12 +33,12 @@ class webpage_manager(object):
             if simplified is not None:
                 err_detail += u'\n\n'
                 try:
-                    simplified = simplified.decode('utf-8')
+                    err_detail += simplified
                 except UnicodeEncodeError:
-                    simplified = simplified.encode('utf-8')
+                    err_detail += simplified.encode('utf-8')
                 except UnicodeDecodeError:
-                    simplified = simplified
-                err_detail += simplified
+                    err_detail += simplified.decode('utf-8')
+                
             
             print '===================================='
             print 'ERROR CAPTURED.'

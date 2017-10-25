@@ -156,8 +156,7 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
-        
-        print data_dict
+
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
         length_action_dict = len(data_dict)
@@ -165,17 +164,13 @@ class line_api_wrapper(object):
         if length_action_dict > MAX_ACTIONS:
             raise ValueError(error.error.main.miscellaneous(u'Length of data dict must less than or equals to {}.'.format(MAX_ACTIONS)))
 
-        print data_dict
-
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
             d = data_dict[i : i + MAX_ACTIONS_IN_CAROUSEL]
+            d = []
 
-            title_unicode = u'{} {}'.format(title_unicode, i / MAX_ACTIONS_IN_CAROUSEL + 1)
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
             action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
-            print d
-            print action_list
 
             column_list.append(CarouselColumn(text=explain_text, title=title_unicode, actions=action_list))
 
