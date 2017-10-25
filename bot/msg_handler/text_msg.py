@@ -818,8 +818,18 @@ class text_msg_handler(object):
                            }, u'最後回覆組ID查詢快捷樣板', u'快速查詢')]
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            elif category == 'U':
+                last_uid = self._system_data.get_last_uid(bot.line_api_wrapper.source_channel_id(src))
+                if last_uid is not None:
+                    return [bot.line_api_wrapper.wrap_text_message(u'最後訊息傳送使用者ID: {}'.format(last_uid), self._webpage_generator), 
+                            bot.line_api_wrapper.wrap_template_with_action({ 
+                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + str(last_uid),
+                               '回覆組資料(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + str(last_uid)
+                           }, u'最後使用者UID相關指令快捷樣板', u'快速查詢')]
+                else:
+                    return error.main.miscellaneous(u'沒有登記到本頻道的最後訊息傳送使用者ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)或R(最後回覆組)', params[1])
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)、U(最後UID)或R(最後回覆組)', params[1])
         else:
             return error.main.lack_of_thing(u'參數')
              

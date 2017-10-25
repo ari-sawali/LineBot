@@ -270,8 +270,12 @@ class global_msg_handle(object):
         ######## ASSIGN NECESSARY VARIABLES ########
         ############################################
 
-        group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
+        cid = bot.line_api_wrapper.source_channel_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
+        group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
+
+        self._system_data.set_last_uid(cid, uid)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###

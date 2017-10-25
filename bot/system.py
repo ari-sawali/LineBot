@@ -25,6 +25,7 @@ class system_data(object):
         self._last_sticker = defaultdict(str)
         self._last_pic_sha = defaultdict(str)
         self._last_pair = defaultdict(str)
+        self._last_uid = defaultdict(str)
 
     def set_last_sticker(self, cid, stk_id):
         self._last_sticker[cid] = stk_id
@@ -43,6 +44,12 @@ class system_data(object):
 
     def get_last_pair(self, cid):
         return self._last_pair.get(cid)
+
+    def set_last_uid(self, cid, uid):
+        self._last_uid[cid] = uid
+
+    def get_last_uid(self, cid):
+        return self._last_uid.get(cid)
 
     @property
     def boot_up(self):
