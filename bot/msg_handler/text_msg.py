@@ -334,7 +334,10 @@ class text_msg_handler(object):
 
     def _Q(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src, group_config_type)
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+        else:
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, False)
@@ -353,7 +356,10 @@ class text_msg_handler(object):
 
     def _I(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src, group_config_type)
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+        else:
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, True)
@@ -425,6 +431,8 @@ class text_msg_handler(object):
             return u'回覆組複製失敗。回覆組來源沒有符合條件的回覆組可供複製。'
 
     def _E(self, src, params, key_permission_lv, group_config_type):
+        low_perm = self._command_manager.get_command_data('E').lowest_permission
+
         # assign instance to manage pair
         if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
@@ -443,20 +451,21 @@ class text_msg_handler(object):
             if not bot.string_can_be_int(id):
                 return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
 
+            # 0 will be able to modify 1
+
             if action == 'A':
-                result = kwd_instance.add_linked_word(word_list)
+                result = kwd_instance.add_linked_word(word_list, key_permission_lv >= low_perm)
             elif action == 'D':
-                result = kwd_instance.del_linked_word(word_list)
+                result = kwd_instance.del_linked_word(word_list, key_permission_lv >= low_perm)
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'A(新增)或D(刪除)', action)
 
             if result:
                 return (bot.line_api_wrapper.wrap_text_message('#{} 相關回覆組變更成功。'.format(id)), shortcut_template)
             else:
-                return '#{} 相關回覆組變更失敗。'.format(id)
+                return '#{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(id)
         # edit pinned property
         elif params[2] is not None:
-            low_perm = self._command_manager.get_command_data('E').lowest_permission
             if key_permission_lv > low_perm:
                 if not bot.string_can_be_int(id):
                     return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
@@ -479,7 +488,10 @@ class text_msg_handler(object):
 
     def _K(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src, group_config_type)
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+        else:
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # assign parameters
         ranking_type = params[1]
@@ -527,7 +539,11 @@ class text_msg_handler(object):
             text = tracking_string_obj.limited
             text += u'\n\n完整資訊URL: {}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+            # assign instance to manage pair
+            if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+            else:
+                kwd_instance = self._get_kwd_instance(src, group_config_type)
         
             if kwd_instance.can_see_public():
                 instance_type = u'公用回覆組資料庫'
@@ -805,11 +821,17 @@ class text_msg_handler(object):
         return text
 
     def _L(self, src, params, key_permission_lv, group_config_type):
+        # assign instance to manage pair
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            target_gid = params.pop(1)
+        else:
+            target_gid = bot.line_api_wrapper.source_channel_id(src)
+
         if params[1] is not None:
             category = params[1]
 
             if category == 'S':
-                last_sticker = self._system_data.get_last_sticker(bot.line_api_wrapper.source_channel_id(src))
+                last_sticker = self._system_data.get_last_sticker(target_gid)
                 if last_sticker is not None:
                     return [bot.line_api_wrapper.wrap_text_message(u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker), self._webpage_generator), 
                             bot.line_api_wrapper.wrap_template_with_action({ 
@@ -819,7 +841,7 @@ class text_msg_handler(object):
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'P':
-                last_pic_sha = self._system_data.get_last_pic_sha(bot.line_api_wrapper.source_channel_id(src))
+                last_pic_sha = self._system_data.get_last_pic_sha(target_gid)
                 if last_pic_sha is not None:
                     text = u'最後圖片雜湊碼(SHA224)'
                     return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)] + [bot.line_api_wrapper.wrap_template_with_action({ 
@@ -829,7 +851,7 @@ class text_msg_handler(object):
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'R':
-                last_pair_id = self._system_data.get_last_pair(bot.line_api_wrapper.source_channel_id(src))
+                last_pair_id = self._system_data.get_last_pair(target_gid)
                 if last_pair_id is not None:
                     return [bot.line_api_wrapper.wrap_text_message(u'最後呼叫回覆組ID: {}'.format(last_pair_id), self._webpage_generator), 
                             bot.line_api_wrapper.wrap_template_with_action({ 
@@ -839,7 +861,7 @@ class text_msg_handler(object):
                 else:
                     return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
             elif category == 'U':
-                last_uid = self._system_data.get_last_uid(bot.line_api_wrapper.source_channel_id(src))
+                last_uid = self._system_data.get_last_uid(target_gid)
                 if last_uid is not None:
                     return [bot.line_api_wrapper.wrap_text_message(u'最後訊息傳送使用者ID: {}'.format(last_uid), self._webpage_generator), 
                             bot.line_api_wrapper.wrap_template_with_action({ 

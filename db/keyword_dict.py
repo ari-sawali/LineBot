@@ -359,22 +359,28 @@ class group_dict_manager(db_base):
         filter_dict = { pair_data.STATISTICS + '.' + pair_data.CREATOR: uid }
         return self._search(filter_dict)
 
-    def add_linked_word(self, id, word_or_list):
+    def add_linked_word(self, id, word_or_list, able_to_mod_pin=False):
         """Return true if matched count is equal to modified count AND matched count is greater than 0"""
         if isinstance(word_or_list, (str, unicode)):
             word_or_list = [word_or_list]
 
-        result = self.update_one({ pair_data.SEQUENCE: id,
-                                   pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 - len(word_or_list) } }}, 
-                                 { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
+        filter_dict = { pair_data.SEQUENCE: id, pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 - len(word_or_list) } }}
+        if not able_to_mod_pin:
+            filter_dict[pair_data.PINNED] = False
+
+        result = self.update_one(filter_dict, { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
-    def del_linked_word(self, id, word_or_list):
+    def del_linked_word(self, id, word_or_list, able_to_mod_pin=False):
         """Return true if matched count is equal to modified count AND matched count is greater than 0"""
         if isinstance(word_or_list, (str, unicode)):
             word_or_list = [word_or_list]
 
-        result = self.update_one({ pair_data.SEQUENCE: id }, { '$pull': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
+        filter_dict = { pair_data.SEQUENCE: id }
+        if not able_to_mod_pin:
+            filter_dict[pair_data.PINNED] = False
+
+        result = self.update_one(filter_dict, { '$pull': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def _search(self, filter_dict):

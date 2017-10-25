@@ -15,16 +15,17 @@ class cmd_category(ext.EnumWithName):
     GAME = 2, '遊戲用指令'
 
 class command_object(object):
-    def __init__(self, min_split, max_split, cmd_category, lowest_permission_req=permission.USER):
+    def __init__(self, min_split, max_split, cmd_category, will_pop, lowest_permission_req=permission.USER):
         self._split_max = max_split
         self._split_min = min_split
         self._count = 0
+        self._will_pop = will_pop
         self._lowest_permission_required = lowest_permission_req
 
     @property
     def split_max(self):
         """Maximum split count."""
-        return self._split_max
+        return self._split_max + int(self._will_pop)
 
     @property
     def split_min(self):
@@ -47,29 +48,29 @@ class command_object(object):
         return self._lowest_permission_required
 
 # MAX_PARAM_COUNT includes parameter which will be popped
-cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, permission.BOT_ADMIN), 
-             'A': command_object(3, 6, cmd_category.MAIN), 
-             'M': command_object(3, 6, cmd_category.MAIN, permission.MODERATOR), 
-             'D': command_object(1, 2, cmd_category.MAIN), 
-             'R': command_object(1, 2, cmd_category.MAIN, permission.MODERATOR), 
-             'E': command_object(2, 3, cmd_category.MAIN, permission.MODERATOR), 
-             'X': command_object(1, 3, cmd_category.MAIN, permission.MODERATOR), 
-             'Q': command_object(0, 2, cmd_category.MAIN), 
-             'I': command_object(1, 2, cmd_category.MAIN), 
-             'K': command_object(1, 2, cmd_category.MAIN),
-             'P': command_object(1, 2, cmd_category.EXTEND), 
-             'G': command_object(0, 1, cmd_category.EXTEND), 
-             'GA': command_object(1, 4, cmd_category.EXTEND, permission.MODERATOR),  
-             'H': command_object(0, 0, cmd_category.EXTEND), 
-             'SHA': command_object(1, 1, cmd_category.EXTEND), 
-             'O': command_object(1, 1, cmd_category.EXTEND), 
-             'RD': command_object(1, 2, cmd_category.EXTEND), 
-             'L': command_object(1, 1, cmd_category.EXTEND),
-             'T': command_object(1, 1, cmd_category.EXTEND),
-             'C': command_object(0, 3, cmd_category.EXTEND),
-             'FX': command_object(1, 2, cmd_category.EXTEND),
-             'N': command_object(1, 1, cmd_category.EXTEND),
-             'RPS': command_object(0, 4, cmd_category.GAME) }
+cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, False, permission.BOT_ADMIN), 
+             'A': command_object(3, 5, cmd_category.MAIN, True), 
+             'M': command_object(3, 5, cmd_category.MAIN, True, permission.MODERATOR), 
+             'D': command_object(1, 2, cmd_category.MAIN, True), 
+             'R': command_object(1, 2, cmd_category.MAIN, True, permission.MODERATOR), 
+             'E': command_object(2, 3, cmd_category.MAIN, True, permission.MODERATOR), 
+             'X': command_object(1, 3, cmd_category.MAIN, True, permission.MODERATOR), 
+             'Q': command_object(0, 2, cmd_category.MAIN, True), 
+             'I': command_object(1, 2, cmd_category.MAIN, True), 
+             'K': command_object(1, 2, cmd_category.MAIN, True),
+             'P': command_object(1, 2, cmd_category.EXTEND, True), 
+             'G': command_object(0, 1, cmd_category.EXTEND, True), 
+             'GA': command_object(1, 4, cmd_category.EXTEND, True, permission.MODERATOR),  
+             'H': command_object(0, 0, cmd_category.EXTEND, False), 
+             'SHA': command_object(1, 1, cmd_category.EXTEND, False), 
+             'O': command_object(1, 1, cmd_category.EXTEND, False), 
+             'RD': command_object(1, 2, cmd_category.EXTEND, False), 
+             'L': command_object(1, 1, cmd_category.EXTEND, True),
+             'T': command_object(1, 1, cmd_category.EXTEND, False),
+             'C': command_object(0, 3, cmd_category.EXTEND, False),
+             'FX': command_object(1, 2, cmd_category.EXTEND, False),
+             'N': command_object(1, 1, cmd_category.EXTEND, False),
+             'RPS': command_object(0, 4, cmd_category.GAME, False) }
 
 class commands_manager(object):
     def __init__(self, cmd_dict):
