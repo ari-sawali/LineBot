@@ -3,7 +3,7 @@
 import os, sys
 import requests
 from datetime import datetime, timedelta
-from collections import defaultdict
+from collections import deque
 from linebot import exceptions
 import hashlib
 import operator
@@ -19,36 +19,76 @@ from linebot.models import (
 import db
 import ext
 
+class system_data_category(ext.EnumWithName):
+    LAST_STICKER = 0, '末三張貼圖ID'
+    LAST_PIC_SHA = 1, '末三張圖片雜湊(SHA224)'
+    LAST_PAIR_ID = 2, '末三組回覆組ID'
+    LAST_UID = 3, '末三則訊息傳送者(不含小水母)UID'
+
 class system_data(object):
+    MAX_LENGTH_OF_DEQUE = 3
+
     def __init__(self):
         self._boot_up = datetime.now() + timedelta(hours=8)
-        self._last_sticker = defaultdict(str)
-        self._last_pic_sha = defaultdict(str)
-        self._last_pair = defaultdict(str)
-        self._last_uid = defaultdict(str)
+        
+        self._last_sticker = {}
+        self._last_pic_sha = {}
+        self._last_pair = {}
+        self._last_uid = {}
+
+        self._field_dict = {
+            system_data_category.LAST_STICKER: self._last_sticker,
+            system_data_category.LAST_PIC_SHA: self._last_pic_sha,
+            system_data_category.LAST_PAIR_ID: self._last_pair,
+            system_data_category.LAST_UID: self._last_uid
+        }
+
+    def set(category_enum, cid, content):
+        d = self._field_dict[category_enum]
+
+        if cid not in d:
+            d[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
+
+        d[cid].append(content)
+        self._field_dict[category_enum] = d
+
+    def get(category_enum, cid):
+        return self._field_dict[category_enum].get(cid)
 
     def set_last_sticker(self, cid, stk_id):
-        self._last_sticker[cid] = stk_id
+        if cid not in self._last_sticker:
+            self._last_sticker[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-    def get_last_sticker(self, cid):
+        self._last_sticker[cid].append(stk_id)
+
+    def get_last_stickers(self, cid):
         return self._last_sticker.get(cid)
 
     def set_last_pic_sha(self, cid, sha):
-        self._last_pic_sha[cid] = sha
+        if cid not in self._last_pic_sha:
+            self._last_pic_sha[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-    def get_last_pic_sha(self, cid):
+        self._last_pic_sha[cid].append(sha)
+
+    def get_last_pic_shas(self, cid):
         return self._last_pic_sha.get(cid)
 
     def set_last_pair(self, cid, pair_id):
-        self._last_pair[cid] = pair_id
+        if cid not in self._last_pair:
+            self._last_pair[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-    def get_last_pair(self, cid):
+        self._last_pair[cid].append(pair_id)
+
+    def get_last_pairs(self, cid):
         return self._last_pair.get(cid)
 
     def set_last_uid(self, cid, uid):
-        self._last_uid[cid] = uid
+        if cid not in self._last_uid:
+            self._last_uid[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-    def get_last_uid(self, cid):
+        self._last_uid[cid].append(uid)
+
+    def get_last_uids(self, cid):
         return self._last_uid.get(cid)
 
     @property

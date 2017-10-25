@@ -525,7 +525,7 @@ class text_msg_handler(object):
         return text
 
     def _P(self, src, params, key_permission_lv, group_config_type):
-        wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID。', params[1])
+        wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID', params[1])
 
         category = params[1]
         gid = params[2]
@@ -567,7 +567,7 @@ class text_msg_handler(object):
             usage_dict = self._oxr_client.get_usage_dict()
             text = tool.oxr.usage_str(usage_dict)
         else:
-            if category == bot.line_api_wrapper.is_valid_user_id(category):
+            if bot.line_api_wrapper.is_valid_user_id(category):
                 uid = category
                 try:
                     name = self._line_api_wrapper.profile_name(uid)
@@ -575,8 +575,8 @@ class text_msg_handler(object):
                     return error.main.line_account_data_not_found()
 
                 text = u'UID:\n{}\n名稱:\n{}'.format(uid, name)
-            elif category == bot.line_api_wrapper.is_valid_room_group_id(category):
-                gid = category
+            elif bot.line_api_wrapper.is_valid_room_group_id(category):
+                uid = category
 
                 try:
                     name = self._line_api_wrapper.profile_group(gid, uid)
@@ -833,48 +833,40 @@ class text_msg_handler(object):
         if params[1] is not None:
             category = params[1]
 
-            if category == 'S':
-                last_sticker = self._system_data.get_last_sticker(target_gid)
-                if last_sticker is not None:
-                    return [bot.line_api_wrapper.wrap_text_message(u'最後一個貼圖的貼圖ID為{}。'.format(last_sticker), self._webpage_generator), 
-                            bot.line_api_wrapper.wrap_template_with_action({ 
-                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_sticker),
-                               '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_sticker)
-                           }, u'最後貼圖相關回覆組快捷樣板', u'快速查詢')]
-                else:
-                    return error.main.miscellaneous(u'沒有登記到本頻道的最後貼圖ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
-            elif category == 'P':
-                last_pic_sha = self._system_data.get_last_pic_sha(target_gid)
-                if last_pic_sha is not None:
-                    text = u'最後圖片雜湊碼(SHA224)'
-                    return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator) for text in (text, last_pic_sha)] + [bot.line_api_wrapper.wrap_template_with_action({ 
-                               '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(last_pic_sha),
-                               '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(last_pic_sha)
-                           }, u'最後圖片雜湊相關回覆組快捷樣板', u'快速查詢')]
-                else:
-                    return error.main.miscellaneous(u'沒有登記到本頻道的最後圖片雜湊，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
-            elif category == 'R':
-                last_pair_id = self._system_data.get_last_pair(target_gid)
-                if last_pair_id is not None:
-                    return [bot.line_api_wrapper.wrap_text_message(u'最後呼叫回覆組ID: {}'.format(last_pair_id), self._webpage_generator), 
-                            bot.line_api_wrapper.wrap_template_with_action({ 
-                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id),
-                               '回覆組資料(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(last_pair_id)
-                           }, u'最後回覆組ID查詢快捷樣板', u'快速查詢')]
-                else:
-                    return error.main.miscellaneous(u'沒有登記到本頻道的最後使用回覆組ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
-            elif category == 'U':
-                last_uid = self._system_data.get_last_uid(target_gid)
-                if last_uid is not None:
-                    return [bot.line_api_wrapper.wrap_text_message(u'最後訊息傳送使用者ID: {}'.format(last_uid), self._webpage_generator), 
-                            bot.line_api_wrapper.wrap_template_with_action({ 
-                               '回覆組資料(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + str(last_uid),
-                               '回覆組資料(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + str(last_uid)
-                           }, u'最後使用者UID相關指令快捷樣板', u'快速查詢')]
-                else:
-                    return error.main.miscellaneous(u'沒有登記到本頻道的最後訊息傳送使用者ID，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(self._system_data.boot_up))
+            category_dict = {
+                'S': bot.system_data_category.LAST_STICKER,
+                'P': bot.system_data_category.LAST_PIC_SHA,
+                'R': bot.system_data_category.LAST_PAIR_ID,
+                'U': bot.system_data_category.LAST_UID
+            }
+
+            last_item_cat = category_dict.get(category)
+
+            if last_item_cat is None:
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)、U(最後UID)或R(最後回覆組)', category)
+
+            last_array = self._system_data.get(last_item_cat, target_gid)
+
+            rep_list = []
+
+            if last_array is not None and len(last_array) > 0:
+                rep_list.append(line_api_wrapper.wrap_text_message(u'{}\n{}。'.format(unicode(last_item_cat), u'、'.join([str(item) for item in last_array])), self._webpage_generator))
             else:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)、U(最後UID)或R(最後回覆組)', params[1])
+                return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
+
+            if any(last_item_cat == type_cat for type_cat in (bot.system_data_category.LAST_STICKER, bot.system_data_category.LAST_PAIR_ID, bot.system_data_category.LAST_PIC_SHA)):
+                action_dict = { 
+                    '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + self._array_separator.join([str(item) for item in last_array]),
+                    '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + self._array_separator.join([str(item) for item in last_array])
+                }
+            elif last_item_cat == bot.system_data_category.LAST_UID:
+                action_dict = { 
+                    '使用者{}製作'.format(uid[0:8]): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid for uid in last_array
+                }
+
+            rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_item_cat)), u'快速查詢'))
+
+            return rep_list
         else:
             return error.main.lack_of_thing(u'參數')
              
