@@ -148,6 +148,9 @@ class group_dict_manager(db_base):
     def aggregate(self, pipeline, **kwargs):
         if not self._including_public:
             pipeline = [ { '$match': { pair_data.AFFILIATED_GROUP: self._group_id } } ] + pipeline
+
+        print pipeline
+        print self._including_public
         return super(group_dict_manager, self).aggregate(pipeline, **kwargs)
 
     def delete_many(self, filter, collation=None):
