@@ -487,6 +487,9 @@ class text_msg_handler(object):
         # validate parameters
         if not bot.string_can_be_int(limit):
             return error.main.incorrect_param(u'參數2(數量)', u'整數')
+        
+        if limit > 50:
+            return error.main.incorrect_param(u'參數2(數量)', u'小於50的整數')
 
         # get ranking result
         if ranking_type == 'USER':
