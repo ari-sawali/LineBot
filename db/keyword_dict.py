@@ -855,8 +855,8 @@ class pair_data(dict_like_mapping):
             status = u''
 
         text = u'#{}{}'.format(self.seq_id, status)
-        text += u'\n關鍵字內容: {}'.format(kw)
-        text += u'\n回覆內容: {}'.format(rep)
+        text += u'\n關鍵字內容: {}{}'.format(u'\n' if u'\n' in kw else u'', kw)
+        text += u'\n回覆內容: {}{}'.format(u'\n' if u'\n' in rep else u'', rep)
         if self.reply_type == word_type.PICTURE or self.reply_type == word_type.STICKER:
             text += u'\n附加回覆: {}'.format(rep_att)
         if linked is not None:
