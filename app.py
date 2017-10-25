@@ -161,7 +161,6 @@ def make_tmp_dir():
 
 @app.route("/callback", methods=['POST'])
 def callback():
-
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
 
