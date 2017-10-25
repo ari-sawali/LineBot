@@ -4,7 +4,6 @@
 # IMPORTANT: Q/I Regex literal
 
 # IMPORTANT: cache keyword_dict
-# IMPORTANT: increase speed of calling ranking by pair
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking
@@ -15,6 +14,8 @@
 # UNDONE: group_data will save empty mem field in database
 # UNDONE: game_msg_handler Shorten + Modulize
 # UNDONE: find related pair of sticker (using global keyword dict manager)
+# UNDONE: increase performance of calling ranking by pair (integrate?)
+# UNDONE: increase performance of getting multi user's profile (multi process/thread?)
 
 import os, sys, errno
 import tempfile
@@ -26,7 +27,7 @@ from urlparse import urlparse
 from datetime import datetime
 from error import error
 from flask import Flask, request, url_for
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool
 
 # import custom module
 import bot
@@ -63,7 +64,7 @@ from imgur.helpers.error import ImgurClientError
 
 # Main initialization
 app = Flask(__name__)
-handle_pool = ThreadPool(processes=4)
+handle_pool = Pool(4)
 
 # Databases initialization
 import pymongo
@@ -160,7 +161,6 @@ def make_tmp_dir():
 
 @app.route("/callback", methods=['POST'])
 def callback():
-
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
 
@@ -170,8 +170,7 @@ def callback():
 
     # handle webhook body
     try:
-        handle_pool.apply(handler.handle, args=(body, signature))
-        # handler.handle(body, signature)
+        handle_pool.map(handler.handle, (body, signature))
     except exceptions.InvalidSignatureError:
         abort(400)
 

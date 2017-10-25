@@ -560,8 +560,8 @@ class group_dict_manager(db_base):
                     else:
                         uname = profile.display_name
 
-                text_to_join.append(u'第{}名 - {}\n{}組 | {}次 | {:.2f}次/組'.format(
-                    index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count))
+                text_to_join.append(u'第{}名 - {}\n{}組 | {}次 | {:.2f}次/組 | {} pt'.format(
+                    index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count, user_data.activity_point))
 
         return '\n'.join(text_to_join)
 
@@ -573,7 +573,7 @@ class group_dict_manager(db_base):
         simplify_max_string_length = 5
 
         def format_string(data):
-            kw = group_dict_manager._keyword_repr(data, True, simplify_max_string_length)
+            kw = group_dict_manager._keyword_repr(pair_data(data), True, simplify_max_string_length)
 
             return u'#{} {} @{}'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
 
