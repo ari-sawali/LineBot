@@ -317,7 +317,7 @@ class global_msg_handle(object):
 
         if terminate_5 or group_config <= db.config_type.SYS_ONLY:
             print 'terminate 5'
-            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, None)
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
         ####################################
