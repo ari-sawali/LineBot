@@ -48,8 +48,8 @@ class command_object(object):
 
 # MAX_PARAM_COUNT includes parameter which will be popped
 cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, permission.BOT_ADMIN), 
-             'A': command_object(3, 5, cmd_category.MAIN), 
-             'M': command_object(3, 5, cmd_category.MAIN, permission.MODERATOR), 
+             'A': command_object(3, 6, cmd_category.MAIN), 
+             'M': command_object(3, 6, cmd_category.MAIN, permission.MODERATOR), 
              'D': command_object(1, 2, cmd_category.MAIN), 
              'R': command_object(1, 2, cmd_category.MAIN, permission.MODERATOR), 
              'E': command_object(2, 3, cmd_category.MAIN, permission.MODERATOR), 

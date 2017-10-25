@@ -93,7 +93,7 @@ class text_msg_handler(object):
 
         if source_type == bot.line_event_source_type.USER:
             kwd_instance = self._kwd_public
-        elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.USER:
+        elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.ROOM:
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
         else:
             raise ValueError(error.main.miscellaneous(u'Unknown source type.'))
@@ -181,6 +181,12 @@ class text_msg_handler(object):
         # verify uid structure
         if not bot.line_api_wrapper.is_valid_user_id(new_profile_uid):
             return error.line_bot_api.illegal_user_id(new_profile_uid)
+
+        # assign instance to manage pair
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(param.pop(1)), group_config_type == db.config_type.ALL)
+        else:
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
         
         flags = params[1]
         kw = params[2].replace('\\n', '\n')
@@ -193,9 +199,6 @@ class text_msg_handler(object):
         # checking flags is legal
         if len(flags) != 2:
             return error.auto_reply.illegal_flags(flags)
-
-        # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         # checking type of keyword and reply
         try:

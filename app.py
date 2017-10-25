@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: LAST UID
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: allow control group in chat
 
