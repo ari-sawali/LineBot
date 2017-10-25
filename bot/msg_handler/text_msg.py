@@ -567,17 +567,15 @@ class text_msg_handler(object):
             usage_dict = self._oxr_client.get_usage_dict()
             text = tool.oxr.usage_str(usage_dict)
         else:
-            if bot.line_api_wrapper.is_valid_user_id(category):
-                uid = category
+            uid = category
+            if bot.line_api_wrapper.is_valid_user_id(uid):
                 try:
                     name = self._line_api_wrapper.profile_name(uid)
                 except bot.UserProfileNotFoundError:
                     return error.main.line_account_data_not_found()
 
                 text = u'UID:\n{}\n名稱:\n{}'.format(uid, name)
-            elif bot.line_api_wrapper.is_valid_room_group_id(category):
-                uid = category
-
+            elif gid is not None and bot.line_api_wrapper.is_valid_room_group_id(gid):
                 try:
                     name = self._line_api_wrapper.profile_group(gid, uid)
                 except bot.UserProfileNotFoundError:
