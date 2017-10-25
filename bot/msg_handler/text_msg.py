@@ -559,6 +559,7 @@ class text_msg_handler(object):
             text += u'開機時間: {} (UTC+8)\n'.format(self._system_data.boot_up)
             text += self._system_stats.get_statistics()
         elif category == 'IMG':
+            import socket
             ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
 
             text = self._imgur_api_wrapper.get_status_string(ip_address)

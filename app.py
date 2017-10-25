@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # IMPORTANT: Allow global search in Q/I using ID
-# IMPORTANT: Q/I Regex literal
-# IMPORTANT: global K
+# IMPORTANT: JC P KW global
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
