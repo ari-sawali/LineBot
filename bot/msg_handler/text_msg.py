@@ -312,7 +312,7 @@ class text_msg_handler(object):
             else:
                 return error.main.pair_not_exist_or_insuffieicnt_permission()
 
-    def _R(self, src, params, key_permission_lv):
+    def _R(self, src, params, key_permission_lv, group_config_type):
         low_perm = self._command_manager.get_command_data('R').lowest_permission
 
         # check permission
