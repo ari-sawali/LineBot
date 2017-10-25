@@ -536,7 +536,7 @@ class text_msg_handler(object):
             tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】\n'], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'))
         
             text = tracking_string_obj.limited
-            text += u'\n\n完整資訊URL: {}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
+            text += u'\n\n網頁紀錄URL: {}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
             # assign instance to manage pair
             if bot.line_api_wrapper.is_valid_room_group_id(params[1]):

@@ -211,7 +211,7 @@ class group_manager(db_base):
         RECEIVED_MESSAGES = 'rcv_sum'
 
         aggr_pipeline = [
-            { '$addFields': { group_data.MESSAGE_RECORDS + '.' + RECEIVED_MESSAGES: { '$sum': [ '$' + group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(type_enum) + '.' + k for k in (msg_stats_pair.TRIGGERED, msg_stats_pair.NOT_TRIGGERED) for type_enum in list(msg_type) ] } } }, 
+            { '$addFields': { RECEIVED_MESSAGES: { '$sum': [ '$' + group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(type_enum) + '.' + k for k in (msg_stats_pair.TRIGGERED, msg_stats_pair.NOT_TRIGGERED) for type_enum in list(msg_type) ] } } }, 
             { '$sort': { RECEIVED_MESSAGES: pymongo.DESCENDING } }
         ]
 
@@ -269,7 +269,7 @@ class group_manager(db_base):
                 text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
                 return text
 
-            return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text)
+            return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n')
         else:
             err = error.main.miscellaneous(u'沒有輸入群組資料。')
             return FormattedStringResult([err], [err])
