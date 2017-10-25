@@ -161,18 +161,18 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).insert_one(document, bypass_document_validation)
 
     def find(self, *args, **kwargs):
-        if len(args) > 0:
-            if self._including_public:
-                or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
+        if len(args) < 1:
+            args = [{}]
 
-                if '$or' in args[0]:
-                    args[0]['$or'].extend(or_list)
-                else:
-                    args[0]['$or'] = or_list
+        if self._including_public:
+            or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
+
+            if '$or' in args[0]:
+                args[0]['$or'].extend(or_list)
             else:
-                args[0][pair_data.AFFILIATED_GROUP] = self._group_id
+                args[0]['$or'] = or_list
         else:
-            args = { pair_data.AFFILIATED_GROUP: self._group_id }
+            args[0][pair_data.AFFILIATED_GROUP] = self._group_id
         
         return super(group_dict_manager, self).find(*args, **kwargs)
 
