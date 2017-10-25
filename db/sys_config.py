@@ -27,7 +27,11 @@ class system_config(db_base):
         return self._cache.get(field_var)
 
     def _set_cache(self):
-        self._cache = config_data(self.find_one())
+        data = self.find_one()
+        if data is None:
+            data = config_data(data)
+            self.insert_one(data)
+        self._cache = config_data(data)
 
 class config_data(dict_like_mapping):
     """
