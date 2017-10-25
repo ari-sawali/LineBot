@@ -30,6 +30,8 @@ class webpage_manager(object):
             err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
             err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
             err_detail += decoded_traceback
+            err_detail += u'\n\n'
+            err_detail += repr(error_instance)
             
             print '===================================='
             print 'ERROR CAPTURED.'
