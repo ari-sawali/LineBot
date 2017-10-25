@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: Make structure of last items
+# IMPORTANT: LAST UID
+# IMPORTANT: Allow global search in Q/I using ID
+# IMPORTANT: allow control group in chat
+
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: increase speed of calling ranking by pair
 # IMPORTANT: use mail api to send error report
