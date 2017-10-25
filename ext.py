@@ -4,6 +4,7 @@ import numpy
 from enum import IntEnum
 from datetime import datetime
 import bson
+from math import log10
 
 class EnumWithName(IntEnum):
     def __new__(cls, value, name):
@@ -63,13 +64,13 @@ levels = [(0, ''), (3, 'K'), (6, 'M'), (9, 'G'), (12, 'T'), (15, 'P'), (18, 'E')
 def simplify_num(value):
     if value < 1000:
         return u'{}'.format(value)
+
+    lads = int(log10(value) / 3)
+
+    if lads >= len(levels):
+        simp_pow, simp_text = levels[-1]
+    else:
+        simp_pow, simp_text = levels[lads]
     
-    for pow, txt in levels:
-        simp = value / float(10 ** pow)
-        if simp >= 1.0 and simp < 1000.0:
-            return u'{:.2f} {}'.format(simp, txt)
-        else:
-            continue
-        
-    max_pow, max_txt = levels[-1]
-    return u'{:.2f} {}'.format(value / float(10**max_pow), max_txt)
+    simp = value / float(10 ** simp_pow)
+    return u'{:.2f} {}'.format(simp, simp_text)
