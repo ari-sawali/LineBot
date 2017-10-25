@@ -579,7 +579,7 @@ class group_dict_manager(db_base):
             data = pair_data(data)
             kw = group_dict_manager._keyword_repr(data, True, SIMPLIFY_MAX_STRING_LENGTH)
 
-            return u'#{} {} @{}'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
+            return u'#{} {} @{}'.format(data.seq_id, kw, (data.last_call + timedelta(hours=8)).strftime('%m/%d %H:%M'))
 
         return FormattedStringResult.init_by_field(data_list, format_string, limit, u'回覆組呼叫排行(前{}名)'.format(len(data_list)), error.main.no_result()).full
 
