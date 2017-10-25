@@ -426,7 +426,10 @@ class text_msg_handler(object):
 
     def _E(self, src, params, key_permission_lv, group_config_type):
         # assign instance to manage pair
-        kwd_instance = self._get_kwd_instance(src, group_config_type)
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
+        else:
+            kwd_instance = self._get_kwd_instance(src, group_config_type)
 
         action = params[1]
         id = params[2]
@@ -462,7 +465,7 @@ class text_msg_handler(object):
                 pinned = action_dict.get(action, None)
 
                 if pinned is None:
-                    return error.main.invalid_thing_with_correct_format(u'參數1', u'A(新增)或D(刪除)', action)
+                    return error.main.invalid_thing_with_correct_format(u'參數1', u'P(置頂)或U(取消置頂)', action)
 
                 result = kwd_instance.set_pinned_by_index(id, pinned)
                 if result:
