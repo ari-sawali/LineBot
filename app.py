@@ -217,7 +217,7 @@ def handle_text_message(event):
             tb_text = traceback.format_exc().encode('utf-8')
         except UnicodeDecodeError:
             tb_text = traceback.format_exc()
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src))
+        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
         if sys_config.get(db.config_data.REPLY_ERROR):
             line_api.reply_message_text(token, error_msg)
@@ -253,7 +253,7 @@ def handle_sticker_message(event):
             tb_text = traceback.format_exc().encode('utf-8')
         except UnicodeDecodeError:
             tb_text = traceback.format_exc()
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src))
+        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
         if sys_config.get(db.config_data.REPLY_ERROR):
             line_api.reply_message_text(token, error_msg)
@@ -289,7 +289,7 @@ def handle_image_message(event):
             tb_text = traceback.format_exc().encode('utf-8')
         except UnicodeDecodeError:
             tb_text = traceback.format_exc()
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src))
+        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
         if sys_config.get(db.config_data.REPLY_ERROR):
             line_api.reply_message_text(token, error_msg)

@@ -23,15 +23,22 @@ class webpage_manager(object):
         self._system_stats = db.system_statistics(mongo_db_uri)
         self._content_holder = db.webpage_content_holder(mongo_db_uri)
 
-    def rec_error(self, error_instance, decoded_traceback, occurred_at):
+    def rec_error(self, error_instance, decoded_traceback, occurred_at, simplified=None):
         """Get error webpage url + error list url"""
         self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
         with self._flask_app.app_context():
             err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
             err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
             err_detail += decoded_traceback
-            err_detail += u'\n\n'
-            err_detail += repr(error_instance).encode('utf-8')
+            if simplified is not None:
+                err_detail += u'\n\n'
+                try:
+                    simplified = simplified.decode('utf-8')
+                except UnicodeEncodeError:
+                    simplified = simplified.encode('utf-8')
+                except UnicodeDecodeError:
+                    simplified = simplified
+                err_detail += simplified
             
             print '===================================='
             print 'ERROR CAPTURED.'

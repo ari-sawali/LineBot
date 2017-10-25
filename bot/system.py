@@ -156,13 +156,16 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
-
+        
+        print data_dict
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
         length_action_dict = len(data_dict)
 
         if length_action_dict > MAX_ACTIONS:
             raise ValueError(error.error.main.miscellaneous(u'Length of data dict must less than or equals to {}.'.format(MAX_ACTIONS)))
+
+        print data_dict
 
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
