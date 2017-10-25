@@ -463,7 +463,7 @@ class text_msg_handler(object):
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'A(新增)或D(刪除)', action)
 
             if result:
-                return (bot.line_api_wrapper.wrap_text_message('#{} 相關回覆組變更成功。'.format(id)), shortcut_template)
+                return (bot.line_api_wrapper.wrap_text_message('#{} 相關回覆組變更成功。'.format(id), self._webpage_generator), shortcut_template)
             else:
                 return '#{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(id)
         # edit pinned property
@@ -477,7 +477,7 @@ class text_msg_handler(object):
 
                 result = kwd_instance.set_pinned_by_index(id, pinned)
                 if result:
-                    return (bot.line_api_wrapper.wrap_text_message('#{} 置頂屬性變更成功。'.format(id)), shortcut_template)
+                    return (bot.line_api_wrapper.wrap_text_message('#{} 置頂屬性變更成功。'.format(id), self._webpage_generator), shortcut_template)
                 else:
                     return '#{} 置頂屬性變更失敗。'.format(id)
             else:
