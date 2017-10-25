@@ -447,7 +447,7 @@ class text_msg_handler(object):
         else:
             id = int(id)
 
-        shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + str(id) }, u'更動回覆組ID: {}'.format(id), u'相關指令')
+        shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(id) }, u'更動回覆組ID: {}'.format(id), u'相關指令')
         
         # edit linked keyword pair
         if params[3] is not None:
