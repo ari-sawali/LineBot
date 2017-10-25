@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # IMPORTANT: Allow global search in Q/I using ID
-# IMPORTANT: allow control group in chat
 
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: increase speed of calling ranking by pair
