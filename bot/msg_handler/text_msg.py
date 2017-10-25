@@ -141,7 +141,7 @@ class text_msg_handler(object):
             kw = params[1]
             title = u'範圍: 【關鍵字】或【回覆】{}【{}】的回覆組。\n'.format(u'為' if exact_same else u'包含', kw)
 
-            print kw
+            print kw.encode('utf-8')
             print exact_same
             result_data = kwd_instance.search_pair_by_keyword(kw, exact_same)
         else:
