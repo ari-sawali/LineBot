@@ -31,7 +31,7 @@ class webpage_manager(object):
             err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
             err_detail += decoded_traceback
             err_detail += u'\n\n'
-            err_detail += repr(error_instance)
+            err_detail += repr(error_instance).encode('utf-8')
             
             print '===================================='
             print 'ERROR CAPTURED.'
