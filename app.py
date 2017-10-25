@@ -3,6 +3,7 @@
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: Q/I Regex literal
 # IMPORTANT: global K
+# IMPORTANT: p get data using double ids(GID, uiD)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
@@ -171,8 +172,8 @@ def callback():
 
     # handle webhook body
     try:
-        handler.handle(body, signature)
-        # handle_pool.apply(handler.handle, args=(body, signature))
+        # handler.handle(body, signature)
+        handle_pool.apply(handler.handle, args=(body, signature))
     except exceptions.InvalidSignatureError:
         abort(400)
 
