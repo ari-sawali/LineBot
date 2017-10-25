@@ -218,7 +218,7 @@ class group_dict_manager(db_base):
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
-                filter['$and'] = { '$or': or_list, '$or': filter['$or'] }
+                filter['$and'] = [{'$or': or_list}, {'$or': filter['$or']}]
                 del filter['$or']
             else:
                 filter['$or'] = or_list
