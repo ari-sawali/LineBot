@@ -333,6 +333,8 @@ class group_dict_manager(db_base):
                 { pair_data.REPLY: unicode(keyword) if data_exact_same else { '$regex': unicode(keyword) } }
             ]
         }
+
+        print filter_dict
         return self._search(filter_dict)
 
     def search_pair_by_index(self, start_id_or_id_list, end_id=None):
