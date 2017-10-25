@@ -184,7 +184,7 @@ class text_msg_handler(object):
 
         # assign instance to manage pair
         if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(params.pop(1)), group_config_type == db.config_type.ALL)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
         else:
             kwd_instance = self._get_kwd_instance(src, group_config_type)
         
@@ -269,7 +269,7 @@ class text_msg_handler(object):
 
         # assign instance to manage pair
         if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(params.pop(1)), group_config_type == db.config_type.ALL)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
         else:
             kwd_instance = self._get_kwd_instance(src, group_config_type)
 
