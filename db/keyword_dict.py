@@ -877,7 +877,7 @@ class pair_data(dict_like_mapping):
 
             text += u'\n{}者LINE UUID: {}'.format(action_str, uid)
             if timestamp is not None:
-                text += u'\n{}時間: {}'.format(action_str, timestamp)
+                text += u'\n{}時間: {}'.format(action_str, timestamp + timedelta(hours=8))
 
             return text
 
@@ -893,7 +893,8 @@ class pair_data(dict_like_mapping):
 
         detailed += u'[ {} ] [ {} ]\n'.format(u'置頂' if self.pinned else u'-', u'失效' if self.disabled else u'-')
         detailed += u'呼叫次數: {}{}\n'.format(self.call_count, word_ranking)
-        detailed += u'最後呼叫: {}\n'.format(self.last_call)
+        if self.last_call is not None:
+            detailed += u'最後呼叫: {}\n'.format(self.last_call + timedelta(hours=8))
         detailed += format_line_profile_with_time(u'製作', self.creator, self.created_time)
 
         if self.disabled:
