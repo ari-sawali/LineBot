@@ -364,7 +364,7 @@ class group_dict_manager(db_base):
         if isinstance(word_or_list, (str, unicode)):
             word_or_list = [word_or_list]
 
-        filter_dict = { pair_data.SEQUENCE: id, pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 - len(word_or_list) } }}
+        filter_dict = { pair_data.SEQUENCE: id, pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS + '.' + str(15 - len(word_or_list)): { '$exists': False }}
         if not able_to_mod_pin:
             filter_dict[pair_data.PINNED] = False
 
