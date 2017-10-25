@@ -579,14 +579,14 @@ class text_msg_handler(object):
                 except bot.UserProfileNotFoundError:
                     pass
                 else:
-                    return u'Group ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
+                    return u'群組ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
 
                 try:
                     name = self._line_api_wrapper.profile_room(gid, uid)
                 except bot.UserProfileNotFoundError:
                     pass
                 else:
-                    return u'Room ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
+                    return u'房間ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(gid, uid, name)
 
                 return error.main.line_account_data_not_found()
             else:
