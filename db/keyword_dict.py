@@ -365,7 +365,7 @@ class group_dict_manager(db_base):
             word_or_list = [word_or_list]
 
         result = self.update_one({ pair_data.SEQUENCE: id,
-                                   pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 } }}, 
+                                   pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$size': { '$lte': 15 - len(word_or_list) } }}, 
                                  { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
@@ -491,11 +491,9 @@ class group_dict_manager(db_base):
             raise ValueError('Limit must be integer.')
 
         cursor = self.find().sort(pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT, pymongo.DESCENDING)
-        result = self.cursor_limit(cursor, limit)
+        result = list(self.cursor_limit(cursor, limit))
 
-        if result is None:
-            text = error.main.no_result()
-        else:
+        if len(result) > 0:
             data_list = list(result)
             
             text_to_join = []
@@ -513,6 +511,8 @@ class group_dict_manager(db_base):
 
                 last[0] = index
                 last[1] = data.call_count
+        else:
+            text_to_join.append(error.main.no_result())
 
         return '\n'.join(text_to_join)
 
@@ -537,11 +537,9 @@ class group_dict_manager(db_base):
         ]
         if limit is not None:
             pipeline.append({ '$limit': limit })
-        aggregate_result = self.aggregate(pipeline)
+        aggregate_result = list(self.aggregate(pipeline))
 
-        if aggregate_result is None:
-            text = error.main.no_result()
-        else:
+        if len(aggregate_result) > 0:
             data_list = PairCreatorRankingResult(list(aggregate_result))
             
             text_to_join = []
@@ -562,6 +560,8 @@ class group_dict_manager(db_base):
 
                 text_to_join.append(u'第{}名 - {}\n{}組 | {}次 | {:.2f}次/組 | {} pt'.format(
                     index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count, ext.simplify_num(user_data.activity_point)))
+        else:
+            text_to_join.append(error.main.no_result())
 
         return '\n'.join(text_to_join)
 
