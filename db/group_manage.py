@@ -211,9 +211,7 @@ class group_manager(db_base):
         RECEIVED_MESSAGES = 'rcv_sum'
 
         aggr_pipeline = [
-            { '$addFields': { group_data.MESSAGE_RECORDS + '.' + RECEIVED_MESSAGES: { '$sum': [ '$' + group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(type_enum) + '.' + k for k in (msg_stats_pair.TRIGGERED, msg_stats_pair.NOT_TRIGGERED) for type_enum in list(msg_type) ] },
-                              group_data.MESSAGE_RECORDS + '.' + msg_stats_data.CHAT_INSTANCE_ID: '$' + group_data.GROUP_ID} }, 
-            { '$replaceRoot': { 'newRoot': '$' + group_data.MESSAGE_RECORDS } },
+            { '$addFields': { group_data.MESSAGE_RECORDS + '.' + RECEIVED_MESSAGES: { '$sum': [ '$' + group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(type_enum) + '.' + k for k in (msg_stats_pair.TRIGGERED, msg_stats_pair.NOT_TRIGGERED) for type_enum in list(msg_type) ] } } }, 
             { '$sort': { RECEIVED_MESSAGES: pymongo.DESCENDING } }
         ]
 
@@ -222,7 +220,7 @@ class group_manager(db_base):
 
         aggr_result = list(self.aggregate(aggr_pipeline))
         if len(aggr_result) > 0:
-            return [msg_stats_data(data) for data in aggr_result]
+            return [group_data(data) for data in aggr_result]
         else:
             return []
 
@@ -259,13 +257,10 @@ class group_manager(db_base):
                 data = group_data(data)
                 gid = data.group_id
 
-                if group_manager is not None:
-                    if gid.startswith('U'):
-                        activation_status = u'私訊頻道'
-                    else:
-                        activation_status = unicode(data.config_type)
+                if gid.startswith('U'):
+                    activation_status = u'私訊頻道'
                 else:
-                    activation_status = u'N/A'
+                    activation_status = unicode(data.config_type)
 
                 text = u''
                 if including_channel_id:
