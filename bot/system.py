@@ -169,7 +169,7 @@ class line_api_wrapper(object):
 
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
-            d = data_dict[i:MAX_ACTIONS_IN_CAROUSEL]
+            d = data_dict[i : i + MAX_ACTIONS_IN_CAROUSEL]
 
             title_unicode = u'{} {}'.format(title_unicode, i / MAX_ACTIONS_IN_CAROUSEL + 1)
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
