@@ -481,8 +481,8 @@ class text_msg_handler(object):
         # assign parameters
         ranking_type = params[1]
 
-        default = self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
-        limit = default if params[2] is None else params[2]
+        default = self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
+        limit = default if params[2] is None else int(params[2])
 
         # validate parameters
         if not bot.string_can_be_int(limit):
