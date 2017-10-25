@@ -171,7 +171,8 @@ def callback():
 
     # handle webhook body
     try:
-        handle_pool.apply(handler.handle, args=(body, signature))
+        handler.handle(body, signature)
+        # handle_pool.apply(handler.handle, args=(body, signature))
     except exceptions.InvalidSignatureError:
         abort(400)
 
