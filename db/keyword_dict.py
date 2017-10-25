@@ -329,12 +329,11 @@ class group_dict_manager(db_base):
         """Return none if nothing found, else return result in list of pair_data class"""
         filter_dict = {
             '$or': [
-                { pair_data.KEYWORD: unicode(keyword) if data_exact_same else { '$regex': unicode(keyword) } },
-                { pair_data.REPLY: unicode(keyword) if data_exact_same else { '$regex': unicode(keyword) } }
+                { pair_data.KEYWORD: unicode(keyword) if data_exact_same else { '$regex': unicode(keyword), '$options': 'i' } },
+                { pair_data.REPLY: unicode(keyword) if data_exact_same else { '$regex': unicode(keyword), '$options': 'i' } }
             ]
         }
 
-        print filter_dict
         return self._search(filter_dict)
 
     def search_pair_by_index(self, start_id_or_id_list, end_id=None):
