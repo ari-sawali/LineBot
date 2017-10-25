@@ -368,7 +368,7 @@ class group_dict_manager(db_base):
         if not able_to_mod_pin:
             filter_dict[pair_data.PINNED] = False
 
-        result = self.update_one(filter_dict, { '$push': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
+        result = self.update_one(filter_dict, { '$pushAll': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: word_or_list } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def del_linked_word(self, id, word_or_list, able_to_mod_pin=False):
@@ -380,7 +380,7 @@ class group_dict_manager(db_base):
         if not able_to_mod_pin:
             filter_dict[pair_data.PINNED] = False
 
-        result = self.update_one(filter_dict, { '$pull': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: { '$each': word_or_list } } })
+        result = self.update_one(filter_dict, { '$pullAll': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: word_or_list } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def _search(self, filter_dict):
