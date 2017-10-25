@@ -151,8 +151,12 @@ class group_dict_manager(db_base):
 
     # override
     def aggregate(self, pipeline, **kwargs):
-        if not self._including_public:
-            pipeline = [ { '$match': { pair_data.AFFILIATED_GROUP: self._group_id } } ] + pipeline
+        if self._including_public:
+            filter_dict = { '$or': [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }] }
+        else:
+            filter_dict = { pair_data.AFFILIATED_GROUP: self._group_id }
+
+        pipeline = [ { '$match': filter_dict } ] + pipeline
 
         return super(group_dict_manager, self).aggregate(pipeline, **kwargs)
 
@@ -614,7 +618,7 @@ class group_dict_manager(db_base):
                 { '$group': {
                     '_id': 1,
                     SUM_USED_COUNT: { '$sum': '$' + pair_data.STATISTICS + '.' + pair_data.CALLED_COUNT }
-                    } }
+                } }
             ]).next()[SUM_USED_COUNT]
 
             aggregate_type_group_dict = {str(type_num): { '$sum': '$' + str(type_num) } for type_num in list(map(int, word_type)) }
