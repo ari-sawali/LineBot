@@ -442,21 +442,23 @@ class text_msg_handler(object):
         action = params[1]
         id = params[2]
 
+        if not bot.string_can_be_int(id):
+            return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
+        else:
+            id = int(id)
+
         shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + id }, u'更動回覆組ID: {}'.format(id), u'相關指令')
         
         # edit linked keyword pair
         if params[3] is not None:
             word_list = params[3].split(self._array_separator)
 
-            if not bot.string_can_be_int(id):
-                return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
-
             # 0 will be able to modify 1
 
             if action == 'A':
-                result = kwd_instance.add_linked_word(word_list, key_permission_lv >= low_perm)
+                result = kwd_instance.add_linked_word(id, word_list, key_permission_lv >= low_perm)
             elif action == 'D':
-                result = kwd_instance.del_linked_word(word_list, key_permission_lv >= low_perm)
+                result = kwd_instance.del_linked_word(id, word_list, key_permission_lv >= low_perm)
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'A(新增)或D(刪除)', action)
 
@@ -467,9 +469,6 @@ class text_msg_handler(object):
         # edit pinned property
         elif params[2] is not None:
             if key_permission_lv > low_perm:
-                if not bot.string_can_be_int(id):
-                    return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
-
                 action_dict = {'P': True, 'U': False}
                 pinned = action_dict.get(action, None)
 
