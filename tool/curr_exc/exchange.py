@@ -156,7 +156,7 @@ class oxr(object):
         return_str += u'\n本月已使用{}次'.format(usage_stats_json.get('requests', 'Error'))
         return_str += u'\n本月剩餘{}次'.format(usage_stats_json.get('requests_remaining', 'Error'))
         return_str += u'\n此方案可使用{}次'.format(usage_stats_json.get('requests_quota', 'Error'))
-        return_str += u'\n還有{}日歸零使用次數'.format(usage_stats_json.get('days_remaining', 'Error'))
+        return_str += u'\n還有{}日重設使用次數'.format(usage_stats_json.get('days_remaining', 'Error'))
 
         return return_str
 
