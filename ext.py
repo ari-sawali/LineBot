@@ -57,3 +57,19 @@ def object_to_json(o, level=0, indent=4, space=" ", newline="\n"):
     else:
         raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
     return ret
+
+levels = [(0, ''), (3, 'K'), (6, 'M'), (9, 'G'), (12, 'T'), (15, 'P'), (18, 'E'), (21, 'Z'), (24, 'Y')]
+
+def simplify_num(value):
+    if value < 1000:
+        return u'{}'.format(value)
+    
+    for pow, txt in levels:
+        simp = value / float(10 ** pow)
+        if simp >= 1.0 and simp < 1000.0:
+            return u'{:.2f} {}'.format(simp, txt)
+        else:
+            continue
+        
+    max_pow, max_txt = levels[-1]
+    return u'{:.2f} {}'.format(value / float(10**max_pow), max_txt)

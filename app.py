@@ -2,6 +2,7 @@
 
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: Q/I Regex literal
+# IMPORTANT: global K
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair

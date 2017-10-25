@@ -561,14 +561,11 @@ class group_dict_manager(db_base):
                         uname = profile.display_name
 
                 text_to_join.append(u'第{}名 - {}\n{}組 | {}次 | {:.2f}次/組 | {} pt'.format(
-                    index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count, user_data.activity_point))
+                    index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count, ext.simplify_num(user_data.activity_point)))
 
         return '\n'.join(text_to_join)
 
     def recently_called_string(self, limit=None):
-        # RECONSTRUCT
-        # HANDLE NO DATA OUTPUT
-
         result = self.find({ pair_data.STATISTICS + '.' + pair_data.LAST_CALL: { '$ne': None } }).sort(pair_data.STATISTICS + '.' + pair_data.LAST_CALL, pymongo.DESCENDING)
         result = self.cursor_limit(result, limit)
         data_list = None if result is None else list(result)
