@@ -15,7 +15,7 @@
 # UNDONE: find related pair of sticker (using global keyword dict manager)
 # UNDONE: increase performance of handling message (not multi processing)
 # UNDONE: increase performance of calling ranking by pair (integrate?)
-# UNDONE: increase performance of getting multi user's profile (multi process/thread?)
+# UNDONE: increase performance of getting multi user's profile (multi process/thread? - https://docs.python.org/2/library/multiprocessing.html)
 
 import os, sys, errno
 import tempfile

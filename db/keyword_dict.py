@@ -566,19 +566,22 @@ class group_dict_manager(db_base):
         return '\n'.join(text_to_join)
 
     def recently_called_string(self, limit=None):
+        # RECONSTRUCT
+        # HANDLE NO DATA OUTPUT
+
         result = self.find({ pair_data.STATISTICS + '.' + pair_data.LAST_CALL: { '$ne': None } }).sort(pair_data.STATISTICS + '.' + pair_data.LAST_CALL, pymongo.DESCENDING)
         result = self.cursor_limit(result, limit)
         data_list = None if result is None else list(result)
 
-        simplify_max_string_length = 5
+        SIMPLIFY_MAX_STRING_LENGTH = 8
 
         def format_string(data):
             data = pair_data(data)
-            kw = group_dict_manager._keyword_repr(data, True, simplify_max_string_length)
+            kw = group_dict_manager._keyword_repr(data, True, SIMPLIFY_MAX_STRING_LENGTH)
 
             return u'#{} {} @{}'.format(data.seq_id, kw, data.last_call.strftime('%m/%d %H:%M'))
 
-        return FormattedStringResult.init_by_field(data_list, format_string, limit)
+        return FormattedStringResult.init_by_field(data_list, format_string, limit, u'回覆組呼叫排行(前{}名)'.format(len(data_list)), error.main.no_result()).full
 
     def get_statistics_string(self, is_active_only=False):
         result = KeywordDictionaryStatistics()
