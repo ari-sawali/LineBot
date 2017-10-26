@@ -649,12 +649,13 @@ class group_dict_manager(db_base):
                     CreatedInDaysData.IN_15DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] }
                 } },
                 { '$group' : {
+                    '_id': None,
                     CreatedInDaysData.IN_1DAY: { '$sum': '$' + CreatedInDaysData.IN_1DAY },
                     CreatedInDaysData.IN_3DAYS: { '$sum': '$' + CreatedInDaysData.IN_3DAYS },
                     CreatedInDaysData.IN_7DAYS: { '$sum': '$' + CreatedInDaysData.IN_7DAYS },
                     CreatedInDaysData.IN_15DAYS: { '$sum': '$' + CreatedInDaysData.IN_15DAYS }
                 } }
-            ])
+            ]).next()
         except StopIteration:
             result = KeywordDictionaryStatistics()
 
