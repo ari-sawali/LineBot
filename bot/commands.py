@@ -52,7 +52,7 @@ class command_object(object):
         return self._remotable
 
 # Provide lowest permission requirement, if some command requires higher permission, handle inside txt msg handling function.
-cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, False, permission.BOT_ADMIN), 
+cmd_dict = { 'S': command_object(4, 4, cmd_category.MAIN, False, permission.BOT_ADMIN), 
              'A': command_object(3, 5, cmd_category.MAIN, True), 
              'M': command_object(3, 5, cmd_category.MAIN, True, permission.MODERATOR), 
              'D': command_object(1, 2, cmd_category.MAIN, True), 

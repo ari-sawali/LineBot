@@ -103,13 +103,13 @@ class error(object):
             return error.main.invalid_thing_with_correct_format(u'LINE用戶ID', u'U開頭，並且長度為33字元，後32碼為0~9或a~f.', illegal_uid)
 
     class sys_command(object):
-        def lack_of_parameters(indexs=None):
-            if indexs is None:
-                indexs = u'參數'
+        def lack_of_parameters(indexes=None):
+            if indexes is None:
+                indexes = u'參數'
             else:
-                indexs = u'、'.join([u'參數{}'.format(num) for num in indexs])
+                indexes = u'、'.join([u'參數{}'.format(num) for num in indexes])
 
-            return error.main.lack_of_thing(indexs)
+            return error.main.lack_of_thing(indexes)
 
     class auto_reply(object):
         @staticmethod

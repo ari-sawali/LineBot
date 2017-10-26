@@ -179,21 +179,33 @@ class text_msg_handler(object):
         if self._pymongo_client is None:
             self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
 
-        if params[2] is not None:
+        if params[4] is not None:
             db_name = params[1]
-            shell_cmd_dict = params[2]
-            shell_cmd_dict = ast.literal_eval(shell_cmd_dict)
+            command = params[2]
+            command_parameter = params[3]
+
+            shell_cmd_dict = params[4]
+            try:
+                shell_cmd_dict = ast.literal_eval(shell_cmd_dict)
+            except ValueError:
+                return error.main.miscellaneous(u'參數4字串型別分析失敗。')
 
             if not isinstance(shell_cmd_dict, dict):
                 return error.main.miscellaneous(u'輸入參數必須是合法dictionary型別。')
+            
+            text = u'目標資料庫:\n{}\n'.format(db_name)
+            text += u'資料庫主指令:\n{}\n'.format(command)
+            text += u'資料庫主指令參數:\n{}\n'.format(command_parameter)
+            text += u'資料庫副指令:\n{}\n\n'.format(shell_cmd_dict)
 
-            result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
+            try:
+                result = self._pymongo_client.get_database(db_name).command(command, command_parameter, **shell_cmd_dict)
 
-            text = u'目標資料庫指令:\n{}\n'.format(db_name)
-            text += u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
-            text += ext.object_to_json(result)
+                text += ext.object_to_json(result)
+            except pymongo.errors.OperationFailure as ex:
+                text += u'資料庫指令執行失敗。\n錯誤碼: {}\n錯誤訊息: {}'.format(ex.code, ex.message)
         else:
-            text = error.sys_command.lack_of_parameters(1)
+            text = error.sys_command.lack_of_parameters([1, 2, 3])
 
         return text
 
