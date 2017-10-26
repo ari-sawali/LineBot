@@ -597,7 +597,7 @@ class text_msg_handler(object):
                 bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'GID' + text_msg_handler.SPLITTER + gid }, u'快速查詢群組資料庫樣板', u'相關指令'))
 
     def _GA(self, src, params, key_permission_lv, group_config_type):
-        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
+        gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
         setter_uid = bot.line_api_wrapper.source_user_id(src)
         try:
             setter_name = self._line_api_wrapper.profile_name(setter_uid)
