@@ -172,8 +172,9 @@ class line_api_wrapper(object):
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):
             d = data_dict[i : i + MAX_ACTIONS_IN_CAROUSEL]
 
-            while len(d) < 3:
-                d.append((u'(空)', u'小水母'))
+            if i >= MAX_ACTIONS_IN_CAROUSEL:
+                while len(d) < MAX_ACTIONS_IN_CAROUSEL:
+                    d.append((u'(空)', u'小水母'))
 
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
             action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
