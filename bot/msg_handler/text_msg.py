@@ -579,6 +579,7 @@ class text_msg_handler(object):
                     kwd_instance = self._get_kwd_instance(src, group_config_type)
 
                 created_id_arr = kwd_instance.user_created_id_array(uid)
+                created_id_arr = [str(id) for id in created_id_arr]
 
                 if target_gid is not None:
                     try:
