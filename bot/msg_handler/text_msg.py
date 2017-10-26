@@ -77,7 +77,7 @@ class text_msg_handler(object):
             if user_permission == bot.permission.RESTRICTED:
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
                 return True
-            elif user_permission <= low_perm:
+            elif user_permission < low_perm:
                 self._line_api_wrapper.reply_message_text(token, error.main.restricted(low_perm))
                 return True
 
