@@ -639,6 +639,22 @@ class group_dict_manager(db_base):
                 { '$group': aggregate_type_group_dict }
             ]).next()
             del result.reply_type_count['_id']
+
+            now_time = datetime.now() + timedelta(hours=8)
+            result.created_in_days = self.aggregate([
+                { '$project': {
+                    CreatedInDaysData.IN_1DAY: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
+                    CreatedInDaysData.IN_3DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
+                    CreatedInDaysData.IN_7DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
+                    CreatedInDaysData.IN_15DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] }
+                } },
+                { '$group' : {
+                    CreatedInDaysData.IN_1DAY: { '$sum': '$' + CreatedInDaysData.IN_1DAY },
+                    CreatedInDaysData.IN_3DAYS: { '$sum': '$' + CreatedInDaysData.IN_3DAYS },
+                    CreatedInDaysData.IN_7DAYS: { '$sum': '$' + CreatedInDaysData.IN_7DAYS },
+                    CreatedInDaysData.IN_15DAYS: { '$sum': '$' + CreatedInDaysData.IN_15DAYS }
+                } }
+            ])
         except StopIteration:
             result = KeywordDictionaryStatistics()
 
@@ -649,6 +665,10 @@ class group_dict_manager(db_base):
         text_to_join = []
 
         text_to_join.append(u'{}組 (失效{}) | {}次 | {:.2f}次/組 | 可用率{:.2%}'.format(result.pair_count, result.pair_count_disabled, result.used_count, result.avg, result.usable_rate))
+        if result.created_in_days is not None:
+            cr_his_str = result.created_in_days.get_string()
+            text_to_join.append(u'回覆組製作量: {}').format(cr_his_str)
+
         if result.keyword_type_count is None:
             text_to_join.append(u'沒有統計資料。')
         else:
@@ -999,13 +1019,16 @@ class KeywordDictionaryStatistics(dict_like_mapping):
 
     USED_COUNT = 'used_ct'
 
+    CREATED_IN_DAYS = 'ct_d'
+
     def __init__(self):
         init_dict = {
             KeywordDictionaryStatistics.PAIR_COUNT: 0,
             KeywordDictionaryStatistics.PAIR_COUNT_DISABLED: 0,
             KeywordDictionaryStatistics.USED_COUNT: 0,
             KeywordDictionaryStatistics.PAIR_COUNT_BY_KEYWORD_TYPE: None,
-            KeywordDictionaryStatistics.PAIR_COUNT_BY_REPLY_TYPE: None
+            KeywordDictionaryStatistics.PAIR_COUNT_BY_REPLY_TYPE: None,
+            KeywordDictionaryStatistics.CREATED_IN_DAYS: CreatedInDaysData()
         }
 
         super(KeywordDictionaryStatistics, self).__init__(init_dict)
@@ -1064,6 +1087,14 @@ class KeywordDictionaryStatistics(dict_like_mapping):
     def reply_type_count(self, value):
         self[KeywordDictionaryStatistics.PAIR_COUNT_BY_REPLY_TYPE] = PairTypeCountData(value)
 
+    @property
+    def created_in_days(self):
+        return self[KeywordDictionaryStatistics.CREATED_IN_DAYS]
+
+    @created_in_days.setter
+    def created_in_days(self, value):
+        self[KeywordDictionaryStatistics.CREATED_IN_DAYS] = CreatedInDaysData(value)
+
 class PairTypeCountData(dict_like_mapping):
     def __init__(self, org_dict):
         return super(PairTypeCountData, self).__init__(org_dict)
@@ -1074,5 +1105,48 @@ class PairTypeCountData(dict_like_mapping):
     def get_values(self):
         return [self[key] for key in sorted(self)]
 
+class CreatedInDaysData(dict_like_mapping):
+    IN_1DAY = 'd1'
+    IN_3DAYS = 'd3'
+    IN_7DAYS = 'd7'
+    IN_15DAYS = 'd15'
+
+    @staticmethod
+    def init_by_field(in_1=0, in_3=0, in_7=0, in_15=0):
+        init_dict = {
+            CreatedInDaysData.IN_1DAY: in_1,
+            CreatedInDaysData.IN_3DAYS: in_3,
+            CreatedInDaysData.IN_7DAYS: in_7,
+            CreatedInDaysData.IN_15DAYS: in_15
+        }
+
+        return CreatedInDaysData(init_dict)
+    
+    def __init__(self, org_dict):
+        if not all(k in org_dict for k in (CreatedInDaysData.IN_1DAY, CreatedInDaysData.IN_3DAYS, CreatedInDaysData.IN_7DAYS, CreatedInDaysData.IN_15DAYS)):
+            raise ValueError(error.main.miscellaneous(u'Incomplete data.'))
+
+        super(CreatedInDaysData, self).__init__(org_dict)
+
+    @property
+    def in_1day(self):
+        return self[KeywordDictionaryStatistics.IN_1DAY]
+    
+    @property
+    def in_3days(self):
+        return self[KeywordDictionaryStatistics.IN_3DAYS]
+    
+    @property
+    def in_7days(self):
+        return self[KeywordDictionaryStatistics.IN_7DAYS]
+    
+    @property
+    def in_15days(self):
+        return self[KeywordDictionaryStatistics.IN_15DAYS]
+
+    def get_string(self):
+        return u'1天內 {} | 3天內 {} | 7天內 {} | 15天內 {}'.format(
+            self[KeywordDictionaryStatistics.IN_1DAY], self[KeywordDictionaryStatistics.IN_3DAYS],
+            self[KeywordDictionaryStatistics.IN_7DAYS], self[KeywordDictionaryStatistics.IN_15DAYS])
 
 
