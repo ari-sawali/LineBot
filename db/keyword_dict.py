@@ -1028,7 +1028,7 @@ class KeywordDictionaryStatistics(dict_like_mapping):
             KeywordDictionaryStatistics.USED_COUNT: 0,
             KeywordDictionaryStatistics.PAIR_COUNT_BY_KEYWORD_TYPE: None,
             KeywordDictionaryStatistics.PAIR_COUNT_BY_REPLY_TYPE: None,
-            KeywordDictionaryStatistics.CREATED_IN_DAYS: CreatedInDaysData()
+            KeywordDictionaryStatistics.CREATED_IN_DAYS: CreatedInDaysData.init_by_field()
         }
 
         super(KeywordDictionaryStatistics, self).__init__(init_dict)
