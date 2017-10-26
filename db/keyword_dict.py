@@ -668,7 +668,7 @@ class group_dict_manager(db_base):
         text_to_join.append(u'{}組 (失效{}) | {}次 | {:.2f}次/組 | 可用率{:.2%}'.format(result.pair_count, result.pair_count_disabled, result.used_count, result.avg, result.usable_rate))
         if result.created_in_days is not None:
             cr_his_str = result.created_in_days.get_string()
-            text_to_join.append(u'回覆組製作量: {}').format(cr_his_str)
+            text_to_join.append(u'回覆組製作量: {}'.format(cr_his_str))
 
         if result.keyword_type_count is None:
             text_to_join.append(u'沒有統計資料。')
