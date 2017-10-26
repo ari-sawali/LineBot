@@ -620,10 +620,13 @@ class user_data_manager(db_base):
             return False
 
     def _set_cache(self, group_id, new_user_data):
-        if group_id in self._cache and new_user_data[user_data.USER_ID] in self._cache[group_id]:
-            self._cache[group_id][new_user_data[user_data.USER_ID]] = new_user_data
+        uid = new_user_data[user_data.USER_ID]
+        if group_id in self._cache and uid in self._cache[group_id]:
+            self._cache[group_id][uid] = new_user_data
         else:
-            self._cache[group_id] = {new_user_data[user_data.USER_ID]: new_user_data}
+            self._cache[group_id] = { uid: new_user_data }
+
+        print self._cache
 
     def _del_cache(self, group_id, uid):
         if group_id in self._cache and uid in self._cache[group_id]:
@@ -635,7 +638,7 @@ class user_data_manager(db_base):
         else:
             u_data = self.find_one({ user_data.GROUP: group_id, user_data.USER_ID: user_id })
             if u_data is not None:
-                self._set_cache(group_id, u_data)
+                self._set_cache(group_id, user_data(u_data))
                 return self._get_cache_by_id(group_id, user_id)
             else:
                 self._set_cache(group_id, user_data.init_by_field(user_id, group_id, bot.permission.USER))
