@@ -68,6 +68,12 @@ class text_msg_handler(object):
             # get function
             cmd_function = getattr(self, '_{}'.format(cmd))
 
+            print low_perm
+            print cmd_data.remotable
+            print bot.line_api_wrapper.is_valid_room_group_id(params[1])
+            print user_permission
+            print user_permission < low_perm
+
             # check if command is remote
             if cmd_data.remotable and bot.line_api_wrapper.is_valid_room_group_id(params[1]):
                 user_permission = self._group_manager.get_user_permission(params[1], src_uid)
