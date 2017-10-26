@@ -70,7 +70,7 @@ class text_msg_handler(object):
 
             # check if command is remote
             if cmd_data.remotable and bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-                user_permission = self._group_manager.get_user_permission(src_gid, params[1])
+                user_permission = self._group_manager.get_user_permission(params[1], src_uid)
 
             # check permission
             low_perm = cmd_data.lowest_permission
@@ -94,20 +94,35 @@ class text_msg_handler(object):
             
         return False
 
-    def _get_kwd_instance(self, src, config):
-        source_type = bot.line_event_source_type.determine(src)
+    def _get_remote_gid(self, params, default=None, allow_pop_public=False):
+        """Return gid. gid will be none if params[1] is not legal gid. if gid is not None, params is popped. If default is not None, all None returns will be default."""
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or (allow_pop_public and db.word_dict_global.CODE_OF_PUBLIC_GROUP == params[1]):
+            return params.pop(1)
 
+        return default
+
+    def _get_kwd_instance(self, src, config, params, spec_gid=None):
+        """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly."""
         if config is None:
             including_public = False
         else:
             including_public = config == db.config_type.ALL
 
-        if source_type == bot.line_event_source_type.USER:
-            kwd_instance = self._kwd_public
-        elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.ROOM:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
+        if spec_gid is None:
+            remote_gid = self._get_remote_gid(params)
         else:
-            raise ValueError(error.main.miscellaneous(u'Unknown source type.'))
+            remote_gid = spec_gid
+
+        if remote_gid is not None:
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, remote_gid, including_public)
+        else:
+            source_type = bot.line_event_source_type.determine(src)
+            if source_type == bot.line_event_source_type.USER:
+                kwd_instance = self._kwd_public
+            elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.ROOM:
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
+            else:
+                raise ValueError(error.main.miscellaneous(u'Unknown source type.'))
 
         return kwd_instance
 
@@ -190,11 +205,8 @@ class text_msg_handler(object):
         if not bot.line_api_wrapper.is_valid_user_id(new_profile_uid):
             return error.line_bot_api.illegal_user_id(new_profile_uid)
 
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
         
         flags = params[1]
         kw = params[2]
@@ -276,12 +288,9 @@ class text_msg_handler(object):
         # verify uid structure
         if not bot.line_api_wrapper.is_valid_user_id(del_profile_uid):
             return error.line_bot_api.illegal_user_id(del_profile_uid)
-
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         # disable keyword
         if params[2] is not None:
@@ -315,12 +324,6 @@ class text_msg_handler(object):
                 return error.main.pair_not_exist_or_insuffieicnt_permission()
 
     def _R(self, src, params, key_permission_lv, group_config_type):
-        low_perm = self._command_manager.get_command_data('R').lowest_permission
-
-        # check permission
-        if not key_permission_lv >= low_perm:
-            return error.main.restricted(int(low_perm))
-
         # check whether profile data is reachable
         try:
             disabler_uid = bot.line_api_wrapper.source_user_id(src)
@@ -335,11 +338,8 @@ class text_msg_handler(object):
         return self._D(src, params, key_permission_lv, group_config_type, True)
 
     def _Q(self, src, params, key_permission_lv, group_config_type):
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, False)
@@ -357,11 +357,8 @@ class text_msg_handler(object):
         return text
 
     def _I(self, src, params, key_permission_lv, group_config_type):
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, True)
@@ -378,16 +375,7 @@ class text_msg_handler(object):
         return text
 
     def _X(self, src, params, key_permission_lv, group_config_type):
-        low_perm = self._command_manager.get_command_data('X').lowest_permission
-
-        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
-            if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or params[1] == db.word_dict_global.CODE_OF_PUBLIC_GROUP:
-                target_gid = params.pop(1)
-            else:
-                return error.main.miscellaneous(u'如果要於私訊頻道中使用此功能，參數1必須為合法的群組/房間ID或PUBLIC(代表公用資料庫ID)。')
-        else:
-            target_gid = bot.line_api_wrapper.source_channel_id(src)
-
+        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src), bot.line_api_wrapper.source_channel_id(src), True)
         uid = bot.line_api_wrapper.source_user_id(src)
 
         if params[2] is not None:
@@ -395,14 +383,14 @@ class text_msg_handler(object):
             source_gid = params[2]
 
             if bot.line_api_wrapper.is_valid_room_group_id(source_gid) or source_gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP:
-                if key_permission_lv <= low_perm:
-                    return error.main.restricted(int(low_perm))
+                if key_permission_lv < bot.permission.MODERATOR:
+                    return error.main.restricted(bot.permission.MODERATOR)
                 result_ids = self._kwd_global.clone_from_group(source_gid, target_gid, uid, 'D' in flags, 'P' in flags)
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', source_gid)
         elif params[1] is not None:
-            if key_permission_lv <= low_perm:
-                return error.main.restricted(int(low_perm) + 1)
+            if key_permission_lv < bot.permission.ADMIN:
+                return error.main.restricted(bot.permission.ADMIN)
             
             if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
                 ids = params[1]
@@ -434,12 +422,9 @@ class text_msg_handler(object):
 
     def _E(self, src, params, key_permission_lv, group_config_type):
         low_perm = self._command_manager.get_command_data('E').lowest_permission
-
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         action = params[1]
         id = params[2]
@@ -488,11 +473,8 @@ class text_msg_handler(object):
             return error.main.lack_of_thing(u'參數')
 
     def _K(self, src, params, key_permission_lv, group_config_type):
-        # assign instance to manage pair
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, params.pop(1), group_config_type == db.config_type.ALL)
-        else:
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
+        # assign keyword instance
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         # assign parameters
         ranking_type = params[1]
@@ -529,10 +511,7 @@ class text_msg_handler(object):
     def _P(self, src, params, key_permission_lv, group_config_type):
         wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID', params[1])
 
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            target_gid = params.pop(1)
-        else:
-            target_gid = None
+        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
 
         category = params[1]
         gid = params[2]
@@ -544,10 +523,7 @@ class text_msg_handler(object):
         
             text = u'為避免訊息過長洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
-            if target_gid is not None:
-                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, target_gid, group_config_type == db.config_type.ALL)
-            else:
-                kwd_instance = self._get_kwd_instance(src, group_config_type)
+            kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
             if kwd_instance.is_public:
                 instance_type = u'公用'
@@ -575,10 +551,7 @@ class text_msg_handler(object):
         else:
             uid = category
             if bot.line_api_wrapper.is_valid_user_id(uid):
-                if target_gid is not None:
-                    kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, target_gid, group_config_type == db.config_type.ALL)
-                else:
-                    kwd_instance = self._get_kwd_instance(src, group_config_type)
+                kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
                 created_id_arr = kwd_instance.user_created_id_array(uid)
                 created_id_arr = [str(id) for id in created_id_arr]
@@ -610,39 +583,20 @@ class text_msg_handler(object):
         return text
 
     def _G(self, src, params, key_permission_lv, group_config_type):
-        if params[1] is not None:
-            gid = params[1]
-        else:
-            gid = bot.line_api_wrapper.source_channel_id(src)
-
         if params[1] is None and bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             return error.main.incorrect_channel(False, True, True)
 
-        if bot.line_api_wrapper.is_valid_room_group_id(gid):
-            # assign instance to manage pair
-            kwd_instance = self._get_kwd_instance(src, group_config_type)
-            group_data = self._group_manager.get_group_by_id(gid, True)
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
-            group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
-            
-            return (bot.line_api_wrapper.wrap_text_message(group_statistics, self._webpage_generator), 
-                    bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'GID' + text_msg_handler.SPLITTER + gid }, u'快速查詢群組資料庫樣板', u'相關指令'))
-        else:
-            return error.main.invalid_thing_with_correct_format(u'群組/房間ID', u'R或C開頭，並且長度為33字元', gid)
+        group_data = self._group_manager.get_group_by_id(gid, True)
+
+        group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
+        
+        return (bot.line_api_wrapper.wrap_text_message(group_statistics, self._webpage_generator), 
+                bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'GID' + text_msg_handler.SPLITTER + gid }, u'快速查詢群組資料庫樣板', u'相關指令'))
 
     def _GA(self, src, params, key_permission_lv, group_config_type):
-        low_perm = self._command_manager.get_command_data('GA').lowest_permission
-
-        if not key_permission_lv >= low_perm:
-            return error.main.restricted(low_perm)
-
-        if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
-            gid = params.pop(1)
-            if not bot.line_api_wrapper.is_valid_room_group_id(gid):
-                return error.main.incorrect_param(u'參數1', u'合法的群組/房間ID')
-        else:
-            gid = bot.line_api_wrapper.source_channel_id(src)
-        
+        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
         setter_uid = bot.line_api_wrapper.source_user_id(src)
         try:
             setter_name = self._line_api_wrapper.profile_name(setter_uid)
@@ -835,10 +789,7 @@ class text_msg_handler(object):
         return text
 
     def _L(self, src, params, key_permission_lv, group_config_type):
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]):
-            target_gid = params.pop(1)
-        else:
-            target_gid = bot.line_api_wrapper.source_channel_id(src)
+        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
 
         if params[1] is not None:
             category = params[1]
