@@ -59,6 +59,21 @@ class system_data(object):
     def boot_up(self):
         return self._boot_up
 
+class infinite_loop_preventer(object):
+    def __init__(self):
+        self._last_message = {}
+
+    def rec_last_content_and_get_status(self, uid, content):
+        if uid in self._last_message:
+            banned = self._last_message[uid].banned
+            if banned:
+                return True
+            self._last_message[uid].last_content = content
+        else:
+            self._last_message[uid] = infinite_loop_prevent_data(uid, init_content)
+
+        return self._last_message[uid].banned
+
 class infinite_loop_prevent_data(object):
     MAX_LOOP_COUNT = 3
 
@@ -85,23 +100,7 @@ class infinite_loop_prevent_data(object):
 
     @property
     def banned(self):
-        return self._repeat_count > inifinite_loop_prevent_data.MAX_LOOP_COUNT
-
-class infinite_loop_preventer(object):
-    def __init__(self):
-        self._last_message = {}
-
-    def rec_last_content_and_get_status(self, uid, content):
-        if uid in self._last_message:
-            banned = self._last_message[uid].banned
-            if banned:
-                return True
-            self._last_message[uid].last_content = content
-        else:
-            self._last_message[uid] = inifinite_loop_prevent_data(uid, init_content)
-
-        return self._last_message[uid].banned
-
+        return self._repeat_count > infinite_loop_prevent_data.MAX_LOOP_COUNT
 
 class line_event_source_type(ext.EnumWithName):
     USER = 0, '私訊'
