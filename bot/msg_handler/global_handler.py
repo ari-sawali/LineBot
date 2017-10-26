@@ -47,6 +47,11 @@ class global_msg_handle(object):
             print 'Define COMMAND_REPLY_ERROR in environment variable to switch report on error occurred.'
             sys.exit(1)
 
+        self._intercept_display_name_key = os.getenv('COMMAND_INTERCEPT_DISPLAY_NAME', None)
+        if self._intercept_display_name_key is None:
+            print 'Define COMMAND_INTERCEPT_DISPLAY_NAME in environment variable to switch report on error occurred.'
+            sys.exit(1)
+
     ##############
     ### GLOBAL ###
     ##############
@@ -105,18 +110,22 @@ class global_msg_handle(object):
         
         self._line_api_wrapper.reply_message(token, rep_list) 
 
-    def _print_intercepted(self, event):
+    def _print_intercepted(self, event, display_user_name=False):
         intercept = self._system_config.get(db.config_data.INTERCEPT)
+        intercept_display_name = self._system_config.get(db.config_data.INTERCEPT_DISPLAY_NAME)
         if intercept:
             src = event.source
             uid = bot.line_api_wrapper.source_user_id(src)
 
-            try:
-                user_name = self._line_api_wrapper.profile_name(uid)
-                if user_name is None:
-                    user_name = 'Empty'
-            except bot.UserProfileNotFoundError:
-                user_name = 'Unknown'
+            if intercept_display_name:
+                try:
+                    user_name = self._line_api_wrapper.profile_name(uid)
+                    if user_name is None:
+                        user_name = 'Empty'
+                except bot.UserProfileNotFoundError:
+                    user_name = 'Unknown'
+            else:
+                user_name = '(Set to not to display.)'
 
             print '==========================================='
             print 'From Channel ID \'{}\''.format(bot.line_api_wrapper.source_channel_id(src))
@@ -164,6 +173,7 @@ class global_msg_handle(object):
 
         action_dict = { self._silence_key: (db.config_data.SILENCE, 'BOT SILENCE: {}'),
                         self._intercept_key: (db.config_data.INTERCEPT, 'MESSAGE INTERCEPTION: {}'),
+                        self._intercept_display_name_key: (db.config_data.INTERCEPT_DISPLAY_NAME, 'DISPLAY NAME IN MESSAGE INTERCEPTION: {}'),
                         self._calc_debug_key: (db.config_data.CALCULATOR_DEBUG, 'CALCULATOR DEBUG: {}'),
                         self._rep_error_key: (db.config_data.REPLY_ERROR, 'REPLY ON ERROR: {}') }
 

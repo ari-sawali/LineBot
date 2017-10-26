@@ -44,6 +44,7 @@ class config_data(dict_like_mapping):
     """
     SILENCE = 'mute'
     INTERCEPT = 'itc'
+    INTERCEPT_DISPLAY_NAME = 'itc_n'
     CALCULATOR_DEBUG = 'calc_dbg'
     REPLY_ERROR = 'rep_err'
 
@@ -53,10 +54,11 @@ class config_data(dict_like_mapping):
                 config_data.SILENCE: False,
                 config_data.INTERCEPT: True,
                 config_data.CALCULATOR_DEBUG: False,
-                config_data.REPLY_ERROR: False
+                config_data.REPLY_ERROR: False,
+                config_data.INTERCEPT_DISPLAY_NAME: False
             }
 
-        if not all(k in org_dict for k in (config_data.SILENCE, config_data.INTERCEPT, config_data.CALCULATOR_DEBUG, config_data.REPLY_ERROR)):
+        if not all(k in org_dict for k in (config_data.SILENCE, config_data.INTERCEPT, config_data.CALCULATOR_DEBUG, config_data.REPLY_ERROR, config_data.INTERCEPT_DISPLAY_NAME)):
             raise ValueError(u'Incomplete config data.')
 
         return super(config_data, self).__init__(org_dict)
