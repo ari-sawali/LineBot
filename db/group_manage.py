@@ -626,8 +626,6 @@ class user_data_manager(db_base):
         else:
             self._cache[group_id] = { uid: new_user_data }
 
-        print self._cache
-
     def _del_cache(self, group_id, uid):
         if group_id in self._cache and uid in self._cache[group_id]:
             del self._cache[group_id][uid]

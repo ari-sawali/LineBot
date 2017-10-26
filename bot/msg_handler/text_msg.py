@@ -62,12 +62,23 @@ class text_msg_handler(object):
             # log statistics
             self._system_stats.command_called(cmd)
 
+            # assign command data
+            cmd_data = self._command_manager.get_command_data(cmd)
+
             # get function
             cmd_function = getattr(self, '_{}'.format(cmd))
 
-            # get permission
-            if user_permission is bot.permission.RESTRICTED:
+            # check if command is remote
+            if cmd_data.remotable and bot.line_api_wrapper.is_valid_room_group_id(params[1]):
+                user_permission = self._group_manager.get_user_permission(src_gid, params[1])
+
+            # check permission
+            low_perm = cmd_data.lowest_permission
+            if user_permission == bot.permission.RESTRICTED:
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
+                return True
+            elif user_permission < low_perm:
+                self._line_api_wrapper.reply_message_text(token, error.main.restricted(low_perm))
                 return True
 
             # handle command
@@ -150,23 +161,20 @@ class text_msg_handler(object):
         return result_data, title
 
     def _S(self, src, params, key_permission_lv, group_config_type):
-        if key_permission_lv >= bot.commands.permission.BOT_ADMIN:
-            if self._pymongo_client is None:
-                self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
+        if self._pymongo_client is None:
+            self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
 
-            if params[2] is not None:
-                db_name = params[1]
-                shell_cmd_dict = params[2]
+        if params[2] is not None:
+            db_name = params[1]
+            shell_cmd_dict = params[2]
 
-                result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
+            result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
 
-                text = u'目標資料庫指令:\n{}\n'.format(db_name)
-                text += u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
-                text += ext.object_to_json(result)
-            else:
-                text = error.main.lack_of_parameters(1)
+            text = u'目標資料庫指令:\n{}\n'.format(db_name)
+            text += u'資料庫指令:\n{}\n\n'.format(shell_cmd_dict)
+            text += ext.object_to_json(result)
         else:
-            text = error.main.restricted(3)
+            text = error.sys_command.lack_of_parameters(1)
 
         return text
 
@@ -244,12 +252,6 @@ class text_msg_handler(object):
             raise ValueError('Unknown type of return result.')
 
     def _M(self, src, params, key_permission_lv, group_config_type):
-        low_perm = self._command_manager.get_command_data('M').lowest_permission
-
-        # check permission
-        if not key_permission_lv >= low_perm:
-            return error.main.restricted(int(low_perm))
-
         # check whether profile data is reachable
         try:
             new_profile_uid = bot.line_api_wrapper.source_user_id(src)

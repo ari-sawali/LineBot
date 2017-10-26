@@ -15,17 +15,17 @@ class cmd_category(ext.EnumWithName):
     GAME = 2, '遊戲用指令'
 
 class command_object(object):
-    def __init__(self, min_split, max_split, cmd_category, will_pop, lowest_permission_req=permission.USER):
+    def __init__(self, min_split, max_split, cmd_category, remotable, lowest_permission_req=permission.USER):
         self._split_max = max_split
         self._split_min = min_split
         self._count = 0
-        self._will_pop = will_pop
+        self._remotable = remotable
         self._lowest_permission_required = lowest_permission_req
 
     @property
     def split_max(self):
         """Maximum split count."""
-        return self._split_max + int(self._will_pop)
+        return self._split_max + int(self._remotable)
 
     @property
     def split_min(self):
@@ -46,6 +46,10 @@ class command_object(object):
     def lowest_permission(self):
         """Required Permission"""
         return self._lowest_permission_required
+
+    @property
+    def remotable(self):
+        return self._remotable
 
 cmd_dict = { 'S': command_object(2, 2, cmd_category.MAIN, False, permission.BOT_ADMIN), 
              'A': command_object(3, 5, cmd_category.MAIN, True), 
