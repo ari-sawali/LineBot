@@ -644,9 +644,9 @@ class group_dict_manager(db_base):
             result.created_in_days = self.aggregate([
                 { '$project': {
                     CreatedInDaysData.IN_1DAY: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
-                    CreatedInDaysData.IN_3DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
-                    CreatedInDaysData.IN_7DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] },
-                    CreatedInDaysData.IN_15DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=1)] }, 1, 0] }
+                    CreatedInDaysData.IN_3DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=3)] }, 1, 0] },
+                    CreatedInDaysData.IN_7DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=7)] }, 1, 0] },
+                    CreatedInDaysData.IN_15DAYS: { '$cond': [{ '$gte': ['$' + pair_data.STATISTICS + '.' + pair_data.CREATED_TIME, now_time - timedelta(days=15)] }, 1, 0] }
                 } },
                 { '$group' : {
                     '_id': None,
