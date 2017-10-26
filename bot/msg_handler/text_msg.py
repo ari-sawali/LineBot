@@ -77,7 +77,7 @@ class text_msg_handler(object):
                 user_permission = self._group_manager.get_user_permission(params[1], src_uid)
 
             print user_permission
-            print user_permission < low_perm
+            print user_permission < cmd_data.lowest_permission
 
             # check permission
             low_perm = cmd_data.lowest_permission
