@@ -70,7 +70,7 @@ class infinite_loop_preventer(object):
                 return True
             self._last_message[uid].last_content = content
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(uid, init_content)
+            self._last_message[uid] = infinite_loop_prevent_data(uid, content)
 
         return self._last_message[uid].banned
 
