@@ -379,6 +379,8 @@ class text_msg_handler(object):
         return text
 
     def _X(self, src, params, key_permission_lv, group_config_type):
+        low_perm = self._command_manager.get_command_data('X').lowest_permission
+
         target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src), True)
         uid = bot.line_api_wrapper.source_user_id(src)
 
