@@ -586,7 +586,8 @@ class text_msg_handler(object):
         if params[1] is None and bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
             return error.main.incorrect_channel(False, True, True)
 
-        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
+        gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params, gid)
 
         group_data = self._group_manager.get_group_by_id(gid, True)
 
