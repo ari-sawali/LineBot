@@ -130,6 +130,7 @@ class db_base(pymongo.collection.Collection):
 
     def count(self, filter = None, **kwargs):
         print 'MongoDB COUNT @{}.{}'.format(self._db_name, self._collection_name)
+        print filter
 
         return super(db_base, self).count(filter, **kwargs)
 
