@@ -109,10 +109,6 @@ class group_manager(db_base):
     def set_config_type(self, gid, config_type, uid):
         """Return true if success, else return error message in string."""
 
-        print gid
-        print config_type
-        print uid
-
         if len(gid) != group_manager.ID_LENGTH:
             return error.error.line_bot_api.illegal_room_group_id(gid)
 

@@ -15,6 +15,7 @@ class global_msg_handle(object):
         self._line_api_wrapper = line_api_wrapper
         self._system_config = system_config
         self._game_data = db.game_object_holder(mongo_db_uri)
+        self._loop_preventer = bot.infinite_loop_preventer()
 
         self._txt_handle = txt_handle
         self._game_handle = game_handle
@@ -276,37 +277,49 @@ class global_msg_handle(object):
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
 
-        ############################################
-        ######## ASSIGN NECESSARY VARIABLES ########
-        ############################################
+        ##############################################
+        ######## ASSIGN NECESSARY VARIABLES 1 ########
+        ##############################################
 
         cid = bot.line_api_wrapper.source_channel_id(src)
         uid = bot.line_api_wrapper.source_user_id(src)
+
+        #####################################
+        ### TERMINATE CHECK - LOOP TO BAN ###
+        #####################################
+
+        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text)
+
+        if terminate_2:
+            print 'terminate 2'
+            return
+
+        ##############################################
+        ######## ASSIGN NECESSARY VARIABLES 2 ########
+        ##############################################
+
         group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
-
-        print user_permission
-
         self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate_2 = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
+        terminate_3 = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
 
-        if terminate_2:
-            print 'terminate 2'
+        if terminate_3:
+            print 'terminate 3'
             return
 
         #########################################
         ### TERMINATE CHECK - TEXT CALCULATOR ###
         #########################################
 
-        terminate_3 = self._handle_text_str_calc(event)
+        terminate_4 = self._handle_text_str_calc(event)
 
-        if terminate_3:
-            print 'terminate 3'
+        if terminate_4:
+            print 'terminate 4'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -314,10 +327,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GAME (RPS) ###
         ####################################
         
-        terminate_4 = self._handle_text_rps(event)
+        terminate_5 = self._handle_text_rps(event)
 
-        if terminate_4:
-            print 'terminate 4'
+        if terminate_5:
+            print 'terminate 5'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -325,10 +338,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SYSTEM COMMAND ###
         ########################################
 
-        terminate_5 = self._handle_text_sys_command(event, user_permission, group_config)
+        terminate_6 = self._handle_text_sys_command(event, user_permission, group_config)
 
-        if terminate_5 or group_config <= db.config_type.SYS_ONLY:
-            print 'terminate 5'
+        if terminate_6 or group_config <= db.config_type.SYS_ONLY:
+            print 'terminate 6'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -336,10 +349,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_6 = self._handle_text_auto_reply(event, group_config)
+        terminate_7 = self._handle_text_auto_reply(event, group_config)
              
-        if terminate_6:
-            print 'terminate 6'
+        if terminate_7:
+            print 'terminate 7'
             return
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)

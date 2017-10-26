@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: command to get user permission
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: JC P KW global
 # IMPORTANT: cache keyword_dict
