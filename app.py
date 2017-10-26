@@ -3,6 +3,7 @@
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: JC P KW global
 # IMPORTANT: cache keyword_dict
+# IMPORTANT: statistics of sticker 
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking

@@ -275,6 +275,8 @@ class global_msg_handle(object):
         group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
 
+        print user_permission
+
         self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
 
         #######################################################
