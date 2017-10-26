@@ -3,6 +3,7 @@
 # IMPORTANT: command to get user permission (P)
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: JC P KW global
+# IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: statistics of sticker 
 # IMPORTANT: use mail api to send error report
