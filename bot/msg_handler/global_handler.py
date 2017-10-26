@@ -103,7 +103,6 @@ class global_msg_handle(object):
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
         
-        print rep_list
         self._line_api_wrapper.reply_message(token, rep_list) 
 
     def _print_intercepted(self, event):
