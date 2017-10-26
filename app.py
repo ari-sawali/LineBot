@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: command to get user permission (P)
 # IMPORTANT: Allow global search in Q/I using ID
 # IMPORTANT: JC P KW global
 # IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: statistics of sticker 
 # IMPORTANT: use mail api to send error report
+# IMPORTANT: command to get user permission (P)
 # IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
@@ -19,6 +19,7 @@
 # UNDONE: increase performance of handling message (not multi processing)
 # UNDONE: increase performance of calling ranking by pair (integrate?)
 # UNDONE: increase performance of getting multi user's profile (multi process/thread? - https://docs.python.org/2/library/multiprocessing.html)
+# UNDONE: format timezone
 
 import os, sys, errno
 import tempfile
