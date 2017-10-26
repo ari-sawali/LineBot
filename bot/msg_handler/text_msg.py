@@ -182,6 +182,10 @@ class text_msg_handler(object):
         if params[2] is not None:
             db_name = params[1]
             shell_cmd_dict = params[2]
+            shell_cmd_dict = ast.literal_eval(shell_cmd_dict)
+
+            if shell_cmd_dict:
+                return error.main.miscellaneous(u'輸入參數必須是合法dictionary型別。')
 
             result = self._pymongo_client.get_database(db_name).command(ast.literal_eval(shell_cmd_dict))
 
