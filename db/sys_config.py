@@ -58,8 +58,20 @@ class config_data(dict_like_mapping):
                 config_data.INTERCEPT_DISPLAY_NAME: False
             }
 
-        if not all(k in org_dict for k in (config_data.SILENCE, config_data.INTERCEPT, config_data.CALCULATOR_DEBUG, config_data.REPLY_ERROR, config_data.INTERCEPT_DISPLAY_NAME)):
-            raise ValueError(u'Incomplete config data.')
+        if config_data.SILENCE not in org_dict:
+            org_dict[config_data.SILENCE] = False
+            
+        if config_data.INTERCEPT not in org_dict:
+            org_dict[config_data.INTERCEPT] = True
+            
+        if config_data.CALCULATOR_DEBUG not in org_dict:
+            org_dict[config_data.CALCULATOR_DEBUG] = False
+            
+        if config_data.REPLY_ERROR not in org_dict:
+            org_dict[config_data.REPLY_ERROR] = False
+            
+        if config_data.INTERCEPT_DISPLAY_NAME not in org_dict:
+            org_dict[config_data.INTERCEPT_DISPLAY_NAME] = False
 
         return super(config_data, self).__init__(org_dict)
 
