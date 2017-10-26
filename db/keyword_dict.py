@@ -1131,23 +1131,22 @@ class CreatedInDaysData(dict_like_mapping):
 
     @property
     def in_1day(self):
-        return self[KeywordDictionaryStatistics.IN_1DAY]
+        return self[CreatedInDaysData.IN_1DAY]
     
     @property
     def in_3days(self):
-        return self[KeywordDictionaryStatistics.IN_3DAYS]
+        return self[CreatedInDaysData.IN_3DAYS]
     
     @property
     def in_7days(self):
-        return self[KeywordDictionaryStatistics.IN_7DAYS]
+        return self[CreatedInDaysData.IN_7DAYS]
     
     @property
     def in_15days(self):
-        return self[KeywordDictionaryStatistics.IN_15DAYS]
+        return self[CreatedInDaysData.IN_15DAYS]
 
     def get_string(self):
         return u'1天內 {} | 3天內 {} | 7天內 {} | 15天內 {}'.format(
-            self[KeywordDictionaryStatistics.IN_1DAY], self[KeywordDictionaryStatistics.IN_3DAYS],
-            self[KeywordDictionaryStatistics.IN_7DAYS], self[KeywordDictionaryStatistics.IN_15DAYS])
+            self[CreatedInDaysData.IN_1DAY], self[CreatedInDaysData.IN_3DAYS], self[CreatedInDaysData.IN_7DAYS], self[CreatedInDaysData.IN_15DAYS])
 
 
