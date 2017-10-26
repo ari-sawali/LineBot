@@ -670,7 +670,6 @@ class text_msg_handler(object):
             except ValueError:
                 return error.main.miscellaneous(u'群組設定代碼不合法，請確認代碼有效後重試。')
 
-            print gid
             change_result = self._group_manager.set_config_type(gid, cfg_type, setter_uid)
 
             if change_result:
