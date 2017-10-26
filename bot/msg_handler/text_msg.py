@@ -101,14 +101,14 @@ class text_msg_handler(object):
 
         return default
 
-    def _get_kwd_instance(self, src, config, params, spec_gid=None):
+    def _get_kwd_instance(self, src, config, params=None, spec_gid=None):
         """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly."""
         if config is None:
             including_public = False
         else:
             including_public = config == db.config_type.ALL
 
-        if spec_gid is None:
+        if spec_gid is None and params is not None:
             remote_gid = self._get_remote_gid(params)
         else:
             remote_gid = spec_gid
