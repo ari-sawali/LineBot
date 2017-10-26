@@ -419,13 +419,14 @@ class group_dict_manager(db_base):
         return None if result is None else [data for data in result]
 
     def user_created_id_array(self, uid):
+        """Return empty array if nothing found, else return array of sequence id."""
         result = self.find({ pair_data.STATISTICS + '.' + pair_data.CREATOR: uid }, 
                            { pair_data.SEQUENCE: True } ).sort(pair_data.SEQUENCE, pymongo.ASCENDING)
 
         if result is not None:
             return [data[pair_data.SEQUENCE] for data in result]
-
-        return result
+        else:
+            return []
 
     def rank_of_used_count(self, count):
         # TODO: https://stackoverflow.com/questions/25843255/mongodb-aggregate-count-on-multiple-fields-simultaneously

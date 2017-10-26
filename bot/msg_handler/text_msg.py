@@ -574,28 +574,33 @@ class text_msg_handler(object):
             uid = category
             if bot.line_api_wrapper.is_valid_user_id(uid):
                 if target_gid is not None:
+                    kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, target_gid, group_config_type == db.config_type.ALL)
+                else:
+                    kwd_instance = self._get_kwd_instance(src, group_config_type)
+
+                created_id_arr = kwd_instance.user_created_id_array(uid)
+
+                if target_gid is not None:
                     try:
                         name = self._line_api_wrapper.profile_group(target_gid, uid)
                     except bot.UserProfileNotFoundError:
-                        pass
-                    else:
-                        return u'群組ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(target_gid, uid, name)
+                        return error.main.line_account_data_not_found()
 
                     try:
                         name = self._line_api_wrapper.profile_room(target_gid, uid)
                     except bot.UserProfileNotFoundError:
-                        pass
-                    else:
-                        return u'房間ID:\n{}\nUID:\n{}\n名稱:\n{}'.format(target_gid, uid, name)
+                        return error.main.line_account_data_not_found()
 
-                    return error.main.line_account_data_not_found()
+                    text = u'房間/群組ID:\n{}\nUID:\n{}\n名稱:\n{}\n製作回覆組ID:\n{}'.format(target_gid, uid, name, u'、'.join(created_id_arr))
 
                 try:
                     name = self._line_api_wrapper.profile_name(uid)
                 except bot.UserProfileNotFoundError:
                     return error.main.line_account_data_not_found()
 
-                text = u'UID:\n{}\n名稱:\n{}'.format(uid, name)
+                text = u'UID:\n{}\n名稱:\n{}\n製作回覆組ID:\n{}'.format(uid, name, u'、'.join(created_id_arr))
+                return [text, 
+                        bot.line_api_wrapper.wrap_template_with_action({ '查詢該使用者製作的回覆組': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + '  '.join(created_id_arr) }, u'回覆組製作查詢快捷樣板',, u'快捷查詢')]
             else:
                 return wrong_param1
 
