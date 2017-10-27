@@ -564,6 +564,9 @@ class user_data_manager(db_base):
 
         Raise InsufficientPermissionError if action is not allowed.
         """
+        if not bot.line_api_wrapper.is_valid_room_group_id(group_id):
+            return
+
         if setter_uid == target_uid and self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             new_user_data = user_data.init_by_field(target_uid, group_id, target_permission_lv)
             self._set_cache(group_id, new_user_data)
@@ -589,6 +592,9 @@ class user_data_manager(db_base):
 
     def set_permission(self, group_id, setter_uid, target_uid, new_lv):
         """Raise InsufficientPermissionError if action is not allowed."""
+        if not bot.line_api_wrapper.is_valid_room_group_id(group_id):
+            return
+
         if self._check_action_is_allowed(setter_uid, group_id, new_lv):
             updated_data = self.find_one_and_update({ user_data.USER_ID: target_uid, user_data.GROUP: group_id },
                                                     { '$set': { user_data.PERMISSION_LEVEL: new_lv } }, None, None, True, pymongo.ReturnDocument.AFTER)

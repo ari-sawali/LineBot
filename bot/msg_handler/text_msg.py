@@ -583,7 +583,7 @@ class text_msg_handler(object):
                     return error.main.line_account_data_not_found()
 
                 created_id_arr = u'、'.join([str(id) for id in kwd_instance.user_created_id_array(uid)])
-                owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, u_data.permission_level) for u_data in self._group_manager.get_user_owned_permissions(uid)])
+                owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, unicode(u_data.permission_level)) for u_data in self._group_manager.get_user_owned_permissions(uid)])
 
                 text = u'UID:\n{}\n名稱:\n{}\n擁有權限:\n{}\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
 
