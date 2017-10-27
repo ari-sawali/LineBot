@@ -141,9 +141,9 @@ class line_api_wrapper(object):
             if ex.status_code == 404:
                 return None
 
-    def profile_name(self, uid):
+    def profile_name(self, uid, src=None):
         """Raise UserProfileNotFoundError if user name is unreachable."""
-        prof = self.profile(uid)
+        prof = self.profile(uid, src)
         if prof is None:
             raise UserProfileNotFoundError()
         else:

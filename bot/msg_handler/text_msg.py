@@ -577,19 +577,10 @@ class text_msg_handler(object):
             if bot.line_api_wrapper.is_valid_user_id(uid):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
-                if target_gid is not None:
-                    try:
-                        name = self._line_api_wrapper.profile_group(target_gid, uid)
-                    except bot.UserProfileNotFoundError:
-                        try:
-                            name = self._line_api_wrapper.profile_room(target_gid, uid)
-                        except bot.UserProfileNotFoundError:
-                            return error.main.line_account_data_not_found()
-                else:
-                    try:
-                        name = self._line_api_wrapper.profile_name(uid)
-                    except bot.UserProfileNotFoundError:
-                        return error.main.line_account_data_not_found()
+                try:
+                    name = self._line_api_wrapper.profile_name(uid, src)
+                except bot.UserProfileNotFoundError:
+                    return error.main.line_account_data_not_found()
 
                 created_id_arr = u'、'.join([str(id) for id in kwd_instance.user_created_id_array(uid)])
                 owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, u_data.permission_level) for u_data in self._group_manager.get_user_owned_permissions(uid)])
