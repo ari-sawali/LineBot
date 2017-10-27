@@ -162,8 +162,8 @@ class group_manager(db_base):
             return u_permission
         
     def get_user_owned_permissions(self, uid):
-        """Return Empty array if nothing found, else array of user_data."""
-        return self._permission_manager._get_uid_owned_permissions(uid)
+        """This will not use cache."""
+        return self._permission_manager.get_user_owned_permissions(uid)
         
     # utilities - activity tracking
     def log_message_activity(self, chat_instance_id, rcv_type_enum, rep_type_enum=None, rcv_count=1, rep_count=1):
@@ -606,7 +606,10 @@ class user_data_manager(db_base):
 
     def get_user_owned_permissions(self, uid):
         """Return Empty array if nothing found, else array of user_data."""
-        return self._get_uid_owned_permissions(uid)
+        user_permission_data = list([user_data(data) for data in self.find({ user_data.USER_ID: uid })])
+        for data in user_permission_data:
+            self._set_cache(data.group, data)
+        return user_permission_data
 
     def get_data_by_permission(self, group_id, permission_lv):
         return self._get_cache_by_permission(group_id, permission_lv)
@@ -661,10 +664,6 @@ class user_data_manager(db_base):
                 return self._get_cache_by_permission(group_id, permission_lv)
             else:
                 return []
-
-    def _get_uid_owned_permissions(self, uid):
-        """Return Empty array if nothing found."""
-        return list(user_data(group_collection[uid]) for group_collection in self._cache.itervalues() if uid in group_collection)
 
 class user_data(dict_like_mapping):
     """
