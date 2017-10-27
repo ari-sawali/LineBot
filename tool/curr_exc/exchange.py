@@ -175,9 +175,9 @@ class oxr(object):
 
         if json_dict is None:
             if target not in available_dict:
-                return {'result': -1, 'string': symbol_not_exist(target)}
+                return ConvertResult(-1, error.error.main.miscellaneous(symbol_not_exist(target)))
             elif source not in available_dict:
-                return {'result': -1, 'string': symbol_not_exist(source)}
+                return ConvertResult(-1, error.error.main.miscellaneous(symbol_not_exist(source))
 
             data_json_dict = self.get_latest_dict(','.join([source, target]))
             timestamp = data_json_dict.get('timestamp', None)
