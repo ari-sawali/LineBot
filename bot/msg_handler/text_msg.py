@@ -588,14 +588,18 @@ class text_msg_handler(object):
                     except bot.UserProfileNotFoundError:
                         return error.main.line_account_data_not_found()
 
-                    text = u'房間/群組ID:\n{}\nUID:\n{}\n名稱:\n{}\n製作回覆組ID:\n{}'.format(target_gid, uid, name, u'、'.join(created_id_arr))
+                    text = u'房間/群組ID:\n{}\nUID:\n{}\n名稱:\n{}權限:\n{}\n製作回覆組ID:\n{}'.format(target_gid, uid, name, key_permission_lv, u'、'.join(created_id_arr))
+                else:
+                    try:
+                        name = self._line_api_wrapper.profile_name(uid)
+                    except bot.UserProfileNotFoundError:
+                        return error.main.line_account_data_not_found()
 
-                try:
-                    name = self._line_api_wrapper.profile_name(uid)
-                except bot.UserProfileNotFoundError:
-                    return error.main.line_account_data_not_found()
+                    owned_permission_list = self._group_manager.get_user_owned_permissions(uid)
+                    owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, u_data.permission_level) for u_data in owned_permission_list])
 
-                text = u'UID:\n{}\n名稱:\n{}\n製作回覆組ID:\n{}'.format(uid, name, u'、'.join(created_id_arr))
+                    text = u'UID:\n{}\n名稱:\n{}\n擁有權限:\n{}\n製作回覆組ID:\n{}'.format(uid, name, u'、'.join(created_id_arr))
+
                 return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator), 
                         bot.line_api_wrapper.wrap_template_with_action({ '查詢該使用者製作的回覆組': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + '  '.join(created_id_arr) }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]
             else:

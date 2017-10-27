@@ -229,12 +229,15 @@ class group_manager(db_base):
         """Return none if key not exists"""
         return self._cache_config.get(gid, None)
 
-    def _set_cache_permission(self, gid, uid, permission):
+    def _set_cache_permission(self, gid, uid, user_permission):
+        if not isinstance(user_permission, permission):
+            user_permission = permission(user_permission)
+
         group_permission_data = self._cache_permission.get(gid, None)
         if group_permission_data is None:
-            self._cache_permission[gid] = { uid: permission }
+            self._cache_permission[gid] = { uid: user_permission }
         else:
-            self._cache_permission[gid][uid] = permission
+            self._cache_permission[gid][uid] = user_permission
     
     def _get_cache_permission(self, gid, uid):
         """Return none if key not exists"""
@@ -597,6 +600,10 @@ class user_data_manager(db_base):
         else:
             return user_data(result)
 
+    def get_user_owned_permissions(self, uid):
+        """Return Empty array if nothing found."""
+        return self._get_uid_owned_permissions(uid)
+
     def get_data_by_permission(self, group_id, permission_lv):
         return self._get_cache_by_permission(group_id, permission_lv)
 
@@ -651,6 +658,10 @@ class user_data_manager(db_base):
             else:
                 return []
 
+    def _get_uid_owned_permissions(self, uid):
+        """Return Empty array if nothing found."""
+        return list(user_data(group_collection[uid]) for group_collection in self._cache.itervalues() if uid in group_collection)
+
 class user_data(dict_like_mapping):
     """
     {
@@ -668,7 +679,7 @@ class user_data(dict_like_mapping):
         init_dict = {
             user_data.USER_ID: uid,
             user_data.GROUP: group_id,
-            user_data.PERMISSION_LEVEL: permission_lv
+            user_data.PERMISSION_LEVEL: permission(permission_lv)
         }
         return user_data(init_dict)
 
