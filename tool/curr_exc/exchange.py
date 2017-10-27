@@ -92,7 +92,13 @@ class oxr(object):
                          'description': e.message}
         else:
             url = oxr.api_url + oxr.historical.format(date)
-            json_data = self._send_request_get_dict(url, param_dict)
+            try:
+                json_data = self._send_request_get_dict(url, param_dict)
+            except exceptions.CurrencyExchangeException as ex:
+                json_data = {'error': True, 
+                             'status': ex._status_code,
+                             'message': ex._message,
+                             'description': ex._description}
 
         return json_data
 
