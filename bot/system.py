@@ -125,12 +125,14 @@ class line_api_wrapper(object):
 
     def profile(self, uid, src=None):
         try:
+            profile = self._line_api.get_profile(uid)
+
             if src is None:
-                return self._line_api.get_profile(uid)
+                return profile
             else:
                 source_type = line_event_source_type.determine(src)
                 if source_type == line_event_source_type.USER:
-                    return self.profile(uid, None)
+                    return profile
                 elif source_type == line_event_source_type.GROUP:
                     return self.profile_group(line_api_wrapper.source_channel_id(src), uid)
                 elif source_type == line_event_source_type.ROOM:
