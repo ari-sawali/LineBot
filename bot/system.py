@@ -125,7 +125,10 @@ class line_api_wrapper(object):
 
     def profile(self, uid, src=None):
         try:
-            profile = self._line_api.get_profile(uid)
+            profile = self.profile_friend_list(uid)
+
+            if profile is not None:
+                return profile
 
             if src is None:
                 return profile
@@ -161,6 +164,13 @@ class line_api_wrapper(object):
     def profile_room(self, rid, uid):
         try:
             return self._line_api.get_room_member_profile(rid, uid)
+        except exceptions.LineBotApiError as ex:
+            if ex.status_code == 404:
+                return None
+
+    def profile_friend_list(self, uid):
+        try:
+            return self._line_api.get_profile(uid)
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
                 return None
