@@ -120,7 +120,6 @@ class text_msg_handler(object):
             remote_gid = spec_gid
 
         if remote_gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE:
-            print 'in'
             return self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
         elif remote_gid is not None:
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, remote_gid, manager_range)
