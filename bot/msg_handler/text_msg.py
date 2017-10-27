@@ -94,33 +94,44 @@ class text_msg_handler(object):
             
         return False
 
-    def _get_remote_gid(self, params, default=None, allow_pop_public=False):
+    def _get_remote_gid(self, params, default=None, allow_pop_public=False, allow_pop_global=False):
         """Return gid. gid will be none if params[1] is not legal gid. if gid is not None, params is popped. If default is not None, all None returns will be default."""
-        if bot.line_api_wrapper.is_valid_room_group_id(params[1]) or (allow_pop_public and db.word_dict_global.CODE_OF_PUBLIC_GROUP == params[1]):
+        if bot.line_api_wrapper.is_valid_room_group_id(params[1], allow_pop_public, allow_pop_global):
             return params.pop(1)
 
         return default
 
-    def _get_kwd_instance(self, src, config, params=None, spec_gid=None):
-        """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly."""
-        if config is None:
-            including_public = False
+    def _get_kwd_instance(self, src, config, params=None, spec_gid=None, allow_global=False):
+        """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly. Set is_global to True means return an instance which group_id is set to PUBLIC_GROUP_ID and range is GLOBAL.
+        
+        Priority(H to L):
+        allow_global -> Range = GLOBAL
+        spec_gid -> Range = +GROUP
+        """
+
+        if is_global:
+            return self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
+
+        if config is not None and config == db.config_type.ALL:
+            manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
         else:
-            including_public = config == db.config_type.ALL
+            manager_range = db.group_dict_manager_range.GROUP_ONLY
 
         if spec_gid is None and params is not None:
-            remote_gid = self._get_remote_gid(params)
+            remote_gid = self._get_remote_gid(params, None, False, allow_global)
         else:
             remote_gid = spec_gid
 
         if remote_gid is not None:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, remote_gid, including_public)
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, remote_gid, manager_range)
+        elif remote_gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE:
+            return self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
         else:
             source_type = bot.line_event_source_type.determine(src)
             if source_type == bot.line_event_source_type.USER:
                 kwd_instance = self._kwd_public
             elif source_type == bot.line_event_source_type.GROUP or source_type == bot.line_event_source_type.ROOM:
-                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), including_public)
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, bot.line_api_wrapper.source_channel_id(src), manager_range)
             else:
                 raise ValueError(error.main.miscellaneous(u'Unknown source type.'))
 
@@ -360,7 +371,7 @@ class text_msg_handler(object):
 
     def _Q(self, src, params, key_permission_lv, group_config_type):
         # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params, None, True)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, False)
@@ -379,7 +390,7 @@ class text_msg_handler(object):
 
     def _I(self, src, params, key_permission_lv, group_config_type):
         # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params, None, True)
 
         # create query result
         query_result = self._get_query_result(params, kwd_instance, True)
@@ -497,7 +508,7 @@ class text_msg_handler(object):
 
     def _K(self, src, params, key_permission_lv, group_config_type):
         # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, params)
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params, None, True)
 
         # assign parameters
         ranking_type = params[1]
@@ -546,16 +557,9 @@ class text_msg_handler(object):
         
             text = u'為避免訊息過長洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
-            kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
+            kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid, True)
 
-            if kwd_instance.is_public:
-                instance_type = u'公用'
-            else:
-                instance_type = u'群組'
-                if kwd_instance.including_public:
-                    instance_type += u'+公用'
-
-            instance_type += u'回覆組資料庫'
+            instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
                 
             text = u'【{}相關統計資料】\n'.format(instance_type)
             text += kwd_instance.get_statistics_string()
@@ -601,7 +605,7 @@ class text_msg_handler(object):
             return error.main.incorrect_channel(False, True, True)
 
         gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
-        kwd_instance = self._get_kwd_instance(src, group_config_type, params, gid)
+        kwd_instance = self._get_kwd_instance(src, group_config_type, params, gid, True)
 
         group_data = self._group_manager.get_group_by_id(gid, True)
 

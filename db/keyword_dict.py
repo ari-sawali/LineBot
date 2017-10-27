@@ -26,9 +26,18 @@ class word_type(ext.EnumWithName):
         else:
             raise UnknownFlagError()
 
+class group_dict_manager_range(ext.EnumWithName):
+    GROUP_ONLY = 1, '群組'
+    GROUP_AND_PUBLIC = 2, '群組+公用'
+    GLOBAL = 3, '全域'
+
 class UnknownFlagError(Exception):
     def __init__(self, *args):
         super(UnknownFlagError, self).__init__(*args)
+
+class UnknownRangeError(Exception):
+    def __init__(self, *args):
+        return super(UnknownRangeError, self).__init__(*args)
 
 class ActionNotAllowed(Exception):
     def __init__(self, *args):
@@ -36,6 +45,8 @@ class ActionNotAllowed(Exception):
 
 class group_dict_manager(db_base):
     WORD_DICT_DB_NAME = 'word_dict'
+
+    CODE_OF_GLOBAL_RANGE = 'GLOBAL'
 
     VALIDATION_JSON = """{
                            "grp": {
@@ -126,54 +137,65 @@ class group_dict_manager(db_base):
                          }"""
 
     # utilities
-    def __init__(self, mongo_db_uri, duplicate_cd_secs, repeat_call_cd_secs, group_id=PUBLIC_GROUP_ID, including_public=False):
+    def __init__(self, mongo_db_uri, duplicate_cd_secs, repeat_call_cd_secs, group_id=PUBLIC_GROUP_ID, range=group_dict_manager_range.GROUP_ONLY):
         self._group_id = group_id
-        self._including_public = including_public
+        self._available_range = range
         self._duplicate_cd_secs = duplicate_cd_secs
         self._repeat_call_cd_secs = repeat_call_cd_secs
 
         super(group_dict_manager, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
 
-    def clone_instance(self, mongo_db_uri, group_id, including_public=None):
-        if including_public is not None:
-            including_public = including_public
-        else:
-            including_public = self._including_public
-        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, including_public)
+    def clone_instance(self, mongo_db_uri, group_id, avaiilable_range=group_dict_manager_range.GROUP_ONLY):
+        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, avaiilable_range)
 
     @property
     def is_public(self):
         return self._group_id == PUBLIC_GROUP_ID
 
     @property
-    def including_public(self):
-        return self._including_public
+    def available_range(self):
+        return self._available_range
 
     # override
     def aggregate(self, pipeline, **kwargs):
-        if self._including_public:
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            filter_dict = { pair_data.SEQUENCE: { '$exists': True }}
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC:
             filter_dict = { '$or': [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }] }
-        else:
+        elif self._available_range == group_dict_manager_range.GROUP_ONLY:
             filter_dict = { pair_data.AFFILIATED_GROUP: self._group_id }
+        else:
+            raise UnknownRangeError()
 
         pipeline = [ { '$match': filter_dict } ] + pipeline
 
         return super(group_dict_manager, self).aggregate(pipeline, **kwargs)
 
     def delete_many(self, filter, collation=None):
-        filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            raise ActionNotAllowed()
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC or self._available_range == group_dict_manager_range.GROUP_ONLY:
+            filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
 
         return super(group_dict_manager, self).delete_many(filter, collation)
 
     def insert_one(self, document, bypass_document_validation=False):
-        document[pair_data.AFFILIATED_GROUP] = self._group_id
+        if any(self._available_range == t for t in (group_dict_manager_range.GROUP_AND_PUBLIC, group_dict_manager_range.GROUP_ONLY, group_dict_manager_range.GLOBAL)):
+            filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
+
         return super(group_dict_manager, self).insert_one(document, bypass_document_validation)
 
     def find(self, *args, **kwargs):
         if len(args) < 1:
             args = [{}]
 
-        if self._including_public:
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            pass
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in args[0]:
@@ -181,13 +203,17 @@ class group_dict_manager(db_base):
                 del args[0]['$or']
             else:
                 args[0]['$or'] = or_list
-        else:
+        elif self._available_range == group_dict_manager_range.GROUP_ONLY:
             args[0][pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
         
         return super(group_dict_manager, self).find(*args, **kwargs)
 
     def find_one(self, filter=None, *args, **kwargs):
-        if self._including_public:
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            pass
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -195,13 +221,17 @@ class group_dict_manager(db_base):
                 del filter['$or']
             else:
                 filter['$or'] = or_list
-        else:
+        elif self._available_range == group_dict_manager_range.GROUP_ONLY:
             filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
 
         return super(group_dict_manager, self).find_one(filter, *args, **kwargs)
 
     def find_one_and_update(self, filter, update, projection=None, sort=None, upsert=False, return_document=pymongo.ReturnDocument.BEFORE, **kwargs):
-        if self._including_public:
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            pass
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -209,8 +239,10 @@ class group_dict_manager(db_base):
                 del filter['$or']
             else:
                 filter['$or'] = or_list
-        else:
+        elif self._available_range == group_dict_manager_range.GROUP_ONLY:
             filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
 
         sort_tuple = (pair_data.AFFILIATED_GROUP, pymongo.DESCENDING)
         if sort is None:
@@ -223,7 +255,9 @@ class group_dict_manager(db_base):
         if filter is None:
             filter = {}
 
-        if self._including_public:
+        if self._available_range == group_dict_manager_range.GLOBAL:
+            pass
+        elif self._available_range == group_dict_manager_range.GROUP_AND_PUBLIC:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
             if '$or' in filter:
@@ -231,8 +265,10 @@ class group_dict_manager(db_base):
                 del filter['$or']
             else:
                 filter['$or'] = or_list
-        else:
+        elif self._available_range == group_dict_manager_range.GROUP_ONLY:
             filter[pair_data.AFFILIATED_GROUP] = self._group_id
+        else:
+            raise UnknownRangeError()
 
         return super(group_dict_manager, self).count(filter, **kwargs)
 
