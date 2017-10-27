@@ -171,7 +171,7 @@ class oxr(object):
         symbol_not_exist = lambda symbol: u'找不到貨幣單位{}的相關資料'.format(symbol)
         available_dict = self.get_available_currencies_dict()
         if amount < 0:
-            return ConvertResult(-1, error.error.main.miscellaneous(u'貨幣轉換基底量需大於0。')))
+            return ConvertResult(-1, error.error.main.miscellaneous(u'貨幣轉換基底量需大於0。'))
 
         if json_dict is None:
             if target not in available_dict:
