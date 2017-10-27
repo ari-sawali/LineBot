@@ -5,9 +5,9 @@ import urllib
 import datetime
 import json
 from collections import OrderedDict
-import bot
-
 import exceptions
+
+import bot, error
 
 class oxr(object):
     available_currency = []
@@ -170,6 +170,8 @@ class oxr(object):
         """return ['result'] and ['string']"""
         symbol_not_exist = lambda symbol: u'找不到貨幣單位{}的相關資料'.format(symbol)
         available_dict = self.get_available_currencies_dict()
+        if amount < 0:
+            return ConvertResult(-1, error.error.main.miscellaneous(u'貨幣轉換基底量需大於0。')))
 
         if json_dict is None:
             if target not in available_dict:
@@ -195,7 +197,7 @@ class oxr(object):
             target_rate = data_dict[target]
             source_rate = data_dict[source]
         except KeyError as e:
-            return {'result': -1, 'string': symbol_not_exist(e.message)}
+            return ConvertResult(-1, symbol_not_exist(e.message))
 
         exchange_rate = target_rate / float(source_rate)
         exchange_amt = exchange_rate * float(amount)
@@ -203,8 +205,7 @@ class oxr(object):
         target_full = available_dict.get(target, u'(無資料)')
         source_full = available_dict.get(source, u'(無資料)')
 
-        return ConvertResult(exchange_amt, 
-                             u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
+        return ConvertResult(exchange_amt, u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):
