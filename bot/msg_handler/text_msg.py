@@ -102,15 +102,12 @@ class text_msg_handler(object):
         return default
 
     def _get_kwd_instance(self, src, config, params=None, spec_gid=None, allow_global=False):
-        """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly. Set is_global to True means return an instance which group_id is set to PUBLIC_GROUP_ID and range is GLOBAL.
+        """Return kwd instance. Will pop param if params[1] is remote. Specify (spec_gid) group id will use the parameter as remote gid directly. Set allow_global to enable GLOBAL popping in params. Set spec_gid to GLOBAL and allow global to directly get global range instance.
         
         Priority(H to L):
         allow_global -> Range = GLOBAL
         spec_gid -> Range = +GROUP
         """
-
-        if is_global:
-            return self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
 
         if config is not None and config == db.config_type.ALL:
             manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
@@ -545,7 +542,7 @@ class text_msg_handler(object):
     def _P(self, src, params, key_permission_lv, group_config_type):
         wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID', params[1])
 
-        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src))
+        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src), False, True)
 
         category = params[1]
         gid = params[2]
