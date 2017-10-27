@@ -119,6 +119,8 @@ class text_msg_handler(object):
         else:
             remote_gid = spec_gid
 
+        print remote_gid
+
         if remote_gid is not None:
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, remote_gid, manager_range)
         elif remote_gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE:

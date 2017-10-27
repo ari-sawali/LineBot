@@ -252,8 +252,6 @@ class group_dict_manager(db_base):
         return super(group_dict_manager, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
 
     def count(self, filter=None, **kwargs):
-        print self._available_range
-
         if filter is None:
             filter = {}
 
