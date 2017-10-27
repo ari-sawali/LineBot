@@ -327,9 +327,11 @@ class text_msg_handler(object):
                     return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列')
             else:
                 return error.main.incorrect_param(u'參數1', u'ID')
-        else:
+        elif params[1] is not None:
             kw = params[1]
             disable_result_id_list = kwd_instance.disable_keyword(kw, del_profile_uid, pinned)
+        else:
+            return error.main.lack_of_thing(u'參數')
         
         # process action result
         if len(disable_result_id_list) > 0:
@@ -884,7 +886,7 @@ class text_msg_handler(object):
             source_currency = params[2]
             target_currency = params[3]
 
-            if not system.string_can_be_float(amount):
+            if not bot.string_can_be_float(amount):
                 text = error.main.invalid_thing_with_correct_format(u'轉換值', u'整數或小數', amount)
             elif not tool.curr_exc.oxr.is_legal_symbol_text(source_currency):
                 text = error.main.invalid_thing_with_correct_format(u'原始值貨幣', u'3英文字元的貨幣代號', source_currency)
@@ -896,7 +898,7 @@ class text_msg_handler(object):
             historical_date = params[1]
             target_symbol = params[2]
 
-            if not system.string_can_be_int(historical_date) and not len(historical_date) == 8:
+            if not bot.string_can_be_int(historical_date) and not len(historical_date) == 8:
                 text = error.main.invalid_thing_with_correct_format(u'日期', u'8位數整數，代表(年年年年月月日日)', historical_date)
             elif not tool.curr_exc.oxr.is_legal_symbol_text(target_symbol):
                 text = error.main.invalid_thing_with_correct_format(u'貨幣單位', u'3字元貨幣代號，多貨幣時以空格分隔', target_symbol)
@@ -908,7 +910,7 @@ class text_msg_handler(object):
             if param == '$':
                 available_currencies_dict = self._oxr_client.get_available_currencies_dict()
                 text = tool.curr_exc.oxr.available_currencies_str(available_currencies_dict)
-            elif system.string_can_be_int(param) and len(param) == 8:
+            elif bot.string_can_be_int(param) and len(param) == 8:
                 historical_all_dict = self._oxr_client.get_historical_dict(param)
                 text = tool.curr_exc.oxr.historical_str(historical_all_dict)
             elif tool.curr_exc.oxr.is_legal_symbol_text(param):

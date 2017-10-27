@@ -70,7 +70,7 @@ cmd_dict = { 'S': command_object(4, 4, cmd_category.MAIN, False, False, permissi
              'Q': command_object(0, 2, cmd_category.MAIN, True, True), 
              'I': command_object(1, 2, cmd_category.MAIN, True, True), 
              'K': command_object(1, 2, cmd_category.MAIN, True, True),
-             'P': command_object(1, 2, cmd_category.EXTEND, True, True), 
+             'P': command_object(1, 2, cmd_category.EXTEND, True, False), 
              'G': command_object(0, 1, cmd_category.EXTEND, True, True), 
              'GA': command_object(1, 4, cmd_category.EXTEND, True, True, permission.MODERATOR),  
              'H': command_object(0, 0, cmd_category.EXTEND, False, False), 
