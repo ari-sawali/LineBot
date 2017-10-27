@@ -267,6 +267,9 @@ class text_msg_handler(object):
 
         if linked is not None and len(linked) > 0:
             linked = linked.split(self._array_separator)
+
+        if rep_att is not None and not (rep_type == db.word_type.PICTURE or rep_type == db.word_type.STICKER):
+            return error.main.miscellaneous(u'附加回覆只可以在回覆種類為圖片或貼圖時使用。')
         
         # create and write
         result = kwd_instance.insert_keyword(kw, rep, new_profile_uid, pinned, kw_type, rep_type, linked, rep_att)

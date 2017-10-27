@@ -99,7 +99,7 @@ class global_msg_handle(object):
         else:
             raise ValueError(error.error.main.miscellaneous(u'Unknown word type for reply.'))
 
-        if rep_att is not None:
+        if rep_att is not None and (rep_type == db.word_type.STICKER or rep_type == db.word_type.PICTURE):
             rep_list.append(bot.line_api_wrapper.wrap_text_message(rep_att, self._webpage_generator))
 
         if len(rep_link) > 0:
