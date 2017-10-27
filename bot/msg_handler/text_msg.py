@@ -574,8 +574,6 @@ class text_msg_handler(object):
         else:
             uid = category
 
-            print type(key_permission_lv)
-
             if bot.line_api_wrapper.is_valid_user_id(uid):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 

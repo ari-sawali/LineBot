@@ -161,6 +161,10 @@ class group_manager(db_base):
             self._set_cache_permission(gid, uid, u_permission)
             return u_permission
         
+    def get_user_owned_permissions(self, uid):
+        """Return Empty array if nothing found, else array of user_data."""
+        return self._permission_manager._get_uid_owned_permissions(uid)
+        
     # utilities - activity tracking
     def log_message_activity(self, chat_instance_id, rcv_type_enum, rep_type_enum=None, rcv_count=1, rep_count=1):
         if len(chat_instance_id) != group_manager.ID_LENGTH:
@@ -601,7 +605,7 @@ class user_data_manager(db_base):
             return user_data(result)
 
     def get_user_owned_permissions(self, uid):
-        """Return Empty array if nothing found."""
+        """Return Empty array if nothing found, else array of user_data."""
         return self._get_uid_owned_permissions(uid)
 
     def get_data_by_permission(self, group_id, permission_lv):
