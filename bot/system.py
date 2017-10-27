@@ -200,7 +200,7 @@ class line_api_wrapper(object):
     
     @staticmethod
     def is_valid_room_group_id(gid, allow_public=False, allow_global=False):
-        return gid is not None and (len(gid) == 33 and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP)) or (allow_global and gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE)) 
+        return gid is not None and (len(gid) == 33 and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP) or (allow_global and gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE))
 
     @staticmethod
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
