@@ -5,7 +5,7 @@ import urllib
 import datetime
 import json
 from collections import OrderedDict
-import exceptions
+import .exceptions
 
 import bot, error
 

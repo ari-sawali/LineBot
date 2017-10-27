@@ -173,6 +173,8 @@ class group_dict_manager(db_base):
         if len(args) < 1:
             args = [{}]
 
+        print args
+
         if self._including_public:
             or_list = [{ pair_data.AFFILIATED_GROUP: self._group_id }, { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }]
 
@@ -183,6 +185,8 @@ class group_dict_manager(db_base):
                 args[0]['$or'] = or_list
         else:
             args[0][pair_data.AFFILIATED_GROUP] = self._group_id
+
+        print args
         
         return super(group_dict_manager, self).find(*args, **kwargs)
 
