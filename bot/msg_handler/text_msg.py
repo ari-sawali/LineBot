@@ -585,7 +585,7 @@ class text_msg_handler(object):
                 created_id_arr = u'、'.join([str(id) for id in kwd_instance.user_created_id_array(uid)])
                 owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, unicode(u_data.permission_level)) for u_data in self._group_manager.get_user_owned_permissions(uid)])
 
-                text = u'UID:\n{}\n名稱:\n{}\n擁有權限:\n{}\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
+                text = u'UID:\n{}\n\n名稱:\n{}\n\n擁有權限:\n{}\n\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
 
                 print text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid
 
