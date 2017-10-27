@@ -187,8 +187,8 @@ class line_api_wrapper(object):
         return uid is not None and len(uid) == 33 and uid.startswith('U')
     
     @staticmethod
-    def is_valid_room_group_id(gid):
-        return gid is not None and len(gid) == 33 and (gid.startswith('C') or gid.startswith('R'))
+    def is_valid_room_group_id(gid, allow_public=False):
+        return gid is not None and (len(gid) == 33 and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP)) 
 
     @staticmethod
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
