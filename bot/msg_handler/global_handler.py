@@ -141,14 +141,16 @@ class global_msg_handle(object):
             print '=================================================================='
 
     def _minigame_rps_capturing(self, rps_obj, is_sticker, content, uid):
-        print rps_obj is not None
-        print rps_obj.get_player_by_uid(uid) is not None
-        print bot.line_api_wrapper.is_valid_user_id(uid)
         if rps_obj is not None and bot.line_api_wrapper.is_valid_user_id(uid) and rps_obj.get_player_by_uid(uid) is not None:
+            print rps_obj.enabled
             if rps_obj.enabled:
+                print rps_obj.find_battle_item(is_sticker, content)
                 battle_item = rps_obj.find_battle_item(is_sticker, content)
                 if battle_item is not None:
                     result = rps_obj.play(battle_item, uid)
+                    print result
+                    print rps_obj.result_generated
+                    print rps_obj.is_waiting_next
                     if result is not None:
                         return result
                     else:
