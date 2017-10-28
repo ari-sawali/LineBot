@@ -406,7 +406,7 @@ class rps(dict_like_mapping):
     def init_by_field(chat_instance_id, creator_id, creator_name, vs_bot, rock, paper, scissor):
         """rps object is content only, set default to sticker id."""
         if vs_bot:
-            player_dict = {rps._BOT_UID: battle_player(u'(電腦)', rps._BOT_UID)}
+            player_dict = {rps._BOT_UID: battle_player.init_by_field(u'(電腦)', rps._BOT_UID)}
         else:
             player_dict = {}
 
