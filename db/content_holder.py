@@ -584,7 +584,7 @@ class rps(dict_like_mapping):
         
     def get_player_by_uid(self, uid):
         """Return None if nothing found. IMMUTABLE."""
-        obj = next((item for item in self[rps.PLAYERS] if item[rps.USER_ID] == uid), None)
+        obj = next((data for cid_in_dict, data in self[rps.PLAYERS].iteritems() if cid_in_dict == uid), None)
         if obj is not None:
             return battle_player(obj)
         else:
