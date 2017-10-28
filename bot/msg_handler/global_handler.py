@@ -366,11 +366,11 @@ class global_msg_handle(object):
         src = event.source
 
         rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
-
-        # IMPORTANT: not getting game data
+        print rps_obj
 
         if rps_obj is not None:
             rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, bot.line_api_wrapper.source_user_id(src))
+            print rps_text
             if rps_text is not None:
                 self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
                 return True
