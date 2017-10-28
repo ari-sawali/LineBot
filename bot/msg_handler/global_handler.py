@@ -367,6 +367,8 @@ class global_msg_handle(object):
 
         rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
 
+        # IMPORTANT: not getting game data
+
         if rps_obj is not None:
             rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, bot.line_api_wrapper.source_user_id(src))
             if rps_text is not None:

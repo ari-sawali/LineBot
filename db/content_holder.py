@@ -145,7 +145,7 @@ class game_object_holder(db_base):
 
     def __init__(self, mongo_db_uri):
         super(game_object_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, game_object_holder.COLLECTION_NAME, False, [rps.CHAT_INSTANCE_ID])
-        self._cache_exist = {}
+        self._cache_exist = { rps_data[rps.CHAT_INSTANCE_ID]: True for rps_data in self.find() }
 
     def update_data(self, chat_instance_id, new_data):
         self._set_cache_object_exist(chat_instance_id, True)
