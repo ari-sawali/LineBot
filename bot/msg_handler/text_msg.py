@@ -964,9 +964,11 @@ class game_msg_handler(object):
     HEAD = 'G'
     SPLITTER = '\n'
 
-    def __init__(self, mongo_db_uri, line_api_wrapper):
+    def __init__(self, mongo_db_uri, line_api_wrapper, command_manager):
         self._game_holder = db.game_object_holder(mongo_db_uri)
         self._line_api_wrapper = line_api_wrapper
+
+        self._command_manager = command_manager
 
     def handle_text(self, event, full_org_text_without_head, user_permission):
         """Return whether message has been replied"""
@@ -1108,6 +1110,21 @@ class game_msg_handler(object):
                 text = error.main.miscellaneous(u'尚未建立猜拳遊戲。')
 
         return text
+
+    def split_verify(self, cmd, splitter, param_text):
+        if not self._command_manager.is_command_exist(cmd):
+            return error.main.invalid_thing(u'指令', cmd)
+
+        cmd_obj = self._command_manager.get_command_data(cmd)
+        max_prm = cmd_obj.split_max
+        min_prm = cmd_obj.split_min
+        params = split(param_text, text_msg_handler.SPLITTER, max_prm)
+
+        if min_prm > len(params) - params.count(None):
+            return error.main.lack_of_thing(u'參數')
+
+        params.insert(0, None)
+        return params
  
 def split(text, splitter, size):
     list = []
