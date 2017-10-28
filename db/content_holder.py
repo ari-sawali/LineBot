@@ -351,7 +351,7 @@ class battle_player(dict_like_mapping):
         try:
             return self[battle_player.WIN] / float(self[battle_player.WIN] + self[battle_player.LOSE])
         except ZeroDivisionError:
-            return 1.0 if self._win > 0 else 0.0
+            return 1.0 if self[battle_player.WIN] > 0 else 0.0
     
     @property
     def last_item(self):
