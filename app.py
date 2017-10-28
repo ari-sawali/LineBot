@@ -205,12 +205,11 @@ def handle_text_message(event):
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             try:
-                ex_msg = ex.message.decode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
             except UnicodeEncodeError:
-                ex_msg = ex.message.encode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.encode("utf-8"))
             except UnicodeDecodeError:
-                ex_msg = ex.message
-            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.decode("utf-8"))
         
         try:
             tb_text = traceback.format_exc().decode('utf-8')
@@ -241,12 +240,11 @@ def handle_sticker_message(event):
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             try:
-                ex_msg = ex.message.decode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
             except UnicodeEncodeError:
-                ex_msg = ex.message.encode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.encode("utf-8"))
             except UnicodeDecodeError:
-                ex_msg = ex.message
-            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.decode("utf-8"))
         
         try:
             tb_text = traceback.format_exc().decode('utf-8')
@@ -277,12 +275,11 @@ def handle_image_message(event):
         else:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             try:
-                ex_msg = ex.message.decode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
             except UnicodeEncodeError:
-                ex_msg = ex.message.encode("utf-8")
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.encode("utf-8"))
             except UnicodeDecodeError:
-                ex_msg = ex.message
-            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg)
+                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex_msg.decode("utf-8"))
         
         try:
             tb_text = traceback.format_exc().decode('utf-8')
