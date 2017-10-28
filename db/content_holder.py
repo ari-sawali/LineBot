@@ -253,7 +253,7 @@ class battle_player(dict_like_mapping):
     CONSECUTIVE_LOSE = 'max_cl'
 
     @staticmethod
-    def init_by_field(self, name, uid):
+    def init_by_field(name, uid):
         init_dict = {
             battle_player.NAME: name,
             battle_player.UID: uid
