@@ -383,7 +383,7 @@ class rps(dict_like_mapping):
         player_temp2: PLAYER
     }
     """
-    _BOT_UID = 0
+    _BOT_UID = 'U--------------------------------'
 
     CHAT_INSTANCE_ID = 'cid'
     IS_VS_BOT = 'vs_bot'
