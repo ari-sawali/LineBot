@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: Allow global search in Q/I using ID
-# IMPORTANT: JC P KW global
 # IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: statistics of sticker 

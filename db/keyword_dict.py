@@ -183,7 +183,7 @@ class group_dict_manager(db_base):
 
     def insert_one(self, document, bypass_document_validation=False):
         if any(self._available_range == t for t in (group_dict_manager_range.GROUP_AND_PUBLIC, group_dict_manager_range.GROUP_ONLY, group_dict_manager_range.GLOBAL)):
-            filter[pair_data.AFFILIATED_GROUP] = self._group_id
+            document[pair_data.AFFILIATED_GROUP] = self._group_id
         else:
             raise UnknownRangeError()
 
