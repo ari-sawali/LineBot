@@ -527,7 +527,7 @@ class rps(dict_like_mapping):
         if player_obj is not None:
             self[rps.PLAYER_TEMP1] = player_obj
             self[rps.PLAYER_TEMP1][battle_player.LAST_ITEM] = item
-            self[rps.BATTLE_RESULT][rps.PLAY_BEGIN] = time.time()
+            self[rps.PROPERTIES][rps.PLAY_BEGIN] = time.time()
 
             if self[rps.PROPERTIES][rps.IS_VS_BOT]:
                 self._play2(random_gen.random_drawer.draw_from_list(list(battle_item)), rps._BOT_UID)
