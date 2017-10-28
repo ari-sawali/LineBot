@@ -24,6 +24,8 @@ class db_base(pymongo.collection.Collection):
 
         if index_col_list is None:
             index_col_list = []
+        else:
+            index_col_list = list(index_col_list)
 
         if not isinstance(index_col_list, (list, tuple)):
             raise ValueError('Column to make index must be list or tuple.')
@@ -34,7 +36,7 @@ class db_base(pymongo.collection.Collection):
             if has_seq:
                 index_col_list.append(db_base.SEQUENCE)
             
-        self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
+            self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
     def create_index(self, keys, **kwargs):
         print 'MongoDB CREATE_INDEX @{}.{}'.format(self._db_name, self._collection_name)
