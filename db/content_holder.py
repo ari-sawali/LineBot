@@ -592,11 +592,11 @@ class rps(dict_like_mapping):
 
     @property
     def gap_time(self):
-		return self[rps.GAP_TIME]
+		return self[rps.PROPERTIES][rps.GAP_TIME]
 
     @property
     def vs_bot(self):
-        return self[rps.IS_VS_BOT]
+        return self[rps.PROPERTIES][rps.IS_VS_BOT]
 
     @property
     def battle_dict(self):
@@ -612,15 +612,15 @@ class rps(dict_like_mapping):
 
     @property
     def result_generated(self):
-        return self[rps.RESULT_GENERATED]
+        return self[rps.PROPERTIES][rps.RESULT_GENERATED]
 
     @property
     def enabled(self):
-        return self[rps.ENABLED]
+        return self[rps.PROPERTIES][rps.ENABLED]
 
     @enabled.setter
     def enabled(self, value):
-        self[rps.ENABLED] = value
+        self[rps.PROPERTIES][rps.ENABLED] = value
 
     @staticmethod
     def player_stats_text(player_dict):
