@@ -33,9 +33,10 @@ class db_base(pymongo.collection.Collection):
         if collection_name not in self._db.collection_names() and has_seq:
             self._db.counter.insert({ db_base.COLLECTION_NAME: collection_name, db_base.SEQUENCE: 0 })
 
-            if has_seq:
-                index_col_list.append(db_base.SEQUENCE)
+        if has_seq:
+            index_col_list.append(db_base.SEQUENCE)
             
+        if len(index_col_list) > 0
             self.create_index([(column, pymongo.DESCENDING) for column in index_col_list], unique=True)
 
     def create_index(self, keys, **kwargs):
