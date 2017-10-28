@@ -410,7 +410,7 @@ class rps(dict_like_mapping):
         else:
             player_dict = {}
 
-        player_dict[creator_id] = battle_player(creator_name, creator_id)
+        player_dict[creator_id] = battle_player.init_by_field(creator_name, creator_id)
 
         init_dict = {
             rps.CHAT_INSTANCE_ID: chat_instance_id,
