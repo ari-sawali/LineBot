@@ -476,7 +476,7 @@ class rps(dict_like_mapping):
         """
         Player object will be released after calling this method.
         """
-        result_enum = self[rps.BATTLE_RESULT]
+        result_enum = self[rps.PROPERTIES][rps.BATTLE_RESULT]
         if result_enum == battle_result.TIED:
             text = u'【平手】'
         elif result_enum == battle_result.PLAYER1_WIN:
@@ -527,7 +527,7 @@ class rps(dict_like_mapping):
         if player_obj is not None:
             self[rps.PLAYER_TEMP1] = player_obj
             self[rps.PLAYER_TEMP1][battle_player.LAST_ITEM] = item
-            self[rps.PLAY_BEGIN] = time.time()
+            self[rps.BATTLE_RESULT][rps.PLAY_BEGIN] = time.time()
 
             if self[rps.PROPERTIES][rps.IS_VS_BOT]:
                 self._play2(random_gen.random_drawer.draw_from_list(list(battle_item)), rps._BOT_UID)
