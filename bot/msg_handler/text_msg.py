@@ -1054,8 +1054,12 @@ class game_msg_handler(object):
             if not bot.string_can_be_int(scissor, rock, paper):
                 return error.main.miscellaneous(u'初次建立遊戲時，拳代表必須是貼圖ID。')
 
-            text = u'遊戲建立成功。\n\n剪刀貼圖ID: {}\n石頭貼圖ID: {}\n布貼圖ID: {}'.format(scissor, rock, paper)
-            self._game_holder.create_data(cid, uid, creator_name, rock, paper, scissor)
+            create_result = self._game_holder.create_data(cid, uid, creator_name, rock, paper, scissor)
+
+            if create_result:
+                text = u'遊戲建立成功。\n\n剪刀貼圖ID: {}\n石頭貼圖ID: {}\n布貼圖ID: {}'.format(scissor, rock, paper)
+            else:
+                text = u'遊戲已經存在。'
         elif params[1] is not None:
             rps_obj = self._game_holder.get_rps(cid)
             action = params[1]

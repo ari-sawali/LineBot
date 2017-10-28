@@ -156,12 +156,15 @@ class game_object_holder(db_base):
         self.delete_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
 
     def create_data(self, chat_instance_id, creator_id, creator_name, rock, paper, scissor):
+        """Return false if game is exists, else return true."""
         is_bot = bot.line_api_wrapper.is_valid_user_id(chat_instance_id)
 
-        print rps.init_by_field(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor)
-
-        self.insert_one(rps.init_by_field(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
-        self._set_cache_object_exist(chat_instance_id, True)
+        try:
+            self.insert_one(rps.init_by_field(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
+            self._set_cache_object_exist(chat_instance_id, True)
+            return True
+        except pymongo.errors.DuplicateKeyError:
+            return False
 
     def get_data(self, chat_instance_id):
         """Return None if data not exists."""
