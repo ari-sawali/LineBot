@@ -554,6 +554,7 @@ class rps(dict_like_mapping):
         elif result_enum == battle_result.TIED:
             player1.tied()
             player2.tied()
+        self[rps.PROPERTIES][rps.BATTLE_RESULT] = result_enum
         self[rps.PROPERTIES][rps.RESULT_GENERATED] = True
             
     def _reset(self):
