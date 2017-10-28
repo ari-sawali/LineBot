@@ -158,7 +158,7 @@ class game_object_holder(db_base):
     def create_data(self, chat_instance_id, creator_id, creator_name, rock, paper, scissor):
         is_bot = bot.line_api_wrapper.is_valid_user_id(chat_instance_id)
 
-        self.insert_one(rps(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
+        self.insert_one(rps.init_by_field(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
         self._set_cache_object_exist(chat_instance_id, True)
 
     def get_data(self, chat_instance_id):
