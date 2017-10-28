@@ -71,7 +71,8 @@ class group_manager(db_base):
                 data = group_data.init_by_field(gid, config)
                 self.insert_one(data)
                 self._permission_manager.new_data(gid, self._ADMIN_UID, self._ADMIN_UID, bot.permission.BOT_ADMIN)
-                return self._activator.new_data(gid)
+                if bot.line_api_wrapper.is_valid_room_group_id(gid):
+                    return self._activator.new_data(gid)
             except pymongo.errors.DuplicateKeyError as ex:
                 return
 
