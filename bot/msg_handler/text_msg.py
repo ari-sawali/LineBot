@@ -977,6 +977,7 @@ class game_msg_handler(object):
 
         cmd, oth = split(full_org_text_without_head, game_msg_handler.SPLITTER, 2)
         cmd = cmd.replace(' ', '')
+        params = self.split_verify(cmd, text_msg_handler.SPLITTER, oth)
 
         if isinstance(params, unicode):
             self._line_api_wrapper.reply_message_text(token, params)
