@@ -456,7 +456,7 @@ class rps(dict_like_mapping):
         return not void if error occurred.
         No action if player not exist.
         """
-        if self[rps.ENABLED]:
+        if self[rps.PROPERTIES][rps.ENABLED]:
             player_count = len(self[rps.PLAYERS])
             if player_count < 2:
                 return error.error.main.miscellaneous(u'玩家人數不足，需要先註冊2名玩家以後方可遊玩。目前已註冊玩家{}名。\n已註冊玩家: {}'.format(
@@ -490,7 +490,7 @@ class rps(dict_like_mapping):
         else:
             raise ValueError(error.error.main.invalid_thing(u'猜拳結果', result_enum))
         
-        text += u'\n本次猜拳兩拳間格時間(包含程式處理時間) {:.3f} 秒'.format(self[rps.GAP_TIME])
+        text += u'\n本次猜拳兩拳間格時間(包含程式處理時間) {:.3f} 秒'.format(self[rps.PROPERTIES][rps.GAP_TIME])
         text += u'\n\n'
         text += rps.player_stats_text(self[rps.PLAYERS])
 
@@ -537,7 +537,7 @@ class rps(dict_like_mapping):
         if player_obj is not None or player_uid == rps._BOT_UID:
             self[rps.PLAYER_TEMP2] = player_obj
             self[rps.PLAYER_TEMP2][battle_player.LAST_ITEM] = item
-            self[rps.GAP_TIME] = time.time() - self[rps.PLAY_BEGIN]
+            self[rps.PROPERTIES][rps.GAP_TIME] = time.time() - self[rps.PROPERTIES][rps.PLAY_BEGIN]
             self._calculate_result()
 
     def _calculate_result(self):
