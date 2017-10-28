@@ -552,7 +552,7 @@ class user_data_manager(db_base):
     COLLECTION_NAME = 'user_data'
 
     def __init__(self, mongo_db_uri):
-        super(user_data_manager, self).__init__(mongo_db_uri, GROUP_DB_NAME, user_data_manager.COLLECTION_NAME, False, [user_data.USER_ID])
+        super(user_data_manager, self).__init__(mongo_db_uri, GROUP_DB_NAME, user_data_manager.COLLECTION_NAME, False)
         self._ADMIN_UID = os.getenv('ADMIN_UID', None)
         if self._ADMIN_UID is None:
             print 'Specify bot admin uid as environment variable "ADMIN_UID".'
