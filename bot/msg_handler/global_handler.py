@@ -141,6 +141,9 @@ class global_msg_handle(object):
             print '=================================================================='
 
     def _minigame_rps_capturing(self, rps_obj, is_sticker, content, uid):
+        print rps_obj is not None
+        print rps_obj.get_player_by_uid(uid) is not None
+        print bot.line_api_wrapper.is_valid_user_id(uid)
         if rps_obj is not None and bot.line_api_wrapper.is_valid_user_id(uid) and rps_obj.get_player_by_uid(uid) is not None:
             if rps_obj.enabled:
                 battle_item = rps_obj.find_battle_item(is_sticker, content)
@@ -366,11 +369,9 @@ class global_msg_handle(object):
         src = event.source
 
         rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
-        print rps_obj
 
         if rps_obj is not None:
             rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, bot.line_api_wrapper.source_user_id(src))
-            print rps_text
             if rps_text is not None:
                 self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
                 return True
