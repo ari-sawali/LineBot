@@ -582,16 +582,21 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
                 try:
-                    source_type = bot.line_api_wrapper.determine_id_type(target_gid)
+                    if gid is not None:
+                        source_type = bot.line_api_wrapper.determine_id_type(gid)
 
-                    if source_type == bot.line_event_source_type.USER:
-                        name = self._line_api_wrapper.profile_friend_list(uid).display_name
-                    if source_type == bot.line_event_source_type.GROUP:
-                        name = self._line_api_wrapper.profile_group(target_gid, uid).display_name
-                    if source_type == bot.line_event_source_type.ROOM:
-                        name = self._line_api_wrapper.profile_room(target_gid, src).display_name
+                        if source_type == bot.line_event_source_type.GROUP:
+                            print 'GROUP'
+                            name = self._line_api_wrapper.profile_group(gid, uid).display_name
+                        elif source_type == bot.line_event_source_type.ROOM:
+                            print 'ROOM'
+                            name = self._line_api_wrapper.profile_room(gid, uid).display_name
+                        else:
+                            print 'FRIEND LIST 2'
+                            name = self._line_api_wrapper.profile_name(uid, src)
                     else:
-                        raise ValueError(error.main.miscellaneous(u'Unhandled source type.'))
+                        print 'FRIEND LIST'
+                        name = self._line_api_wrapper.profile_name(uid, src)
                 except bot.UserProfileNotFoundError:
                     return error.main.line_account_data_not_found()
 

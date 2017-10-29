@@ -195,8 +195,8 @@ class rps_holder(db_base):
                 return rps_message.error.player_data_not_found()
             else:
                 player_data1, player_data2 = player_datas
-                player1_data = battle_player(player1_data)
-                player2_data = battle_player(player2_data)
+                player_data1 = battle_player(player_data1)
+                player_data2 = battle_player(player_data2)
 
             update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
 
