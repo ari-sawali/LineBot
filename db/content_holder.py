@@ -188,7 +188,7 @@ class rps_holder(db_base):
         if play_result == battle_result.UNDEFINED:
             return rps_message.result.waiting()
         else:
-            player_datas = self._get_player_data(rps_at_local)
+            player_datas = self._get_player_data(uid, rps_at_local)
             if player_datas is None:
                 return rps_message.error.player_data_not_found()
             else:
@@ -200,7 +200,7 @@ class rps_holder(db_base):
 
             return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time)
 
-    def _get_player_data(self, rps_at_local):
+    def _get_player_data(self, uid, rps_at_local):
         aggr_data = list(self.aggregate([
             { '$replaceRoot': {
                 'newRoot': '$' + rps_online.PLAYERS
