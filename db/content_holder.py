@@ -332,7 +332,11 @@ class battle_item_repr_manager(object):
     def get_battle_item(self, content, is_sticker):
         """Return None if nothing match."""
         key_str = battle_item_representative.generate_key(is_sticker, content)
-        return self._repr_dict.get(key_str, None)
+        item_repr = self._repr_dict.get(key_str, None)
+        if item_repr is None:
+            return None
+        else:
+            return battle_item(item_repr[battle_item_representative.BATTLE_ITEM])
 
     def set_battle_item(self, content, is_sticker, battle_item_enum=None):
         """Set battle_item_enum to None to delete representative."""
