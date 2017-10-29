@@ -207,6 +207,14 @@ class rps_holder(db_base):
             } },
             { '$replaceRoot': { 
                 'newRoot': '$' + rps_online.PLAYERS
+            } },
+            { '$match': { 
+                '$or': [
+                    { uid + '.' + battle_player.USER_ID: uid }, { rps_at_local.temp_uid_1 + '.' + battle_player.USER_ID: rps_at_local.temp_uid_1 }
+                ]
+            } },
+            { '$sort': { 
+                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]))
 
