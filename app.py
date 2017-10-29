@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
+# IMPORTANT: create avtivity point of group(calculate all stats of group)
+# IMPORTANT: rank of messages
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: statistics of sticker 
 # IMPORTANT: use mail api to send error report
@@ -337,12 +338,22 @@ def handle_postback(event):
 # Not Using
 @handler.add(MessageEvent, message=LocationMessage)
 def handle_location_message(event):
-    return
+    text_handler._group_manager.log_message_activity(cid, db.msg_type.LOCATION)
 
 # Not Using
-@handler.add(MessageEvent, message=(VideoMessage, AudioMessage, FileMessage))
+@handler.add(MessageEvent, message=VideoMessage)
 def handle_media_message(event):
-    return
+    text_handler._group_manager.log_message_activity(cid, db.msg_type.VIDEO)
+    
+# Not Using
+@handler.add(MessageEvent, message=AudioMessage)
+def handle_media_message(event):
+    text_handler._group_manager.log_message_activity(cid, db.msg_type.AUDIO)
+    
+# Not Using
+@handler.add(MessageEvent, message=FileMessage)
+def handle_media_message(event):
+    text_handler._group_manager.log_message_activity(cid, db.msg_type.FILE)
 
 # Not Using
 @handler.add(UnfollowEvent)

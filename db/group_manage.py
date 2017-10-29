@@ -36,6 +36,7 @@ class msg_type(ext.EnumWithName):
     VIDEO = 3, '影片'
     AUDIO = 4, '音訊'
     LOCATION = 5, '位置'
+    FILE = 6, '檔案'
 
 ###############################
 ### GROUP MANAGING INSTANCE ###
