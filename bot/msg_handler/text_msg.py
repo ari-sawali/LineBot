@@ -548,7 +548,7 @@ class text_msg_handler(object):
         gid = params[2]
 
         if category == 'MSG':
-            if gid is not None and bot.string_can_be_int(limit):
+            if gid is not None and bot.string_can_be_int(gid):
                 limit = int(gid)
             elif bot.string_can_be_int(limit):
                 limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
