@@ -175,10 +175,6 @@ class rps_holder(db_base):
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
-        print self._cache_enabled
-        print self._get_cache_enabled(cid)
-        print cid
-
         if not self._get_cache_enabled(cid):
             return rps_message.error.game_is_not_enabled()
 
@@ -265,7 +261,7 @@ class rps_holder(db_base):
         self._cache_enabled[cid] = enabled
 
     def _get_cache_enabled(self, cid):
-        self._cache_enabled.get(cid, False)
+        return self._cache_enabled.get(cid, False)
 
 class battle_result(ext.IntEnum):
     UNDEFINED = -1
