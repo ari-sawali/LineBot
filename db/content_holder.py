@@ -215,7 +215,7 @@ class rps_holder(db_base):
             { '$sort': { 
                 battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
-        ]))
+        ]).next())
 
         print aggr_data
         print len(aggr_data)
