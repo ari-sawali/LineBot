@@ -274,7 +274,6 @@ class battle_player(dict_like_mapping):
             self.reset_statistics()
 
     def win(self):
-        print 'w'
         self[battle_player.CONSECUTIVE_WIN] += 1
         if self[battle_player.CONSECUTIVE_WINNING]:
             self[battle_player.CONSECUTIVE_COUNT] += 1
@@ -494,8 +493,6 @@ class rps(dict_like_mapping):
         text += u'\n本次猜拳兩拳間格時間(包含程式處理時間) {:.3f} 秒'.format(self[rps.PROPERTIES][rps.GAP_TIME])
         text += u'\n\n'
         text += rps.player_stats_text(self[rps.PLAYERS])
-
-        self._reset()
         return text
 
     def battle_item_dict_text(self, item=None):
@@ -524,6 +521,9 @@ class rps(dict_like_mapping):
             self[rps.REPRESENTATIVES][k] = []
 
     def _play1(self, item, player_uid):
+        self[rps.RESULT_GENERATED] = False
+        self[rps.PLAY_BEGIN] = -1
+
         player_obj = self.get_player_by_uid(player_uid)
         if player_obj is not None:
             self[rps.PLAYER_TEMP1] = player_obj
@@ -557,10 +557,6 @@ class rps(dict_like_mapping):
             player2.tied()
         self[rps.PROPERTIES][rps.BATTLE_RESULT] = result_enum
         self[rps.PROPERTIES][rps.RESULT_GENERATED] = True
-            
-    def _reset(self):
-        self[rps.RESULT_GENERATED] = False
-        self[rps.PLAY_BEGIN] = -1
         self[rps.PLAYER_TEMP1] = None
         self[rps.PLAYER_TEMP2] = None
 
