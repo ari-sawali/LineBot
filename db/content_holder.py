@@ -176,6 +176,8 @@ class rps_holder(db_base):
             return rps_message.error.game_instance_not_exist()
 
         print self._cache_enabled
+        print self._get_cache_enabled(cid)
+        print cid
 
         if not self._get_cache_enabled(cid):
             return rps_message.error.game_is_not_enabled()
