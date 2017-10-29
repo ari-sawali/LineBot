@@ -160,6 +160,7 @@ class rps_holder(db_base):
             self._create_cache_repr(cid, new_game_online.representatives)
             self._set_cache_local(cid, rps_local())
             self._set_cache_enabled(cid, new_game_online.enabled)
+            print self._cache_local
             return True
         except pymongo.errors.DuplicateKeyError:
             return False
@@ -170,6 +171,7 @@ class rps_holder(db_base):
         If game is not exist, return rps_message.error.game_instance_not_exist().
         If game is disabled, return rps_message.error.game_is_not_enabled().
         """
+        print self._cache_local
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
@@ -192,13 +194,10 @@ class rps_holder(db_base):
             player_datas = self._get_player_data(cid, uid, rps_at_local, is_vs_bot)
             if player_datas is None:
                 return rps_message.error.player_data_not_found()
-            else:
-                player_data1, player_data2 = player_datas
-                player_data1 = battle_player(player_data1)
-                player_data2 = battle_player(player_data2)
 
-            print player_data1
-            print player_data2
+            player_data1, player_data2 = player_datas
+            player_data1 = battle_player(player_data1)
+            player_data2 = battle_player(player_data2)
 
             update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
 
