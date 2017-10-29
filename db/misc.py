@@ -46,16 +46,16 @@ class FormattedStringResult(object):
 
             # increase performance (duplicate flag determination if integrate)
             if insert_ranking:
-                for index, data in enumerate(data_list):
-                    data = string_format_function(data)
+                for index, data in enumerate(data_list, start=1):
+                    data = u'第{}名:\n{}'.format(index, string_format_function(data))
 
                     if limit is None or index < limit:
                         _list_limited.append(data)
 
                     _list_full.append(data)
             else:
-                for index, data in enumerate(data_list, start=1):
-                    data = u'第{}名:\n{}'.format(index, string_format_function(data))
+                for index, data in enumerate(data_list):
+                    data = string_format_function(data)
 
                     if limit is None or index < limit:
                         _list_limited.append(data)
