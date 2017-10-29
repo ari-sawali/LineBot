@@ -186,7 +186,7 @@ class global_msg_handle(object):
 
     def _handle_text_rps(self, event):
         """Return whether message has been replied."""
-        content = event.message.sticker_id
+        content = event.message.text
         src = event.source
         src_cid = bot.line_api_wrapper.source_channel_id(src)
         src_uid = bot.line_api_wrapper.source_user_id(src)
@@ -349,7 +349,7 @@ class global_msg_handle(object):
 
     def _handle_sticker_rps(self, event, sticker_id):
         """Return whether message has been replied."""
-        content = event.message.text
+        content = event.message.sticker_id
         src = event.source
         src_cid = bot.line_api_wrapper.source_channel_id(src)
         src_uid = bot.line_api_wrapper.source_user_id(src)
