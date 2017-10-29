@@ -321,18 +321,22 @@ class battle_item_representative(dict_like_mapping):
     def content(self):
         return self[battle_item_representative.CONTENT]
 
+    @staticmethod
+    def generate_key(is_sticker, content):
+        return '{}_{}'.format(is_sticker, content)
+
 class battle_item_repr_manager(object):
     def __init__(self, repr_dict):
         self._repr_dict = repr_dict
 
     def get_battle_item(self, content, is_sticker):
         """Return None if nothing match."""
-        key_str = '{}_{}'.format(content, is_sticker)
+        key_str = battle_item_representative.generate_key(is_sticker, content)
         return self._repr_dict.get(key_str, None)
 
     def set_battle_item(self, content, is_sticker, battle_item_enum=None):
         """Set battle_item_enum to None to delete representative."""
-        key_str = '{}_{}'.format(content, is_sticker)
+        key_str = battle_item_representative.generate_key(is_sticker, content)
 
         if battle_item_enum is None:
             del self._repr_list[key_str]
@@ -467,15 +471,15 @@ class rps_online(dict_like_mapping):
     ENABLED = 'en'
 
     @staticmethod
-    def init_by_field(cid, creator_name, creator_id, rock_stk_id, paper_repr_id, scissor_repr_id):
-        vs_bot = bot.line_api_wrapper.is_valid_user_id(creator_id)
+    def init_by_field(cid, creator_id, creator_name, rock_stk_id, paper_repr_id, scissor_repr_id):
+        vs_bot = bot.line_api_wrapper.is_valid_user_id(cid)
 
         init_dict = {
             rps_online.CHAT_INSTANCE_ID: cid,
             rps_online.PLAYERS: { creator_id: battle_player.init_by_field(creator_id, creator_name) },
-            rps_online.REPRESENTATIVES: { rock_stk_id: battle_item_representative.init_by_field(battle_item.ROCK, True, rock_stk_id),
-                                          paper_repr_id: battle_item_representative.init_by_field(battle_item.PAPER, True, paper_repr_id),
-                                          scissor_repr_id: battle_item_representative.init_by_field(battle_item.SCISSOR, True, scissor_repr_id) },
+            rps_online.REPRESENTATIVES: { battle_item_representative.generate_key(True, rock_stk_id) : battle_item_representative.init_by_field(battle_item.ROCK, True, rock_stk_id),
+                                          battle_item_representative.generate_key(True, paper_repr_id): battle_item_representative.init_by_field(battle_item.PAPER, True, paper_repr_id),
+                                          battle_item_representative.generate_key(True, scissor_repr_id): battle_item_representative.init_by_field(battle_item.SCISSOR, True, scissor_repr_id) },
             rps_online.PROPERTIES: {
                 rps_online.VS_BOT: vs_bot,
                 rps_online.ENABLED: True
