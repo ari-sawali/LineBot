@@ -203,15 +203,14 @@ class rps_holder(db_base):
     def _get_player_data(self, cid, uid, rps_at_local):
         aggr_data = list(self.aggregate([
             { '$match': {
-                rps_online.CHAT_INSTANCE_ID: cid
+                rps_online.CHAT_INSTANCE_ID: cid,
+                '$or': [
+                    { rps_online.PLAYERS + '.' + battle_player.USER_ID: uid }, 
+                    { rps_online.PLAYERS + '.' + battle_player.USER_ID: rps_at_local.temp_uid_1 }
+                ]
             } },
             { '$replaceRoot': { 
                 'newRoot': '$' + rps_online.PLAYERS
-            } },
-            { '$match': { 
-                '$or': [
-                    { uid + '.' + battle_player.USER_ID: uid }, { rps_at_local.temp_uid_1 + '.' + battle_player.USER_ID: rps_at_local.temp_uid_1 }
-                ]
             } },
             { '$sort': { 
                 battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
