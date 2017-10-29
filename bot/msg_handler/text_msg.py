@@ -542,7 +542,8 @@ class text_msg_handler(object):
     def _P(self, src, params, key_permission_lv, group_config_type):
         wrong_param1 = error.main.invalid_thing_with_correct_format(u'參數1', u'MSG、KW、IMG、SYS、EXC或合法使用者ID', params[1])
 
-        target_gid = self._get_remote_gid(params, bot.line_api_wrapper.source_channel_id(src), False, True)
+        default_target_gid = bot.line_api_wrapper.source_channel_id(src)
+        target_gid = self._get_remote_gid(params, default_target_gid, False, True)
 
         category = params[1]
         gid = params[2]
@@ -582,7 +583,7 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
                 try:
-                    if gid is not None:
+                    if target_gid != default_target_gid:
                         source_type = bot.line_api_wrapper.determine_id_type(gid)
 
                         if source_type == bot.line_event_source_type.GROUP:
