@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: statistics of sticker 

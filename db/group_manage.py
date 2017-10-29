@@ -270,8 +270,7 @@ class group_manager(db_base):
                 text = u''
                 if including_channel_id:
                     text += u'頻道ID: {} 【{}】\n'.format(gid, activation_status)
-                text += u'收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in data.message_track_record.received.iteritems()))
-                text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
+                text += msg_stats_data(data.message_track_record).get_string()
                 return text
 
             return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
@@ -503,7 +502,7 @@ class msg_stats_data(dict_like_mapping):
         return self.get(msg_stats_data.CHAT_INSTANCE_ID, None)
 
     def get_string(self):
-        text = u'\n收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in self.received.iteritems()))
+        text = u'收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in self.received.iteritems()))
         text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in self.reply.iteritems()))
         return text
 
