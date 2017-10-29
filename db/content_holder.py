@@ -330,7 +330,7 @@ class battle_item_representative(dict_like_mapping):
 
     @staticmethod
     def generate_key(is_sticker, content):
-        return '{}_{}'.format(is_sticker, content)
+        return '{}_{}'.format(is_sticker, content.encode('utf-8'))
 
 class battle_item_repr_manager(object):
     def __init__(self, repr_dict):
