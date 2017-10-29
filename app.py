@@ -18,6 +18,7 @@
 # UNDONE: increase performance of calling ranking by pair (integrate?)
 # UNDONE: increase performance of getting multi user's profile (multi process/thread? - https://docs.python.org/2/library/multiprocessing.html)
 # UNDONE: format timezone
+# UNDONE: machine learning to filter content - https://machine-learning-python.kspax.io/
 
 import os, sys, errno
 import tempfile

@@ -356,6 +356,8 @@ class global_msg_handle(object):
 
         rps_result = self._rps_data.play(src_cid, src_uid, content, True)
 
+        print rps_result
+
         if rps_result != db.rps_message.error.game_instance_not_exist() and rps_result != db.rps_message.error.game_is_not_enabled():
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  

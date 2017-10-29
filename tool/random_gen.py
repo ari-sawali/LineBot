@@ -16,9 +16,9 @@ class random_drawer(object):
         return u'抽選範圍【{}~{}】\n抽選結果【{}】'.format(start, end, result)
         
     @staticmethod
-    def draw_from_list(text_list):
-        random.shuffle(text_list)
-        return random.choice(text_list)
+    def draw_from_list(item_list):
+        random.shuffle(item_list)
+        return random.choice(item_list)
 
     @staticmethod
     def draw_text_string(text_list):

@@ -522,26 +522,39 @@ class rps_local(object):
         self._temp_item2 = None
         self._temp_uid2 = None
 
-    def play(self, uid, player_item):
-        if self._waiting:
-            self._gap_time = rps_local.TIME_NOT_STARTED
+    def play(self, uid, player_item, is_vs_bot=False):
+        if is_vs_bot:
             self._start_time = time.time()
 
-            self._temp_item1 = player_item
             self._temp_uid1 = uid
-            self._temp_item2 = None
+            self._temp_uid2 = battle_player.BOT_UID
 
+            self._temp_item1 = player_item
+            self._temp_item2 = random_gen.random_drawer.draw_from_list(list([battle_item.PAPER, battle_item.ROCK, battle_item.SCISSOR]))
+
+            self._gap_time = time.time() - self._start_time
             self._result_generated = True
             self._waiting = False
         else:
-            self._gap_time = time.time() - self._start_time
-            self._start_time = rps_local.TIME_NOT_STARTED
-            
-            self._temp_item2 = player_item
-            self._temp_uid2 = uid
+            if self._waiting:
+                self._gap_time = rps_local.TIME_NOT_STARTED
+                self._start_time = time.time()
 
-            self._result_generated = False
-            self._waiting = True
+                self._temp_item1 = player_item
+                self._temp_uid1 = uid
+                self._temp_item2 = None
+
+                self._result_generated = True
+                self._waiting = False
+            else:
+                self._gap_time = time.time() - self._start_time
+                self._start_time = rps_local.TIME_NOT_STARTED
+                
+                self._temp_item2 = player_item
+                self._temp_uid2 = uid
+
+                self._result_generated = False
+                self._waiting = True
 
         self._result = battle_result.calculate_result(self._temp_item1, self._temp_item2)
 
