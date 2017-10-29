@@ -151,6 +151,9 @@ class rps_holder(db_base):
         self._cache_repr = { rps_data[rps_online.CHAT_INSTANCE_ID]: battle_item_repr_manager(rps_data[rps_online.REPRESENTATIVES]) for rps_data in rps_list }
         self._cache_enabled = { rps_data[rps_online.CHAT_INSTANCE_ID]: rps_data[rps_online.PROPERTIES][rps_online.ENABLED] for rps_data in rps_list }
 
+    # register player handle (not registered or <2 will return error message)
+    # cache register player
+
     def create_game(self, cid, creator_id, creator_name, rock_stk_id, paper_stk_id, scissor_stk_id):
         """Return False if duplicated, else return True."""
         try:
@@ -214,13 +217,8 @@ class rps_holder(db_base):
             } },
             { '$replaceRoot': { 
                 'newRoot': '$' + rps_online.PLAYERS
-            } },
-            { '$sort': { 
-                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]).next()
-
-        print aggr_data
 
         if len(aggr_data) == 2:
             return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
@@ -228,6 +226,9 @@ class rps_holder(db_base):
             return None
 
     def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
+        print player1_data
+        print player2_data
+
         if result_enum == battle_result.PLAYER1_WIN:
             player1_data.win()
             player2_data.lose()
