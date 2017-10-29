@@ -487,7 +487,7 @@ class rps_online(dict_like_mapping):
         }
 
         if vs_bot:
-            init_dict[rps_online.PLAYERS].append(battle_player.init_by_field(battle_player.BOT_UID, '(電腦)'))
+            init_dict[rps_online.PLAYERS][battle_player.BOT_UID] = battle_player.init_by_field(battle_player.BOT_UID, '(電腦)')
 
         return rps_online(init_dict)
 
