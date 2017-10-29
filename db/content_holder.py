@@ -220,15 +220,14 @@ class rps_holder(db_base):
             } }
         ]).next()
 
+        print aggr_data
+
         if len(aggr_data) == 2:
             return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
         else:
             return None
 
     def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
-        print player1_data
-        print player2_data
-
         if result_enum == battle_result.PLAYER1_WIN:
             player1_data.win()
             player2_data.lose()
