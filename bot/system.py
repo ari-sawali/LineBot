@@ -211,11 +211,11 @@ class line_api_wrapper(object):
     @staticmethod
     def determine_id_type(cid):
         if cid.startswith('C'):
-            return line_event_source_type.USER
+            return line_event_source_type.GROUP
         elif cid.startswith('R'):
             return line_event_source_type.ROOM
         elif cid.startswith('U'):
-            return line_event_source_type.GROUP
+            return line_event_source_type.USER
 
     @staticmethod
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
