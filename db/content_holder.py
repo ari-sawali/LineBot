@@ -204,7 +204,7 @@ class rps_holder(db_base):
 
             self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, update_dict, None, None, False, pymongo.ReturnDocument.AFTER)
 
-            return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time)
+            return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time) + u'\n' + rps_message.result.statistics([player_data1, player_data2]) 
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
@@ -219,8 +219,6 @@ class rps_holder(db_base):
                 'newRoot': '$' + rps_online.PLAYERS
             } }
         ]).next()
-
-        print aggr_data
 
         if len(aggr_data) == 2:
             return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
@@ -426,6 +424,18 @@ class battle_player(dict_like_mapping):
     def name(self):
         return self[battle_player.NAME]
 
+    def statistic_string(self):
+        w = self[battle_player.RECORD][battle_player.WIN]
+        l = self[battle_player.RECORD][battle_player.LOSE]
+        t = self[battle_player.RECORD][battle_player.TIED]
+
+        cont_w = self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN]
+        cont_count = self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT]
+        cont_mw = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_WIN]
+        cont_ml = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE]
+
+        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.2%} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, w / float(w + l), cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
+
     def win(self):
         self[battle_player.RECORD][battle_player.WIN] += 1
 
@@ -615,3 +625,9 @@ class rps_message(object):
                 raise ValueError(error.error.main.miscellaneous(u'Unhandled result_enum.'))
 
             return u'{}\n\n兩拳相隔時間(含程式處理) {:.3f} 秒'.format(result, gap_time)
+
+        @staticmethod
+        def statistics(player_data_list):
+            text_to_join = [battle_player(data).statistic_string() for data in player_data_list]
+
+            return u'\n'.join(text_to_join)
