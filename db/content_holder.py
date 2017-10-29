@@ -160,7 +160,6 @@ class rps_holder(db_base):
             self._create_cache_repr(cid, new_game_online.representatives)
             self._set_cache_local(cid, rps_local())
             self._set_cache_enabled(cid, new_game_online.enabled)
-            print self._cache_local
             return True
         except pymongo.errors.DuplicateKeyError:
             return False

@@ -977,7 +977,7 @@ class game_msg_handler(object):
     SPLITTER = '\n'
 
     def __init__(self, mongo_db_uri, line_api_wrapper, command_manager):
-        self._game_holder = db.rps_holder(mongo_db_uri)
+        self._rps_holder = db.rps_holder(mongo_db_uri)
         self._line_api_wrapper = line_api_wrapper
 
         self._command_manager = command_manager
@@ -1018,7 +1018,7 @@ class game_msg_handler(object):
         uid = bot.line_api_wrapper.source_user_id(src)
 
         if params[4] is not None:
-            rps_obj = self._game_holder.get_rps(cid)
+            rps_obj = self._rps_holder.get_rps(cid)
             if rps_obj is not None and isinstance(rps_obj, game.rps):
                 action = params[1]
                 if action == 'ADD':
@@ -1066,14 +1066,14 @@ class game_msg_handler(object):
             if not bot.string_can_be_int(scissor, rock, paper):
                 return error.main.miscellaneous(u'初次建立遊戲時，拳代表必須是貼圖ID。')
 
-            create_result = self._game_holder.create_game(cid, uid, creator_name, rock, paper, scissor)
+            create_result = self._rps_holder.create_game(cid, uid, creator_name, rock, paper, scissor)
 
             if create_result:
                 text = u'遊戲建立成功。\n\n剪刀貼圖ID: {}\n石頭貼圖ID: {}\n布貼圖ID: {}'.format(scissor, rock, paper)
             else:
                 text = u'遊戲已經存在。'
         elif params[1] is not None:
-            rps_obj = self._game_holder.get_rps(cid)
+            rps_obj = self._rps_holder.get_rps(cid)
             action = params[1]
 
             if rps_obj is not None and isinstance(rps_obj, game.rps):
@@ -1114,7 +1114,7 @@ class game_msg_handler(object):
             else:
                 text = error.main.miscellaneous(u'尚未建立猜拳遊戲。')
         else:
-            rps_obj = self._game_holder.get_rps(cid)
+            rps_obj = self._rps_holder.get_rps(cid)
             if rps_obj is not None and isinstance(rps_obj, game.rps):
                 if rps_obj.player_dict is not None and len(rps_obj.player_dict) > 0:
                     text = game.rps.player_stats_text(rps_obj.player_dict)

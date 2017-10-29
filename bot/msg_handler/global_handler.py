@@ -14,7 +14,6 @@ class global_msg_handle(object):
         self._mongo_uri = mongo_db_uri
         self._line_api_wrapper = line_api_wrapper
         self._system_config = system_config
-        self._rps_data = db.rps_holder(mongo_db_uri)
         self._loop_preventer = bot.infinite_loop_preventer()
 
         self._txt_handle = txt_handle
@@ -27,6 +26,8 @@ class global_msg_handle(object):
         self._system_data = self._txt_handle._system_data 
         self._string_calculator = self._txt_handle._string_calculator 
         self._get_kwd_instance = self._txt_handle._get_kwd_instance 
+        
+        self._rps_data = self._game_handle._rps_holder
 
         self._intercept_key = os.getenv('COMMAND_INTERCEPT', None)
         if self._intercept_key is None:
