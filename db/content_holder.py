@@ -488,7 +488,7 @@ class rps_online(dict_like_mapping):
         return rps_online(init_dict)
 
     def __init__(self, org_dict):
-        if all(k in org_dict for k in (rps_online.CHAT_INSTANCE_ID, rps_online.PLAYERS, rps_online.REPRESENTATIVES, rps_online.PROPERTIES)):
+        if not all(k in org_dict for k in (rps_online.CHAT_INSTANCE_ID, rps_online.PLAYERS, rps_online.REPRESENTATIVES, rps_online.PROPERTIES)):
             raise ValueError(error.error.main.miscellaneous(u'Incomplete data.'))
 
         return super(rps_online, self).__init__(org_dict)
