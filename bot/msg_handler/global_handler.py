@@ -140,23 +140,21 @@ class global_msg_handle(object):
                 print event.message
             print '=================================================================='
 
-    def _minigame_rps_capturing(self, rps_obj, is_sticker, content, uid):
+    def _minigame_rps_capturing(self, rps_obj, is_sticker, content, src):
+        cid = bot.line_api_wrapper.source_channel_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
         if rps_obj is not None and bot.line_api_wrapper.is_valid_user_id(uid) and rps_obj.get_player_by_uid(uid) is not None:
-            print rps_obj.enabled
             if rps_obj.enabled:
-                print rps_obj.find_battle_item(is_sticker, content)
                 battle_item = rps_obj.find_battle_item(is_sticker, content)
                 if battle_item is not None:
                     result = rps_obj.play(battle_item, uid)
-                    print result
-                    print rps_obj.result_generated
-                    print rps_obj.is_waiting_next
                     if result is not None:
                         return result
                     else:
                         if rps_obj.is_waiting_next:
                             return u'等待下一個玩家出拳中...'
                         if rps_obj.result_generated:
+                            self._game_data.update_data(cid, rps_obj)
                             return rps_obj.result_text()
 
     def _get_group_config(self, cid):
@@ -211,7 +209,7 @@ class global_msg_handle(object):
         rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
 
         if rps_obj is not None:
-            rps_text = self._minigame_rps_capturing(rps_obj, False, full_text, bot.line_api_wrapper.source_user_id(src))
+            rps_text = self._minigame_rps_capturing(rps_obj, False, full_text, src)
             if rps_text is not None:
                 self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
                 return True
@@ -373,7 +371,7 @@ class global_msg_handle(object):
         rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
 
         if rps_obj is not None:
-            rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, bot.line_api_wrapper.source_user_id(src))
+            rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, src)
             if rps_text is not None:
                 self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
                 return True
