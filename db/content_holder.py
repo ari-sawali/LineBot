@@ -208,12 +208,6 @@ class rps_holder(db_base):
                     { rps_online.PLAYERS + '.' + uid + '.' + battle_player.USER_ID: uid }, 
                     { rps_online.PLAYERS + '.' + rps_at_local.temp_uid_1 + '.' + battle_player.USER_ID: rps_at_local.temp_uid_1 }
                 ]
-            } },
-            { '$replaceRoot': { 
-                'newRoot': '$' + rps_online.PLAYERS
-            } },
-            { '$sort': { 
-                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]))
 
@@ -545,8 +539,8 @@ class rps_local(object):
             self._waiting = False
         else:
             if self._waiting:
-                self._gap_time = rps_local.TIME_NOT_STARTED
-                self._start_time = time.time()
+                self._gap_time = time.time() - self._start_time
+                self._start_time = rps_local.TIME_NOT_STARTED
 
                 self._temp_item1 = player_item
                 self._temp_uid1 = uid
@@ -555,8 +549,8 @@ class rps_local(object):
                 self._result_generated = True
                 self._waiting = False
             else:
-                self._gap_time = time.time() - self._start_time
-                self._start_time = rps_local.TIME_NOT_STARTED
+                self._gap_time = rps_local.TIME_NOT_STARTED
+                self._start_time = time.time()
                 
                 self._temp_item2 = player_item
                 self._temp_uid2 = uid
