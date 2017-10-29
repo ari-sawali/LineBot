@@ -170,7 +170,6 @@ class rps_holder(db_base):
         If game is not exist, return rps_message.error.game_instance_not_exist().
         If game is disabled, return rps_message.error.game_is_not_enabled().
         """
-        print self._cache_local
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
@@ -220,6 +219,8 @@ class rps_holder(db_base):
                 battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]).next()
+
+        print aggr_data
 
         if len(aggr_data) == 2:
             return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
