@@ -373,7 +373,7 @@ class battle_player(dict_like_mapping):
     CONTINUOUS_COUNT = 'c_ct'
     IS_CONTINUNOUS_WIN = 'c_w'
 
-    @property
+    @staticmethod
     def init_by_field(user_id, name):
         init_dict = {
             battle_player.USER_ID: user_id,
