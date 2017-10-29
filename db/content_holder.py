@@ -434,7 +434,7 @@ class battle_player(dict_like_mapping):
         cont_mw = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_WIN]
         cont_ml = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE]
 
-        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.2%} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, w / float(w + l), cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
+        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.3f} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, w / float(w + l), cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
 
     def win(self):
         self[battle_player.RECORD][battle_player.WIN] += 1
