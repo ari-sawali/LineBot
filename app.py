@@ -196,7 +196,7 @@ def handle_text_message(event):
     token = event.reply_token
     src = event.source
 
-    print repr(event)
+    print str(event)
 
     try:
         global_handler.handle_text(event)
