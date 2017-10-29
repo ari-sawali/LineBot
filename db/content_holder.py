@@ -204,15 +204,7 @@ class rps_holder(db_base):
         aggr_data = list(self.aggregate([
             { '$replaceRoot': { 
                 'newRoot': '$' + rps_online.PLAYERS
-            } },
-            { '$match': { 
-                '$or': [
-                    { battle_player.USER_ID: uid }, { battle_player.USER_ID: rps_at_local.temp_uid_1 }
-                ]
-            } },
-            { '$sort': { 
-                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
-            } }
+            }
         ]))
 
         print aggr_data
