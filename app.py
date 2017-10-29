@@ -196,6 +196,8 @@ def handle_text_message(event):
     token = event.reply_token
     src = event.source
 
+    print repr(event)
+
     try:
         global_handler.handle_text(event)
     except Exception as ex:
@@ -220,6 +222,7 @@ def handle_text_message(event):
             tb_text = traceback.format_exc().encode('utf-8')
         except UnicodeDecodeError:
             tb_text = traceback.format_exc()
+
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
         if sys_config.get(db.config_data.REPLY_ERROR):
