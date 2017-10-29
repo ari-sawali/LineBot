@@ -140,8 +140,6 @@ class webpage_data(dict_like_mapping):
 ### GAME - ROCK-PAPER-SCISSOR ###
 #################################
 
-# RPS not imported
-
 class rps_holder(db_base):
     COLLECTION_NAME = 'rps'
 
@@ -539,7 +537,9 @@ class rps_local(object):
             self._temp_uid2 = battle_player.BOT_UID
 
             self._temp_item1 = player_item
-            self._temp_item2 = random_gen.random_drawer.draw_from_list(list([battle_item.PAPER, battle_item.ROCK, battle_item.SCISSOR]))
+            s = random_gen.random_drawer.draw_from_list(list([battle_item.PAPER, battle_item.ROCK, battle_item.SCISSOR]))
+            print s
+            self._temp_item2 = s
 
             self._gap_time = time.time() - self._start_time
             self._result_generated = True
@@ -609,4 +609,4 @@ class rps_message(object):
             else:
                 raise ValueError(error.error.main.miscellaneous(u'Unhandled result_enum.'))
 
-            return u'{}\n\n兩拳相隔時間(含程式處理) {:.2f} 秒'.format(result, gap_time)
+            return u'{}\n\n兩拳相隔時間(含程式處理) {:.3f} 秒'.format(result, gap_time)
