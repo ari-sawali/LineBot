@@ -196,6 +196,9 @@ class rps_holder(db_base):
                 player_data1 = battle_player(player_data1)
                 player_data2 = battle_player(player_data2)
 
+            print player_data1
+            print player_data2
+
             update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
 
             self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, update_dict, None, None, False, pymongo.ReturnDocument.AFTER)
