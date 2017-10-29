@@ -14,7 +14,7 @@ class global_msg_handle(object):
         self._mongo_uri = mongo_db_uri
         self._line_api_wrapper = line_api_wrapper
         self._system_config = system_config
-        self._game_data = db.game_object_holder(mongo_db_uri)
+        self._rps_data = db.rps_holder(mongo_db_uri)
         self._loop_preventer = bot.infinite_loop_preventer()
 
         self._txt_handle = txt_handle
@@ -140,23 +140,6 @@ class global_msg_handle(object):
                 print event.message
             print '=================================================================='
 
-    def _minigame_rps_capturing(self, rps_obj, is_sticker, content, src):
-        cid = bot.line_api_wrapper.source_channel_id(src)
-        uid = bot.line_api_wrapper.source_user_id(src)
-        if rps_obj is not None and bot.line_api_wrapper.is_valid_user_id(uid) and rps_obj.get_player_by_uid(uid) is not None:
-            if rps_obj.enabled:
-                battle_item = rps_obj.find_battle_item(is_sticker, content)
-                if battle_item is not None:
-                    result = rps_obj.play(battle_item, uid)
-                    if result is not None:
-                        return result
-                    else:
-                        if rps_obj.is_waiting_next:
-                            return u'等待下一個玩家出拳中...'
-                        if rps_obj.result_generated:
-                            self._game_data.update_data(cid, rps_obj)
-                            return rps_obj.result_text()
-
     def _get_group_config(self, cid):
         return self._group_manager.get_group_config_type(cid)
 
@@ -203,16 +186,16 @@ class global_msg_handle(object):
 
     def _handle_text_rps(self, event):
         """Return whether message has been replied."""
-        full_text = event.message.text
+        content = event.message.text
         src = event.source
+        src_cid = bot.line_api_wrapper.source_channel_id(src)
+        src_uid = bot.line_api_wrapper.source_user_id(src)
 
-        rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
+        rps_result = self._rps_data.play(src_cid, src_uid, content, False)
 
-        if rps_obj is not None:
-            rps_text = self._minigame_rps_capturing(rps_obj, False, full_text, src)
-            if rps_text is not None:
-                self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
-                return True
+        if rps_result != db.rps_message.error.game_instance_not_exist() and rps_result != db.rps_message.error.game_is_not_enabled():
+            self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
+            return True  
 
         return False
 
@@ -366,15 +349,16 @@ class global_msg_handle(object):
 
     def _handle_sticker_rps(self, event, sticker_id):
         """Return whether message has been replied."""
+        content = event.message.text
         src = event.source
+        src_cid = bot.line_api_wrapper.source_channel_id(src)
+        src_uid = bot.line_api_wrapper.source_user_id(src)
 
-        rps_obj = self._game_data.get_data(bot.line_api_wrapper.source_channel_id(src))
+        rps_result = self._rps_data.play(src_cid, src_uid, content, True)
 
-        if rps_obj is not None:
-            rps_text = self._minigame_rps_capturing(rps_obj, True, sticker_id, src)
-            if rps_text is not None:
-                self._line_api_wrapper.reply_message_text(event.reply_token, rps_text)
-                return True
+        if rps_result != db.rps_message.error.game_instance_not_exist() and rps_result != db.rps_message.error.game_is_not_enabled():
+            self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
+            return True  
 
         return False
 

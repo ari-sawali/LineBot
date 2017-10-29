@@ -253,7 +253,7 @@ class group_manager(db_base):
             return group_permission_data.get(uid, None)
         
     @staticmethod
-    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True):
+    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True, insert_ranking=False):
         if group_data_or_list is not None and len(group_data_or_list) > 0:
             if not isinstance(group_data_or_list, list):
                 group_data_or_list = [group_data_or_list]
@@ -274,7 +274,7 @@ class group_manager(db_base):
                 text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in data.message_track_record.reply.iteritems()))
                 return text
 
-            return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n')
+            return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
         else:
             err = error.main.miscellaneous(u'沒有輸入群組資料。')
             return FormattedStringResult([err], [err])

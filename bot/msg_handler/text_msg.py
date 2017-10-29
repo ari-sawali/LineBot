@@ -548,9 +548,12 @@ class text_msg_handler(object):
         gid = params[2]
 
         if category == 'MSG':
-            limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
+            if gid is not None and bot.string_can_be_int(limit):
+                limit = int(gid)
+            elif bot.string_can_be_int(limit):
+                limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
         
-            tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'))
+            tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True)
         
             text = u'為避免訊息過長洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
         elif category == 'KW':
@@ -965,7 +968,7 @@ class game_msg_handler(object):
     SPLITTER = '\n'
 
     def __init__(self, mongo_db_uri, line_api_wrapper, command_manager):
-        self._game_holder = db.game_object_holder(mongo_db_uri)
+        self._game_holder = db.rps_holder(mongo_db_uri)
         self._line_api_wrapper = line_api_wrapper
 
         self._command_manager = command_manager
@@ -1054,7 +1057,7 @@ class game_msg_handler(object):
             if not bot.string_can_be_int(scissor, rock, paper):
                 return error.main.miscellaneous(u'初次建立遊戲時，拳代表必須是貼圖ID。')
 
-            create_result = self._game_holder.create_data(cid, uid, creator_name, rock, paper, scissor)
+            create_result = self._game_holder.create_game(cid, uid, creator_name, rock, paper, scissor)
 
             if create_result:
                 text = u'遊戲建立成功。\n\n剪刀貼圖ID: {}\n石頭貼圖ID: {}\n布貼圖ID: {}'.format(scissor, rock, paper)

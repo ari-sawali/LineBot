@@ -12,7 +12,7 @@ class FormattedStringResult(object):
             self._has_result = has_result
 
     @staticmethod
-    def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None, separator='\n'):
+    def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None, separator='\n', insert_ranking=False):
         has_result = False
 
         _list_limited = []
@@ -44,13 +44,23 @@ class FormattedStringResult(object):
             else:
                 _limited_data_list = data_list
 
-            for index, data in enumerate(data_list):
-                data = string_format_function(data)
+            # increase performance (duplicate flag determination if integrate)
+            if insert_ranking:
+                for index, data in enumerate(data_list):
+                    data = string_format_function(data)
 
-                if limit is None or index < limit:
-                    _list_limited.append(data)
+                    if limit is None or index < limit:
+                        _list_limited.append(data)
 
-                _list_full.append(data)
+                    _list_full.append(data)
+            else:
+                for index, data in enumerate(data_list, start=1):
+                    data = u'第{}名:\n{}'.format(index, string_format_function(data))
+
+                    if limit is None or index < limit:
+                        _list_limited.append(data)
+
+                    _list_full.append(data)
 
             if limit is not None:
                 data_left = count - limit

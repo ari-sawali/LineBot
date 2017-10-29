@@ -140,60 +140,151 @@ class webpage_data(dict_like_mapping):
 ### GAME - ROCK-PAPER-SCISSOR ###
 #################################
 
-class game_object_holder(db_base):
-    COLLECTION_NAME = 'game'
+# RPS not imported
+
+class rps_holder(db_base):
+    COLLECTION_NAME = 'rps'
 
     def __init__(self, mongo_db_uri):
-        super(game_object_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, game_object_holder.COLLECTION_NAME, False, [rps.CHAT_INSTANCE_ID])
-        self._cache_exist = { rps_data[rps.CHAT_INSTANCE_ID]: True for rps_data in self.find() }
+        super(rps_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, rps_holder.COLLECTION_NAME, False, [rps_online.CHAT_INSTANCE_ID])
 
-    def update_data(self, chat_instance_id, new_data):
-        self._set_cache_object_exist(chat_instance_id, True)
-        self.find_one_and_replace({ rps.CHAT_INSTANCE_ID: chat_instance_id }, new_data)
-        
-    def delete_data(self, chat_instance_id):
-        self._set_cache_object_exist(chat_instance_id, False)
-        self.delete_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
+        rps_list = list(self.find())
+        self._cache_local = { rps_data[rps_online.CHAT_INSTANCE_ID]: rps_local() for rps_data in rps_list }
+        self._cache_repr = { rps_data[rps_online.CHAT_INSTANCE_ID]: battle_item_repr_manager(rps_data[rps_online.REPRESENTATIVES]) for rps_data in rps_list }
+        self._cache_enabled = { rps_data[rps_online.CHAT_INSTANCE_ID]: rps_data[rps_online.PROPERTIES][rps_online.ENABLED] for rps_data in rps_list }
 
-    def create_data(self, chat_instance_id, creator_id, creator_name, rock, paper, scissor):
-        """Return false if game is exists, else return true."""
-        is_bot = bot.line_api_wrapper.is_valid_user_id(chat_instance_id)
-
+    def create_game(self, cid, creator_id, creator_name, rock_stk_id, paper_stk_id, scissor_stk_id):
+        """Return False if duplicated, else return True."""
         try:
-            self.insert_one(rps.init_by_field(chat_instance_id, creator_id, creator_name, is_bot, rock, paper, scissor))
-            self._set_cache_object_exist(chat_instance_id, True)
+            new_game_online = rps_online.init_by_field(cid, creator_id, creator_name, rock_stk_id, paper_stk_id, scissor_stk_id)
+
+            self.insert_one(new_game_online)
+            self._create_cache_repr(cid, new_game_online.representatives)
+            self._set_cache_local(cid, rps_local())
+            self._set_cache_enabled(cid, new_game_online.enabled)
             return True
         except pymongo.errors.DuplicateKeyError:
             return False
 
-    def get_data(self, chat_instance_id):
-        """Return None if data not exists."""
-        exist = self._get_cache_object_exist(chat_instance_id)
-        if exist:
-            find_result = self.find_one({ rps.CHAT_INSTANCE_ID: chat_instance_id })
-            if find_result is not None:
-                return rps(find_result)
+    def play(self, cid, uid, content, is_sticker):
+        """
+        Return result string.
+        If game is not exist, return rps_message.error.game_instance_not_exist().
+        If game is disabled, return rps_message.error.game_is_not_enabled().
+        """
+        if not self._check_instance_exist(cid):
+            return rps_message.error.game_instance_not_exist()
+
+        if not self._get_cache_enabled(cid):
+            return rps_message.error.game_is_not_enabled()
+
+        player_item = self._get_cache_repr(cid, content, is_sticker)
+        rps_at_local = self._get_cache_local(cid)
+
+        play_result = rps_at_local.play(player_item)
+
+        self._set_cache_local(cid, rps_at_local)
+
+        if play_result == battle_result.UNDEFINED:
+            return rps_message.result.waiting()
+        else:
+            player_datas = self._get_player_data(rps_at_local)
+            if player_datas is None:
+                return rps_message.error.player_data_not_found()
             else:
-                self._set_cache_object_exist(chat_instance_id, False)
-                return None
+                player_data1, player_data2 = player_datas
+
+            update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
+
+            self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, update_dict, None, None, False, pymongo.ReturnDocument.AFTER)
+
+            return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time)
+
+    def _get_player_data(self, rps_at_local):
+        aggr_data = list(self.aggregate([
+            { '$replaceRoot': {
+                'newRoot': '$' + rps_online.PLAYERS
+            } },
+            { '$match': { 
+                '$or': [
+                    { battle_player.USER_ID: uid }, { battle_player.USER_ID: rps_at_local.temp_uid_1 }
+                ]
+            } },
+            { '$sort': { 
+                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
+            } }
+        ]))
+
+        if len(aggr_data) == 1:
+            return aggr_data[0], aggr_data[1]
         else:
             return None
 
-    def _set_cache_object_exist(self, gid, exist):
-        self._cache_exist[gid] = exist
+    def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
+        if result_enum == battle_result.PLAYER1_WIN:
+            player1_data.win()
+            player2_data.lose()
+        elif result_enum == battle_result.PLAYER2_WIN:
+            player1_data.lose()
+            player2_data.win()
+        elif result_enum == battle_result.TIED:
+            player1_data.tied()
+            player2_data.tied()
+        else:
+            raise ValueError(error.error.main.miscellaneous(u'Unhandled battle enum.'))
 
-    def _get_cache_object_exist(self, gid):
-        return self._cache_exist.get(gid, False)
+        return { '$set': { rps_online.PLAYERS + '.' + player1_data.user_id: player1_data, 
+                           rps_online.PLAYERS + '.' + player2_data.user_id: player2_data } }
+
+    def _check_instance_exist(self, cid):
+        return cid in self._cache_local
+
+    def _set_cache_local(self, cid, rps_local):
+        self._cache_local[cid] = rps_local
+
+    def _get_cache_local(self, cid):
+        """Return None if nothing found"""
+        return self._cache_local.get(cid, None)
+
+    def _create_cache_repr(self, cid, repr_dict):
+        """Provide content only to delete representative."""
+        self._cache_repr[cid] = battle_item_repr_manager(repr_dict)
+
+    def _set_cache_repr(self, cid, content, is_sticker, battle_item_enum=None):
+        """Set battle_item_enum to None to delete representative."""
+        self._cache_repr[cid].set_battle_item(content, is_sticker, battle_item_enum)
+
+    def _get_cache_repr(self, cid, content, is_sticker):
+        return self._cache_repr[cid].get_battle_item(content, is_sticker)
+
+    def _set_cache_enabled(self, cid, enabled):
+        self._cache_enabled[cid] = enabled
+
+    def _get_cache_enabled(self, cid):
+        self._cache_enabled.get(cid, False)
+
+class battle_result(ext.IntEnum):
+    UNDEFINED = -1
+    TIED = 0
+    PLAYER1_WIN = 1
+    PLAYER2_WIN = 2
+
+    @staticmethod
+    def calculate_result(player1_item, player2_item):
+        """Set either player1_item or player2_item to None to return UNDEFINED."""
+        if player1_item is None or player2_item is None:
+            return battle_result.UNDEFINED
+
+        return battle_result((player1_item - player2_item) % 3)
 
 class battle_item(ext.EnumWithName):
-    __order__ = 'SCISSOR ROCK PAPER'
-    ROCK = 1, '石頭'
-    PAPER = 2, '布'
-    SCISSOR = 3, '剪刀'
+    ROCK = 0, '石頭'
+    PAPER = 1, '布'
+    SCISSOR = 2, '剪刀'
 
 class battle_item_representative(dict_like_mapping):
     """
-    { 
+    {
         battle_item: BATTLE_ITEM,
         is_sticker: BOOLEAN,
         content: STRING
@@ -203,438 +294,302 @@ class battle_item_representative(dict_like_mapping):
     IS_STICKER = 'stk'
     CONTENT = 'cont'
 
-    def __init__(self, battle_item, is_sticker, content):
+    @staticmethod
+    def init_by_field(battle_item_enum, is_sticker, content):
         init_dict = {
-            battle_item_representative.BATTLE_ITEM: battle_item,
+            battle_item_representative.BATTLE_ITEM: battle_item_enum,
             battle_item_representative.IS_STICKER: is_sticker,
             battle_item_representative.CONTENT: content
         }
-        super(battle_item_representative, self).__init__(init_dict)
+        return battle_item_representative(init_dict)
+
+    def __init__(self, org_dict):
+        if not all(k in org_dict for k in (battle_item_representative.BATTLE_ITEM, battle_item_representative.IS_STICKER, battle_item_representative.CONTENT)):
+            raise ValueError(error.error.main.miscellaneous(u'Incomplete battle representative.'))
+
+        super(battle_item_representative, self).__init__(org_dict)
 
     @property
     def is_sticker(self):
         return self[battle_item_representative.IS_STICKER]
 
     @property
-    def content(self):
-        return self[battle_item_representative.CONTENT]
-
-    @property
     def battle_item(self):
         return self[battle_item_representative.BATTLE_ITEM]
 
-class battle_result(enum.IntEnum):
-    UNDEFINED = -1
-    TIED = 0
-    PLAYER1_WIN = 1
-    PLAYER2_WIN = 2
+    @property
+    def content(self):
+        return self[battle_item_representative.CONTENT]
+
+class battle_item_repr_manager(object):
+    def __init__(self, repr_dict):
+        self._repr_dict = repr_dict
+
+    def get_battle_item(self, content, is_sticker):
+        """Return None if nothing match."""
+        key_str = '{}_{}'.format(content, is_sticker)
+        return self._repr_dict.get(key_str, None)
+
+    def set_battle_item(self, content, is_sticker, battle_item_enum=None):
+        """Set battle_item_enum to None to delete representative."""
+        key_str = '{}_{}'.format(content, is_sticker)
+
+        if battle_item_enum is None:
+            del self._repr_list[key_str]
+        else:
+            self._repr_list[key_str] = battle_item_representative.init_by_field(battle_item_enum, is_sticker, content)
 
 class battle_player(dict_like_mapping):
     """
     {
-        name: STRING,
-        uid: STRING,
-        win: INTEGER,
-        lose: INTEGER,
-        tied: INTEGER,
-        last_item: BATTLE_ITEM,
-        consecutive_winning: BOOLEAN,
-        consecutive_count: BOOLEAN,
-        consecutive_win: INTEGER,
-        consecutive_lose: INTEGER
+        NAME: STRING,
+        USER_ID: STRING,
+        RECORD: {
+            WIN: INTEGER,
+            LOSE: INTEGER,
+            TIED: INTEGER,
+        },
+        STATISTICS: {
+            MAX_CONTINUOUS_WIN: INTEGER,
+            MAX_CONTINUOUS_LOSE: INTEGER,
+            CONTINUOUS_COUNT: INTEGER,
+            IS_CONTINUNOUS_WIN: BOOLEAN
+        }
     }
     """
-    NAME = 'name'
-    UID = 'uid'
+    BOT_UID = 'U--------------------------------'
 
-    WIN = 'w'
-    LOSE = 'l'
-    TIED = 't'
+    NAME = 'nm'
+    USER_ID = 'uid'
 
-    LAST_ITEM = 'last'
-    CONSECUTIVE_WINNING = 'cw'
-    CONSECUTIVE_COUNT = 'cc'
-    CONSECUTIVE_WIN = 'max_cw'
-    CONSECUTIVE_LOSE = 'max_cl'
+    RECORD = 'rec'
+    WIN = 'W'
+    LOSE = 'L'
+    TIED = 'T'
 
-    @staticmethod
-    def init_by_field(name, uid):
+    STATISTICS = 'stats'
+    MAX_CONTINUOUS_WIN = 'mx_cw'
+    MAX_CONTINUOUS_LOSE = 'mx_cl'
+    CONTINUOUS_COUNT = 'c_ct'
+    IS_CONTINUNOUS_WIN = 'c_w'
+
+    @property
+    def init_by_field(user_id, name):
         init_dict = {
-            battle_player.NAME: name,
-            battle_player.UID: uid
+            battle_player.USER_ID: user_id,
+            battle_player.NAME: name
         }
-        return battle_player(init_dict, False)
 
-    def __init__(self, org_dict, by_pass_statistics_init=True):
-        if not all(k in org_dict for k in (battle_player.NAME, battle_player.UID)):
-            raise ValueError(error.error.main.miscellaneous(u'Incomplete player data.'))
+        return battle_player(init_dict)
+
+    def __init__(self, org_dict):
+        if not all(k in org_dict for k in (battle_player.NAME, battle_player.USER_ID)):
+            raise ValueError(error.error.main.miscellaneous(u'Data incomplete.'))
+
+        if battle_player.RECORD not in org_dict:
+            org_dict[battle_player.RECORD] = {
+                battle_player.WIN: 0,
+                battle_player.LOSE: 0,
+                battle_player.TIED: 0
+            }
+
+        if battle_player.STATISTICS not in org_dict:
+            org_dict[battle_player.STATISTICS] = {
+                battle_player.MAX_CONTINUOUS_WIN: 0,
+                battle_player.MAX_CONTINUOUS_LOSE: 0,
+                battle_player.CONTINUOUS_COUNT: 0,
+                battle_player.IS_CONTINUNOUS_WIN: False
+            }
 
         super(battle_player, self).__init__(org_dict)
-        if not by_pass_statistics_init:
-            self.reset_statistics()
 
-    def win(self):
-        self[battle_player.CONSECUTIVE_WIN] += 1
-        if self[battle_player.CONSECUTIVE_WINNING]:
-            self[battle_player.CONSECUTIVE_COUNT] += 1
-        else:
-            self[battle_player.CONSECUTIVE_COUNT] = 1
-        if self[battle_player.CONSECUTIVE_COUNT] > self[battle_player.CONSECUTIVE_WIN]:
-            self[battle_player.CONSECUTIVE_WIN] = self[battle_player.CONSECUTIVE_COUNT]
-        self[battle_player.CONSECUTIVE_WINNING] = True
-        
-    def lose(self):
-        self[battle_player.LOSE] += 1
-        if not self[battle_player.CONSECUTIVE_WINNING]:
-            self[battle_player.CONSECUTIVE_COUNT] += 1
-        else:
-            self[battle_player.CONSECUTIVE_COUNT] = 1
-        if self[battle_player.CONSECUTIVE_COUNT] > self[battle_player.CONSECUTIVE_LOSE]:
-            self[battle_player.CONSECUTIVE_LOSE] = self[battle_player.CONSECUTIVE_COUNT]
-        self[battle_player.CONSECUTIVE_WINNING] = False
-        
-    def tied(self):
-        self[battle_player.TIED] += 1
-
-    def reset_statistics(self):
-        self[battle_player.WIN] = 0
-        self[battle_player.LOSE] = 0
-        self[battle_player.TIED] = 0
-        self[battle_player.LAST_ITEM] = None
-        self[battle_player.CONSECUTIVE_WINNING] = False
-        self[battle_player.CONSECUTIVE_COUNT] = 0
-        self[battle_player.CONSECUTIVE_WIN] = 0
-        self[battle_player.CONSECUTIVE_LOSE] = 0
-
-    def is_same_uid(self, uid):
-        return self[battle_player.UID] == uid
+    @property
+    def user_id(self):
+        return self[battle_player.USER_ID]
 
     @property
     def name(self):
         return self[battle_player.NAME]
-    
-    @property
-    def win_count(self):
-        return self[battle_player.WIN]
-    
-    @property
-    def lose_count(self):
-        return self[battle_player.LOSE]
-    
-    @property
-    def tied_count(self):
-        return self[battle_player.TIED]
 
-    @property
-    def total_played(self):
-        return self[battle_player.WIN] + self[battle_player.LOSE] + self[battle_player.TIED]
+    def win(self):
+        self[battle_player.RECORD][battle_player.WIN] += 1
 
-    @property
-    def consecutive_type(self):
-        """True=Win, False=Lose"""
-        return self[battle_player.CONSECUTIVE_WINNING]
+        if self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN]:
+            self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] += 1
+        else:
+            self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN] = True
+            self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] = 1
 
-    @property
-    def consecutive_count(self):
-        return self[battle_player.CONSECUTIVE_COUNT]
+        if self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] > self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_WIN]:
+            self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_WIN] = self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT]
 
-    @property
-    def longest_consecutive_win(self):
-        return self[battle_player.CONSECUTIVE_WIN]
+    def tied(self):
+        self[battle_player.RECORD][battle_player.TIED] += 1
 
-    @property
-    def longest_consecutive_lose(self):
-        return self[battle_player.CONSECUTIVE_LOSE]
+    def lose(self):
+        self[battle_player.RECORD][battle_player.LOSE] += 1
 
-    @property
-    def winning_rate(self):
-        try:
-            return self[battle_player.WIN] / float(self[battle_player.WIN] + self[battle_player.LOSE])
-        except ZeroDivisionError:
-            return 1.0 if self[battle_player.WIN] > 0 else 0.0
-    
-    @property
-    def last_item(self):
-        return self[battle_player.LAST_ITEM]
+        if not self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN]:
+            self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] += 1
+        else:
+            self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN] = False
+            self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] = 1
 
-    @last_item.setter
-    def last_item(self, value):
-        self[battle_player.LAST_ITEM] = value
+        if self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] > self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE]:
+            self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE] = self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT]
 
-class rps(dict_like_mapping):
+class rps_online(dict_like_mapping):
     """
-    Game of Rock-Paper-Scissors
-    
     {
         chat_instance_id: STRING,
-        representatives: {
-            rock: [],
-            paper: [],
-            scissor: []
-        },
-        players: {
-            player_uid: PLAYER, player_uid: PLAYER, player_uid: PLAYER...
-        },
+        players: 
+            { user_id: BATTLE_PLAYER, 
+              user_id: BATTLE_PLAYER, 
+              user_id: BATTLE_PLAYER,
+              ... },
+        representatives: 
+            { [is_sticker]_[content]: BATTLE_ITEM_REPRESENTATIVES, 
+              [is_sticker]_[content]: BATTLE_ITEM_REPRESENTATIVES, 
+              [is_sticker]_[content]: BATTLE_ITEM_REPRESENTATIVES,
+              ... },
         properties: {
-            enabled: BOOLEAN,,
-            is_vs_bot: BOOLEAN
-            result_generated: BOOLEAN,
-            play_begin: FLOAT (TIME),
-            gap_time: FLOAT (TIME)
-        },
-        player_temp1: PLAYER,
-        player_temp2: PLAYER
+            vs_bot: BOOLEAN,
+            enabled: BOOLEAN
+        }
     }
     """
-    _BOT_UID = 'U--------------------------------'
-
     CHAT_INSTANCE_ID = 'cid'
-    IS_VS_BOT = 'vs_bot'
-
+    PLAYERS = 'plyrs'
     REPRESENTATIVES = 'repr'
-    ROCK = 'rck'
-    PAPER = 'ppr'
-    SCISSOR = 'scr'
 
     PROPERTIES = 'prop'
+    VS_BOT = 'vs_bot'
     ENABLED = 'en'
-    RESULT_GENERATED = 'gen'
-    PLAY_BEGIN = 'begin_t'
-    GAP_TIME = 'gap'
-    BATTLE_RESULT = 'res'
 
-    PLAYERS = 'plyr'
-    PLAYER_TEMP1 = 'temp1'
-    PLAYER_TEMP2 = 'temp2'
-    
     @staticmethod
-    def init_by_field(chat_instance_id, creator_id, creator_name, vs_bot, rock, paper, scissor):
-        """rps object is content only, set default to sticker id."""
-        if vs_bot:
-            player_dict = {rps._BOT_UID: battle_player.init_by_field(u'(電腦)', rps._BOT_UID)}
-        else:
-            player_dict = {}
-
-        player_dict[creator_id] = battle_player.init_by_field(creator_name, creator_id)
+    def init_by_field(cid, creator_name, creator_id, rock_stk_id, paper_repr_id, scissor_repr_id):
+        vs_bot = bot.line_api_wrapper.is_valid_user_id(creator_id)
 
         init_dict = {
-            rps.CHAT_INSTANCE_ID: chat_instance_id,
-            rps.REPRESENTATIVES: {
-                rps.ROCK: [battle_item_representative(battle_item.ROCK, True, rock)],
-                rps.PAPER: [battle_item_representative(battle_item.PAPER, True, paper)],
-                rps.SCISSOR: [battle_item_representative(battle_item.SCISSOR, True, scissor)]
-            },
-            rps.PLAYERS: player_dict,
-            rps.PROPERTIES: {
-                rps.ENABLED: True,
-                rps.IS_VS_BOT: vs_bot,
-                rps.RESULT_GENERATED: False,
-                rps.PLAY_BEGIN: -1,
-                rps.GAP_TIME: -1
-            },
-            rps.PLAYER_TEMP1: None,
-            rps.PLAYER_TEMP2: None
+            rps_online.CHAT_INSTANCE_ID: cid,
+            rps_online.PLAYERS: { creator_id: battle_player.init_by_field(creator_id, creator_name) },
+            rps_online.REPRESENTATIVES: { rock_stk_id: battle_item_representative.init_by_field(battle_item.ROCK, True, rock_stk_id),
+                                          paper_repr_id: battle_item_representative.init_by_field(battle_item.PAPER, True, paper_repr_id),
+                                          scissor_repr_id: battle_item_representative.init_by_field(battle_item.SCISSOR, True, scissor_repr_id) },
+            rps_online.PROPERTIES: {
+                rps_online.VS_BOT: vs_bot,
+                rps_online.ENABLED: True
+            }
         }
-        return rps(init_dict)
+
+        if vs_bot:
+            init_dict[rps_online.PLAYERS].append(battle_player.init_by_field(battle_player.BOT_UID, '(電腦)'))
+
+        return rps_online(init_dict)
 
     def __init__(self, org_dict):
-        super(rps, self).__init__(org_dict)
+        if all(k in org_dict for k in (rps_online.CHAT_INSTANCE_ID, rps_online.PLAYERS, rps_online.REPRESENTATIVES, rps_online.PROPERTIES)):
+            raise ValueError(error.error.main.miscellaneous(u'Incomplete data.'))
 
-    def register_battle_item(self, item, is_sticker, content):
-        field = self._battle_item_to_repr_key(item)
-        self[rps.REPRESENTATIVES][field].append(battle_item_representative(item, is_sticker, content))
-
-    def register_player(self, name, uid):
-        if self.get_player_by_uid(uid) is None:
-            self[rps.PLAYERS][uid] = battle_player.init_by_field(name, uid)
-            return True
-        else:
-            return False
-        
-    def play(self, item, player_uid):
-        """
-        return not void if error occurred.
-        No action if player not exist.
-        """
-        if self[rps.PROPERTIES][rps.ENABLED]:
-            player_count = len(self[rps.PLAYERS])
-            if player_count < 2:
-                return error.error.main.miscellaneous(u'玩家人數不足，需要先註冊2名玩家以後方可遊玩。目前已註冊玩家{}名。\n已註冊玩家: {}'.format(
-                    player_count, '、'.join([player[battle_player.NAME] for player in self[rps.PLAYERS].itervalues()])))
-            else:
-                if self[rps.PLAYER_TEMP1] is not None:
-                    if self[rps.PLAYER_TEMP1][battle_player.UID] == player_uid:
-                        return error.error.main.miscellaneous(u'同一玩家不可重複出拳。')
-                    else:
-                        self._play2(item, player_uid)
-                else:
-                    self._play1(item, player_uid)
-        else:
-            return error.error.main.miscellaneous(u'遊戲暫停中...')
-
-    def result_text(self):
-        """
-        Player object will be released after calling this method.
-        """
-        result_enum = self[rps.PROPERTIES][rps.BATTLE_RESULT]
-        if result_enum == battle_result.TIED:
-            text = u'【平手】'
-        elif result_enum == battle_result.PLAYER1_WIN:
-            text = u'【勝利 - {}】'.format(self[rps.PLAYER_TEMP1][battle_player.NAME])
-            text += u'\n【敗北 - {}】'.format(self[rps.PLAYER_TEMP2][battle_player.NAME])
-        elif result_enum == battle_result.PLAYER2_WIN:
-            text = u'【勝利 - {}】'.format(self[rps.PLAYER_TEMP2][battle_player.NAME])
-            text += u'\n【敗北 - {}】'.format(self[rps.PLAYER_TEMP1][battle_player.NAME])
-        elif result_enum == battle_result.UNDEFINED:
-            text = u'【尚未猜拳】'
-        else:
-            raise ValueError(error.error.main.invalid_thing(u'猜拳結果', result_enum))
-        
-        text += u'\n本次猜拳兩拳間格時間(包含程式處理時間) {:.3f} 秒'.format(self[rps.PROPERTIES][rps.GAP_TIME])
-        text += u'\n\n'
-        text += rps.player_stats_text(self[rps.PLAYERS])
-        return text
-
-    def battle_item_dict_text(self, item=None):
-        if item is None:
-            text = u'【剪刀石頭布代表物件】\n'
-            text += u'\n'.join([self._battle_item_dict_text(item) for item in battle_item])
-            return text
-        else:
-            return self._battle_item_dict_text(item)
-
-    def reset_statistics(self):
-        for player in self[rps.PLAYERS].itervalues():
-            player = battle_player(player)
-            player.reset_statistics() 
-
-    def find_battle_item(self, is_sticker, content):
-        for battle_item_key, representatives in self[rps.REPRESENTATIVES].iteritems():
-            for representative in representatives:
-                if representative[battle_item_representative.IS_STICKER] == is_sticker and representative[battle_item_representative.CONTENT] == content:
-                    return self._repr_key_to_battle_item(battle_item_key)
-
-        return None
-
-    def clear_battle_item(self):
-        for k in self[rps.REPRESENTATIVES].keys():
-            self[rps.REPRESENTATIVES][k] = []
-
-    def _play1(self, item, player_uid):
-        self[rps.RESULT_GENERATED] = False
-        self[rps.PLAY_BEGIN] = -1
-
-        player_obj = self.get_player_by_uid(player_uid)
-        if player_obj is not None:
-            self[rps.PLAYER_TEMP1] = player_obj
-            self[rps.PLAYER_TEMP1][battle_player.LAST_ITEM] = item
-            self[rps.PROPERTIES][rps.PLAY_BEGIN] = time.time()
-
-            if self[rps.PROPERTIES][rps.IS_VS_BOT]:
-                self._play2(random_gen.random_drawer.draw_from_list(list(battle_item)), rps._BOT_UID)
-
-    def _play2(self, item, player_uid):
-        player_obj = self.get_player_by_uid(player_uid)
-        if player_obj is not None or player_uid == rps._BOT_UID:
-            self[rps.PLAYER_TEMP2] = player_obj
-            self[rps.PLAYER_TEMP2][battle_player.LAST_ITEM] = item
-            self[rps.PROPERTIES][rps.GAP_TIME] = time.time() - self[rps.PROPERTIES][rps.PLAY_BEGIN]
-            self._calculate_result()
-
-    def _calculate_result(self):
-        result = (int(self[rps.PLAYER_TEMP1][battle_player.LAST_ITEM]) - int(self[rps.PLAYER_TEMP2][battle_player.LAST_ITEM])) % 3
-        result_enum = battle_result(result)
-        player1 = self[rps.PLAYER_TEMP1]
-        player2 = self[rps.PLAYER_TEMP2]
-        if result_enum == battle_result.PLAYER1_WIN:
-            player1.win()
-            player2.lose()
-        elif result_enum == battle_result.PLAYER2_WIN:
-            player2.win()
-            player1.lose()
-        elif result_enum == battle_result.TIED:
-            player1.tied()
-            player2.tied()
-        self[rps.PROPERTIES][rps.BATTLE_RESULT] = result_enum
-        self[rps.PROPERTIES][rps.RESULT_GENERATED] = True
-        self[rps.PLAYER_TEMP1] = None
-        self[rps.PLAYER_TEMP2] = None
-
-    def _battle_item_dict_text(self, item):
-        key_repr_key = self._battle_item_to_repr_key(item)
-
-        text = u'【{}】\n'.format(unicode(item))
-        text += u', '.join([u'(貼圖ID {})'.format(item[battle_item_representative.CONTENT]) if item[battle_item_representative.IS_STICKER] else unicode(item[battle_item_representative.CONTENT]) for item in self[rps.REPRESENTATIVES][key_repr_key]])
-
-        return text
-
-    def _battle_item_to_repr_key(self, item):
-        key_repr_dict = { battle_item.SCISSOR: rps.SCISSOR,
-                          battle_item.PAPER: rps.PAPER,
-                          battle_item.ROCK: rps.ROCK}
-        return key_repr_dict[item]
-
-    def _repr_key_to_battle_item(self, key):
-        repr_key_dict = { rps.SCISSOR: battle_item.SCISSOR,
-                          rps.PAPER: battle_item.PAPER,
-                          rps.ROCK: battle_item.ROCK }
-        return repr_key_dict[key]
-        
-    def get_player_by_uid(self, uid):
-        """Return None if nothing found. IMMUTABLE."""
-        obj = next((data for cid_in_dict, data in self[rps.PLAYERS].iteritems() if cid_in_dict == uid), None)
-        if obj is not None:
-            return battle_player(obj)
-        else:
-            return None
+        return super(rps_online, self).__init__(org_dict)
 
     @property
-    def gap_time(self):
-		return self[rps.PROPERTIES][rps.GAP_TIME]
-
-    @property
-    def vs_bot(self):
-        return self[rps.PROPERTIES][rps.IS_VS_BOT]
-
-    @property
-    def battle_dict(self):
-        return self[rps.REPRESENTATIVES]
-
-    @property
-    def player_dict(self):
-        return self[rps.PLAYERS]
-
-    @property
-    def is_waiting_next(self):
-        return self[rps.PLAYER_TEMP1] is not None and self[rps.PLAYER_TEMP2] is None
-
-    @property
-    def result_generated(self):
-        return self[rps.PROPERTIES][rps.RESULT_GENERATED]
+    def representatives(self):
+        return self[rps_online.REPRESENTATIVES]
 
     @property
     def enabled(self):
-        return self[rps.PROPERTIES][rps.ENABLED]
+        return self[rps_online.PROPERTIES][rps_online.ENABLED]
 
-    @enabled.setter
-    def enabled(self, value):
-        self[rps.PROPERTIES][rps.ENABLED] = value
+# is bot
+class rps_local(object):
+    TIME_NOT_STARTED = -1.0
 
-    @staticmethod
-    def player_stats_text(player_dict):
-        texts_to_join = []
-        for player in sorted(player_dict.values(), reverse=True):
-            player = battle_player(player)
-            texts_to_join.append(u'{}\n{}戰 勝率{:.3f} {}勝 {}敗 {}平 {}連{}中 最長{}連勝、{}連敗'.format(
-                player.name, player.total_played, player.winning_rate, player.win_count, player.lose_count, player.tied_count, 
-                player.consecutive_count, u'勝' if player.consecutive_type else u'敗', player.longest_consecutive_win, player.longest_consecutive_lose))
+    def __init__(self):
+        self._result = battle_result.UNDEFINED
+        self._result_generated = False
+        self._waiting = False
 
-        text = u'【玩家戰績】\n'
-        text += u'\n\n'.join(texts_to_join)
-        return text
+        self._start_time = rps_local.TIME_NOT_STARTED
+        self._gap_time = rps_local.TIME_NOT_STARTED
+
+        self._temp_item1 = None
+        self._temp_uid1 = None
+        self._temp_item2 = None
+        self._temp_uid2 = None
+
+    def play(self, uid, player_item):
+        if self._waiting:
+            self._gap_time = rps_local.TIME_NOT_STARTED
+            self._start_time = time.time()
+
+            self._temp_item1 = player_item
+            self._temp_uid1 = uid
+            self._temp_item2 = None
+
+            self._result_generated = True
+            self._waiting = False
+        else:
+            self._gap_time = time.time() - self._start_time
+            self._start_time = rps_local.TIME_NOT_STARTED
+            
+            self._temp_item2 = player_item
+            self._temp_uid2 = uid
+
+            self._result_generated = False
+            self._waiting = True
+
+        self._result = battle_result.calculate_result(self._temp_item1, self._temp_item2)
+
+        return self._result
+
+    @property
+    def temp_uid_1(self):
+        return self._temp_uid1
+
+    @property
+    def gap_time(self):
+        return self._gap_time
+
+class rps_message(object):
+    class error(object):
+        @staticmethod
+        def player_data_not_found():
+            return u'找不到玩家資料。'
+
+        @staticmethod
+        def game_instance_not_exist():
+            return u'遊戲資料不存在，請建立遊戲後重試。'
+
+        @staticmethod
+        def game_is_not_enabled():
+            return u'遊戲已暫停。'
+
+    class result(object):
+        @staticmethod
+        def waiting():
+            return u'等待下一位玩家出拳中...'
+
+        @staticmethod
+        def result_report(player1_name, player2_name, result_enum, gap_time):
+            if result_enum == battle_result.PLAYER1_WIN:
+                result = u'【{}】勝利'.format(player1_name)
+            elif result_enum == battle_result.PLAYER2_WIN:
+                result = u'【{}】勝利'.format(player2_name)
+            elif result_enum == battle_result.TIED:
+                result = u'平手'
+            elif result_enum == battle_result.UNDEFINED:
+                return u'等待下一位玩家出拳中...'
+            else:
+                raise ValueError(error.error.main.miscellaneous(u'Unhandled result_enum.'))
+
+            return u'{}\n\n兩拳相隔時間(含程式處理) {:.2f} 秒'.format(result, gap_time)
 
 
 
 
+    
+
+        
 
 
