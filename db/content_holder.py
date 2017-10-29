@@ -223,6 +223,9 @@ class rps_holder(db_base):
             return None
 
     def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
+        player1_data = battle_player(player1_data)
+        player2_data = battle_player(player2_data)
+
         if result_enum == battle_result.PLAYER1_WIN:
             player1_data.win()
             player2_data.lose()
