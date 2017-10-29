@@ -202,7 +202,7 @@ class rps_holder(db_base):
 
     def _get_player_data(self, uid, rps_at_local):
         aggr_data = list(self.aggregate([
-            { '$replaceRoot': {
+            { '$replaceRoot': { 
                 'newRoot': '$' + rps_online.PLAYERS
             } },
             { '$match': { 
@@ -214,6 +214,9 @@ class rps_holder(db_base):
                 battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]))
+
+        print aggr_data
+        print uid
 
         if len(aggr_data) == 2:
             return aggr_data[0], aggr_data[1]
