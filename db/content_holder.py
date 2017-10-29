@@ -215,7 +215,7 @@ class rps_holder(db_base):
             } }
         ]))
 
-        if len(aggr_data) == 1:
+        if len(aggr_data) == 2:
             return aggr_data[0], aggr_data[1]
         else:
             return None
@@ -604,12 +604,3 @@ class rps_message(object):
                 raise ValueError(error.error.main.miscellaneous(u'Unhandled result_enum.'))
 
             return u'{}\n\n兩拳相隔時間(含程式處理) {:.2f} 秒'.format(result, gap_time)
-
-
-
-
-    
-
-        
-
-
