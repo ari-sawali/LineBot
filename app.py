@@ -196,8 +196,6 @@ def handle_text_message(event):
     token = event.reply_token
     src = event.source
 
-    print str(event)
-
     try:
         global_handler.handle_text(event)
     except Exception as ex:
@@ -217,11 +215,11 @@ def handle_text_message(event):
                 error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
         
         try:
-            tb_text = traceback.format_exc().decode('utf-8')
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
         except UnicodeEncodeError:
-            tb_text = traceback.format_exc().encode('utf-8')
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = traceback.format_exc()
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 

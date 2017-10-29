@@ -38,7 +38,6 @@ class webpage_manager(object):
                     err_detail += simplified.encode('utf-8')
                 except UnicodeDecodeError:
                     err_detail += simplified.decode('utf-8')
-                
             
             print '===================================='
             print 'ERROR CAPTURED.'
