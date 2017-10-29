@@ -175,6 +175,8 @@ class rps_holder(db_base):
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
+        print self._cache_enabled
+
         if not self._get_cache_enabled(cid):
             return rps_message.error.game_is_not_enabled()
 
@@ -505,7 +507,6 @@ class rps_online(dict_like_mapping):
     def enabled(self):
         return self[rps_online.PROPERTIES][rps_online.ENABLED]
 
-# is bot
 class rps_local(object):
     TIME_NOT_STARTED = -1.0
 
