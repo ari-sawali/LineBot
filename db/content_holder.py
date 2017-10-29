@@ -181,7 +181,7 @@ class rps_holder(db_base):
         player_item = self._get_cache_repr(cid, content, is_sticker)
         rps_at_local = self._get_cache_local(cid)
 
-        play_result = rps_at_local.play(player_item)
+        play_result = rps_at_local.play(uid, player_item, bot.line_api_wrapper.is_valid_user_id(cid))
 
         self._set_cache_local(cid, rps_at_local)
 
