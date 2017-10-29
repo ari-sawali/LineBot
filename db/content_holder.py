@@ -179,6 +179,8 @@ class rps_holder(db_base):
             return rps_message.error.game_is_not_enabled()
 
         player_item = self._get_cache_repr(cid, content, is_sticker)
+        if player_item is None:
+            return
         rps_at_local = self._get_cache_local(cid)
 
         play_result = rps_at_local.play(uid, player_item, bot.line_api_wrapper.is_valid_user_id(cid))
@@ -193,6 +195,8 @@ class rps_holder(db_base):
                 return rps_message.error.player_data_not_found()
             else:
                 player_data1, player_data2 = player_datas
+                player1_data = battle_player(player1_data)
+                player2_data = battle_player(player2_data)
 
             update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
 
@@ -223,9 +227,6 @@ class rps_holder(db_base):
             return None
 
     def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
-        player1_data = battle_player(player1_data)
-        player2_data = battle_player(player2_data)
-
         if result_enum == battle_result.PLAYER1_WIN:
             player1_data.win()
             player2_data.lose()

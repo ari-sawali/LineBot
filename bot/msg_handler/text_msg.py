@@ -582,7 +582,16 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, params, target_gid)
 
                 try:
-                    name = self._line_api_wrapper.profile_name(uid, src)
+                    source_type = bot.line_api_wrapper.determine_id_type(target_gid)
+
+                    if source_type == bot.line_event_source_type.USER:
+                        name = self._line_api_wrapper.profile_friend_list(uid).display_name
+                    if source_type == bot.line_event_source_type.GROUP:
+                        name = self._line_api_wrapper.profile_group(target_gid, uid).display_name
+                    if source_type == bot.line_event_source_type.ROOM:
+                        name = self._line_api_wrapper.profile_room(target_gid, src).display_name
+                    else:
+                        raise ValueError(error.main.miscellaneous(u'Unhandled source type.'))
                 except bot.UserProfileNotFoundError:
                     return error.main.line_account_data_not_found()
 
@@ -590,8 +599,6 @@ class text_msg_handler(object):
                 owned_permission = u'\n'.join([u'{}: {}'.format(u_data.group, unicode(u_data.permission_level)) for u_data in self._group_manager.get_user_owned_permissions(uid)])
 
                 text = u'UID:\n{}\n\n名稱:\n{}\n\n擁有權限:\n{}\n\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
-
-                print text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid
 
                 return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator), 
                         bot.line_api_wrapper.wrap_template_with_action({ '查詢該使用者製作的回覆組': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]

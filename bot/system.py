@@ -159,21 +159,27 @@ class line_api_wrapper(object):
             return self._line_api.get_group_member_profile(gid, uid)
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
-                return None
+                raise UserProfileNotFoundError()
+            else:
+                raise ex
 
     def profile_room(self, rid, uid):
         try:
             return self._line_api.get_room_member_profile(rid, uid)
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
-                return None
+                raise UserProfileNotFoundError()
+            else:
+                raise ex
 
     def profile_friend_list(self, uid):
         try:
             return self._line_api.get_profile(uid)
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
-                return None
+                raise UserProfileNotFoundError()
+            else:
+                raise ex
 
     def get_content(self, msg_id):
         return self._line_api.get_message_content(msg_id)
@@ -201,6 +207,15 @@ class line_api_wrapper(object):
     @staticmethod
     def is_valid_room_group_id(gid, allow_public=False, allow_global=False):
         return gid is not None and (len(gid) == 33 and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP) or (allow_global and gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE))
+    
+    @staticmethod
+    def determine_id_type(cid):
+        if cid.startswith('C'):
+            return line_event_source_type.USER
+        elif cid.startswith('R'):
+            return line_event_source_type.ROOM
+        elif cid.startswith('U'):
+            return line_event_source_type.GROUP
 
     @staticmethod
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
