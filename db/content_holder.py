@@ -201,7 +201,7 @@ class rps_holder(db_base):
             return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time)
 
     def _get_player_data(self, cid, uid, rps_at_local):
-        aggr_data = list(self.aggregate([
+        aggr_data = self.aggregate([
             { '$match': {
                 rps_online.CHAT_INSTANCE_ID: cid,
                 '$or': [
@@ -215,7 +215,7 @@ class rps_holder(db_base):
             { '$sort': { 
                 battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
-        ]).next())
+        ]).next()
 
         print aggr_data
         print len(aggr_data)
