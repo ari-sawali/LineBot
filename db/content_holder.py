@@ -208,12 +208,6 @@ class rps_holder(db_base):
                     { rps_online.PLAYERS + '.' + battle_player.USER_ID: uid }, 
                     { rps_online.PLAYERS + '.' + battle_player.USER_ID: rps_at_local.temp_uid_1 }
                 ]
-            } },
-            { '$replaceRoot': { 
-                'newRoot': '$' + rps_online.PLAYERS
-            } },
-            { '$sort': { 
-                battle_player.USER_ID: pymongo.DESCENDING if uid > rps_at_local.temp_uid_1 else pymongo.ASCENDING
             } }
         ]))
 

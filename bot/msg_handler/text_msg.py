@@ -550,7 +550,7 @@ class text_msg_handler(object):
         if category == 'MSG':
             if gid is not None and bot.string_can_be_int(gid):
                 limit = int(gid)
-            elif bot.string_can_be_int(limit):
+            else:
                 limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
         
             tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True)
