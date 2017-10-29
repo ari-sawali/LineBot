@@ -179,16 +179,17 @@ class rps_holder(db_base):
         player_item = self._get_cache_repr(cid, content, is_sticker)
         if player_item is None:
             return
-        rps_at_local = self._get_cache_local(cid)
 
-        play_result = rps_at_local.play(uid, player_item, bot.line_api_wrapper.is_valid_user_id(cid))
+        rps_at_local = self._get_cache_local(cid)
+        is_vs_bot = bot.line_api_wrapper.is_valid_user_id(cid)
+        play_result = rps_at_local.play(uid, player_item, is_vs_bot)
 
         self._set_cache_local(cid, rps_at_local)
 
         if play_result == battle_result.UNDEFINED:
             return rps_message.result.waiting()
         else:
-            player_datas = self._get_player_data(cid, uid, rps_at_local)
+            player_datas = self._get_player_data(cid, uid, rps_at_local, is_vs_bot)
             if player_datas is None:
                 return rps_message.error.player_data_not_found()
             else:
@@ -205,7 +206,7 @@ class rps_holder(db_base):
 
             return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time)
 
-    def _get_player_data(self, cid, uid, rps_at_local):
+    def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
             { '$match': {
                 rps_online.CHAT_INSTANCE_ID: cid,
@@ -223,7 +224,7 @@ class rps_holder(db_base):
         ]).next()
 
         if len(aggr_data) == 2:
-            return aggr_data[rps_at_local.temp_uid_1], aggr_data[uid]
+            return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
         else:
             return None
 
@@ -540,9 +541,7 @@ class rps_local(object):
             self._temp_uid2 = battle_player.BOT_UID
 
             self._temp_item1 = player_item
-            s = random_gen.random_drawer.draw_from_list(list([battle_item.PAPER, battle_item.ROCK, battle_item.SCISSOR]))
-            print s
-            self._temp_item2 = s
+            self._temp_item2 = random_gen.random_drawer.draw_from_list(list([battle_item.PAPER, battle_item.ROCK, battle_item.SCISSOR]))
 
             self._gap_time = time.time() - self._start_time
             self._result_generated = True
@@ -575,6 +574,10 @@ class rps_local(object):
     @property
     def temp_uid_1(self):
         return self._temp_uid1
+
+    @property
+    def temp_uid_2(self):
+        return self._temp_uid2
 
     @property
     def gap_time(self):
