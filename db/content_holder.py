@@ -274,6 +274,7 @@ class battle_player(dict_like_mapping):
             self.reset_statistics()
 
     def win(self):
+        print 'w'
         self[battle_player.CONSECUTIVE_WIN] += 1
         if self[battle_player.CONSECUTIVE_WINNING]:
             self[battle_player.CONSECUTIVE_COUNT] += 1
