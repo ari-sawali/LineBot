@@ -584,14 +584,14 @@ class text_msg_handler(object):
 
                 try:
                     if target_gid != default_target_gid:
-                        source_type = bot.line_api_wrapper.determine_id_type(gid)
+                        source_type = bot.line_api_wrapper.determine_id_type(target_gid)
 
                         if source_type == bot.line_event_source_type.GROUP:
                             print 'GROUP'
-                            name = self._line_api_wrapper.profile_group(gid, uid).display_name
+                            name = self._line_api_wrapper.profile_group(target_gid, uid).display_name
                         elif source_type == bot.line_event_source_type.ROOM:
                             print 'ROOM'
-                            name = self._line_api_wrapper.profile_room(gid, uid).display_name
+                            name = self._line_api_wrapper.profile_room(target_gid, uid).display_name
                         else:
                             print 'FRIEND LIST 2'
                             name = self._line_api_wrapper.profile_name(uid, src)
