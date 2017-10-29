@@ -217,12 +217,8 @@ class rps_holder(db_base):
             } }
         ]).next()
 
-        print aggr_data
-        print len(aggr_data)
-        print uid
-
         if len(aggr_data) == 2:
-            return aggr_data[0], aggr_data[1]
+            return aggr_data[rps_at_local.temp_uid_1], aggr_data[uid]
         else:
             return None
 
