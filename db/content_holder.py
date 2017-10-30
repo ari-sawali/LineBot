@@ -692,6 +692,7 @@ class rps_message(object):
 
         @staticmethod
         def statistics(player_data_list):
-            text_to_join = [battle_player(data).statistic_string() for data in player_data_list]
+            sort_lambda = lambda data: (data[battle_player.WIN] + data[battle_player.LOSE] + data[battle_player.TIED]) + data[battle_player.WIN] / (data[battle_player.WIN] + data[battle_player.LOSE])
+            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_lambda)]
 
             return u'\n'.join(text_to_join)
