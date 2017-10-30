@@ -313,7 +313,11 @@ class rps_holder(db_base):
 
         rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
 
-        return rps_at_online.players_data_str() + u'\n' + rps_message.message.item_representatives_str(rps_at_online.representatives.itervalues())
+        text_to_join = [u'【{}中】'.format(rps_message.message.game_enabled(rps_at_online.enabled)),
+                        rps_at_online.players_data_str(),
+                        rps_message.message.item_representatives_str(rps_at_online.representatives.itervalues())]
+
+        returnu'\n'.join(text_to_join)
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
@@ -825,8 +829,11 @@ class rps_message(object):
         @staticmethod
         def game_enabled(enabled):
             enabled_dict = { True: u'啟用', False: u'停用' }
+            return enabled_dict[enabled]
 
-            return u'遊戲已{}。'.format(enabled_dict[enabled])
+        @staticmethod
+        def game_enabled_changed(enabled):
+            return u'遊戲狀態已更改為{}。'.format(rps_message.message.game_enabled(enabled))
 
         @staticmethod
         def game_deleted():
