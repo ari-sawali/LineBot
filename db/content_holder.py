@@ -669,7 +669,7 @@ class rps_online(dict_like_mapping):
         return rps_message.result.statistics(self[rps_online.PLAYERS])
 
     def reset_statistics(self):
-        self[rps_online.PLAYERS] = [battle_player(data).reset() for data in self[rps_online.PLAYERS].itervalues()]
+        self[rps_online.PLAYERS] = { uid: battle_player(data).reset() for uid, data in self[rps_online.PLAYERS].iteritems() }
 
     @property
     def representatives(self):
