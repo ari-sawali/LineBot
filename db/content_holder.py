@@ -673,7 +673,7 @@ class rps_online(dict_like_mapping):
         return super(rps_online, self).__init__(org_dict)
 
     def players_data_str(self):
-        return rps_message.result.statistics(self[rps_online.PLAYERS])
+        return rps_message.result.statistics(self[rps_online.PLAYERS].values())
 
     def reset_statistics(self):
         self[rps_online.PLAYERS] = { uid: battle_player.init_by_field(data[battle_player.USER_ID], data[battle_player.NAME]) for uid, data in self[rps_online.PLAYERS].iteritems() }
@@ -855,6 +855,6 @@ class rps_message(object):
 
                 return (w + l + t) + wr
 
-            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list.itervalues(), key=sort_func)]
+            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_func)]
 
             return u'\n'.join(text_to_join)
