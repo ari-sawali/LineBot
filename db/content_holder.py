@@ -261,7 +261,7 @@ class rps_holder(db_base):
             return rps_message.error.game_instance_not_exist()
 
         rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
-        rps_at_online.reset()
+        rps_at_online.reset_statistics()
         self.update_one({ rps_online.CHAT_INSTANCE_ID: cid }, rps_at_online)
 
         return rps_message.message.statisics_reset_complete()
