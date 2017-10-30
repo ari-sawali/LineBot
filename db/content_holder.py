@@ -311,7 +311,9 @@ class rps_holder(db_base):
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
-        return rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid })).players_data_str()
+        rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
+
+        return rps_at_online.players_data_str() + u'\n' + rps_message.message.item_representatives_str(rps_at_online.representatives.itervalues())
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
@@ -461,7 +463,7 @@ class battle_item_representative(dict_like_mapping):
         if self[battle_item_representative.IS_STICKER]:
             content = u'(貼圖ID {})'.format(content)
 
-        return u'{}，代表物件 - {}'.format(content, unicode(self[battle_item_representative.BATTLE_ITEM])
+        return u'{}，代表物件 - {}'.format(content, unicode(self[battle_item_representative.BATTLE_ITEM]))
 
     @property
     def is_sticker(self):
