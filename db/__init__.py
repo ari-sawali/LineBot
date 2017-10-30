@@ -17,5 +17,5 @@ from .sys_config import (
 )
 
 from .content_holder import (
-    webpage_content_holder, webpage_content_type, webpage_data, rps_holder, rps_message
+    webpage_content_holder, webpage_content_type, webpage_data, rps_holder, rps_message, battle_item
 )

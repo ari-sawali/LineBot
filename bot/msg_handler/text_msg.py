@@ -1017,42 +1017,23 @@ class game_msg_handler(object):
         cid = bot.line_api_wrapper.source_channel_id(src)
         uid = bot.line_api_wrapper.source_user_id(src)
 
+        battle_item_dict = { 'R': db.battle_item.ROCK, 'P': db.battle_item.PAPER, 'S': db.battle_item.SCISSOR }
+
         if params[4] is not None:
-            rps_obj = self._rps_holder.get_rps(cid)
-            if rps_obj is not None and isinstance(rps_obj, game.rps):
-                action = params[1]
-                if action == 'ADD':
-                    item_type = params[2]
-                    is_sticker = params[3]
-                    content = params[4]
+            action = params[1]
+            item_enum_code = params[2]
+            type_code = params[3]
+            content = params[4]
 
-                    battle_item = None
+            type_dict = { 'STK': True, 'TXT': False }
 
-                    if item_type == 'R':
-                        battle_item = game.battle_item.rock
-                    if item_type == 'P':
-                        battle_item = game.battle_item.paper
-                    if item_type == 'S':
-                        battle_item = game.battle_item.scissor
+            if item_enum_code not in battle_item_dict:
+                return db.rps_message.error.unknown_battle_item()
 
-                    if battle_item is not None:
-                        if is_sticker == 'STK':
-                            if bot.string_can_be_int(content):
-                                rps_obj.register_battle_item(battle_item, True, content)
-                                text = rps_obj.battle_item_dict_text()
-                            else:
-                                text = error.main.incorrect_param(u'參數4', u'整數，以代表貼圖ID')
-                        elif is_sticker == 'TXT':
-                            rps_obj.register_battle_item(battle_item, False, content)
-                            text = rps_obj.battle_item_dict_text()
-                        else:
-                            text = error.main.incorrect_param(u'參數3', u'STK(是貼圖ID)或TXT(文字訊息)')
-                    else:
-                        text = error.main.incorrect_param(u'參數2', u'S(剪刀)、R(石頭)或P(布)')
-                else:
-                    text = error.main.incorrect_param(u'參數1', u'ADD')
-            else:
-                text = error.main.miscellaneous(u'尚未建立猜拳遊戲。')
+            if type_code not in type_dict:
+                return db.rps_message.error.unknown_content_type()
+
+            text = self._rps_holder.register_battleitem(cid, content, type_dict[type_code], battle_item_dict[item_enum_code])
         elif params[3] is not None:
             scissor = params[1]
             rock = params[2]
@@ -1064,31 +1045,19 @@ class game_msg_handler(object):
                 return error.line_bot_api.unable_to_receive_user_id()
 
             if not bot.string_can_be_int(scissor, rock, paper):
-                return error.main.miscellaneous(u'初次建立遊戲時，拳代表必須是貼圖ID。')
+                return error.main.miscellaneous(u'初次建立遊戲時，各拳代表必須是貼圖ID。')
 
-            create_result = self._rps_holder.create_game(cid, uid, creator_name, rock, paper, scissor)
-
-            if create_result:
-                text = u'遊戲建立成功。\n\n剪刀貼圖ID: {}\n石頭貼圖ID: {}\n布貼圖ID: {}'.format(scissor, rock, paper)
-            else:
-                text = u'遊戲已經存在。'
+            text = self._rps_holder.create_game(cid, uid, creator_name, rock, paper, scissor)
         elif params[1] is not None:
             action = params[1]
 
-            if action == 'DEL':
-                self._game_data.del_rps(cid)
-                text = u'猜拳遊戲已刪除。'
-            elif action == 'RST':
-                rps_obj.reset_statistics()
-                text = u'猜拳遊戲統計資料已重設。'
-            elif action == 'R':
-                text = rps_obj.battle_item_dict_text(game.battle_item.rock)
-            elif action == 'P':
-                text = rps_obj.battle_item_dict_text(game.battle_item.paper)
-            elif action == 'S':
-                text = rps_obj.battle_item_dict_text(game.battle_item.scissor)
-            elif action == 'PLAY':
-                uid = bot.line_api_wrapper.source_user_id(src)
+            action_dict = {
+                'SW': self._rps_holder.switch_enabled,
+                'RST': self._rps_holder.reset_statistics,
+                'DEL': self._rps_holder.delete_game,
+            }
+
+            if action == 'PLAY':
                 try:
                     player_name = self._line_api_wrapper.profile(uid).display_name
                 except bot.UserProfileNotFoundError:
@@ -1098,28 +1067,12 @@ class game_msg_handler(object):
                     text = self._rps_holder.register_player(cid, uid, player_name)
                 else:
                     text = error.line_bot_api.unable_to_receive_user_id()
-            elif action == 'SW':
-                rps_obj.enabled = not rps_obj.enabled
-                if rps_obj.enabled:
-                    text = u'遊戲已繼續。'
-                else:
-                    text = u'遊戲已暫停。'
-            elif action == 'CLR':
-                rps_obj.clear_battle_item()
-                text = u'已清除所有拳代表物件。'
+            elif action in action_dict:
+                text = action_dict[action](cid)
             else:
-                text = error.main.incorrect_param(u'參數1', u'DEL、RST、R、P、S、PLAY、SW')
+                text = error.main.unable_to_determine()
         else:
-            rps_obj = self._rps_holder.get_rps(cid)
-            if rps_obj is not None and isinstance(rps_obj, game.rps):
-                if rps_obj.player_dict is not None and len(rps_obj.player_dict) > 0:
-                    text = game.rps.player_stats_text(rps_obj.player_dict)
-                    text += '\n\n'
-                    text += rps_obj.battle_item_dict_text()
-                else:
-                    text = error.main.miscellaneous(u'無玩家資料。')
-            else:
-                text = error.main.miscellaneous(u'尚未建立猜拳遊戲。')
+            text = self._rps_holder.game_statistics(cid)
 
         return text
 
