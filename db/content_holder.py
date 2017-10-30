@@ -248,11 +248,13 @@ class rps_holder(db_base):
         if self._get_cache_repr(cid, content, is_sticker) is not None:
             return rps_message.error.battle_item_alreay_exist()
 
-        self._set_cache_repr(cid, content, is_sticker, item_enum)
-        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, 
-                                 { '$set': { rps_online.REPRESENTATIVES + '.' + battle_item_representative.generate_key(is_sticker, content): battle_item_representative.init_by_field(item_enum, is_sticker, content) } }, None, None, False, pymongo.ReturnDocument.AFTER)
+        new_repr = battle_item_representative.init_by_field(item_enum, is_sticker, content)
 
-        return rps_message.message.battle_item_registered(item_enum, content, is_sticker)
+        self._set_cache_repr(cid, new_repr)
+        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, 
+                                 { '$set': { rps_online.REPRESENTATIVES + '.' + battle_item_representative.generate_key(is_sticker, content): new_repr } }, None, None, False, pymongo.ReturnDocument.AFTER)
+
+        return rps_message.message.battle_item_registered(new_repr)
 
     def reset_statistics(self, cid):
         """
@@ -363,9 +365,9 @@ class rps_holder(db_base):
         """Provide content only to delete representative."""
         self._cache_repr[cid] = battle_item_repr_manager(repr_dict)
 
-    def _set_cache_repr(self, cid, content, is_sticker, battle_item_enum=None):
-        """Set battle_item_enum to None to delete representative."""
-        self._cache_repr[cid].set_battle_item(content, is_sticker, battle_item_enum)
+    def _set_cache_repr(self, repr_obj=None):
+        """Set repr_obj to None to delete representative."""
+        self._cache_repr[cid].set_battle_item(content, repr_obj)
 
     def _clear_cache_repr(self, cid):
         del self._cache_repr[cid]
@@ -454,6 +456,13 @@ class battle_item_representative(dict_like_mapping):
 
         super(battle_item_representative, self).__init__(org_dict)
 
+    def item_str(self):
+        content = content
+        if self[battle_item_representative.IS_STICKER]:
+            content = u'(貼圖ID {})'.format(content)
+
+        return u'{}，代表物件 - {}'.format(content, unicode(self[battle_item_representative.BATTLE_ITEM])
+
     @property
     def is_sticker(self):
         return self[battle_item_representative.IS_STICKER]
@@ -483,14 +492,14 @@ class battle_item_repr_manager(object):
         else:
             return battle_item(item_repr[battle_item_representative.BATTLE_ITEM])
 
-    def set_battle_item(self, content, is_sticker, battle_item_enum=None):
+    def set_battle_item(self, repr_obj):
         """Set battle_item_enum to None to delete representative."""
-        key_str = battle_item_representative.generate_key(is_sticker, content)
+        key_str = battle_item_representative.generate_key(repr_obj.is_sticker, repr_obj.content)
 
-        if battle_item_enum is None:
+        if repr_obj is None:
             del self._repr_dict[key_str]
         else:
-            self._repr_dict[key_str] = battle_item_representative.init_by_field(battle_item_enum, is_sticker, content)
+            self._repr_dict[key_str] = repr_obj
 
 class battle_player(dict_like_mapping):
     """
@@ -804,8 +813,8 @@ class rps_message(object):
             return u'玩家資料註冊成功。(UID: {})'.format(uid)
 
         @staticmethod
-        def battle_item_registered(item_enum, content, is_sticker):
-            return u'已新增【{}】代表物件。\n內容: {}\n是否為貼圖: {}'.format(unicode(item_enum), content, is_sticker)
+        def battle_item_registered(repr):
+            return u'已新增【{}】代表物件。\n{}'.format(unicode(repr.battle_item), repr.item_str())
 
         @staticmethod
         def statisics_reset_complete():
@@ -820,6 +829,13 @@ class rps_message(object):
         @staticmethod
         def game_deleted():
             return u'遊戲資料已刪除。'
+
+        @staticmethod
+        def item_representatives_str(battle_item_repr_list):
+            text_to_join = [u'【戰鬥代表物件清單】']
+            text_to_join = [battle_item_representative(item_repr).item_str() for item_repr in battle_item_repr_list]
+
+            return u'\n'.join(text_to_join)
 
     class result(object):
         @staticmethod
@@ -855,6 +871,7 @@ class rps_message(object):
 
                 return (w + l + t) + wr
 
-            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_func, reverse=True)]
+            text_to_join = [u'【玩家資料】']
+            text_to_join.extend([battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_func, reverse=True)])
 
             return u'\n'.join(text_to_join)
