@@ -463,7 +463,7 @@ class battle_item_representative(dict_like_mapping):
         if self[battle_item_representative.IS_STICKER]:
             content = u'(貼圖ID {})'.format(content)
 
-        return u'{}，代表物件 - {}'.format(content, unicode(self[battle_item_representative.BATTLE_ITEM]))
+        return u'{}，代表物件 - {}'.format(content, unicode(battle_item(self[battle_item_representative.BATTLE_ITEM])))
 
     @property
     def is_sticker(self):
@@ -835,7 +835,7 @@ class rps_message(object):
         @staticmethod
         def item_representatives_str(battle_item_repr_list):
             text_to_join = [u'【戰鬥代表物件清單】']
-            text_to_join = [battle_item_representative(item_repr).item_str() for item_repr in battle_item_repr_list]
+            text_to_join.extend([battle_item_representative(item_repr).item_str() for item_repr in battle_item_repr_list])
 
             return u'\n'.join(text_to_join)
 
