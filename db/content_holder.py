@@ -846,6 +846,6 @@ class rps_message(object):
 
                 return (w + l + t) + w / (w + l)
 
-            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_func)]
+            text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list.itervalues(), key=sort_func)]
 
             return u'\n'.join(text_to_join)
