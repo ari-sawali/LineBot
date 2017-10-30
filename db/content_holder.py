@@ -459,7 +459,7 @@ class battle_item_representative(dict_like_mapping):
         super(battle_item_representative, self).__init__(org_dict)
 
     def item_str(self):
-        content = content
+        content = self[battle_item_representative.CONTENT]
         if self[battle_item_representative.IS_STICKER]:
             content = u'(貼圖ID {})'.format(content)
 
