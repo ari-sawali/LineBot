@@ -284,7 +284,7 @@ class rps_holder(db_base):
         self._set_cache_enabled(cid, new_enabled)
         self.update_one({ rps_online.CHAT_INSTANCE_ID: cid }, { '$set': { rps_online.PROPERTIES + '.' + rps_online.ENABLED: new_enabled } })
 
-        return rps_message.message.game_enabled(new_enabled)
+        return rps_message.message.game_enabled_changed(new_enabled)
 
     def delete_game(self, cid):
         """
