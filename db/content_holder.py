@@ -162,6 +162,8 @@ class rps_holder(db_base):
             self._set_cache_local(cid, rps_local())
             self._set_cache_enabled(cid, new_game_online.enabled)
             self._set_cache_player(cid, creator_id)
+            if new_game_online.is_vs_bot:
+                self._set_cache_player(cid, battle_player.BOT_UID)
             return rps_message.message.successfully_created(rock_stk_id, paper_stk_id, scissor_stk_id)
         except pymongo.errors.DuplicateKeyError:
             return rps_message.error.game_instance_already_exist()
@@ -678,6 +680,10 @@ class rps_online(dict_like_mapping):
     @property
     def enabled(self):
         return self[rps_online.PROPERTIES][rps_online.ENABLED]
+
+    @property
+    def is_vs_bot(self):
+        return self[rps_online.PROPERTIES][rps_online.VS_BOT]
 
 class rps_local(object):
     TIME_NOT_STARTED = -1.0
