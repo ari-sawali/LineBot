@@ -534,8 +534,6 @@ class battle_player(dict_like_mapping):
         return battle_player(init_dict)
 
     def __init__(self, org_dict):
-        print org_dict
-
         if not all(k in org_dict for k in (battle_player.NAME, battle_player.USER_ID)):
             raise ValueError(error.error.main.miscellaneous(u'Data incomplete.'))
 
@@ -671,7 +669,7 @@ class rps_online(dict_like_mapping):
         return rps_message.result.statistics(self[rps_online.PLAYERS])
 
     def reset_statistics(self):
-        self[rps_online.PLAYERS] = [battle_player(data).reset() for data in self[rps_online.PLAYERS]]
+        self[rps_online.PLAYERS] = [battle_player(data).reset() for data in self[rps_online.PLAYERS].itervalues()]
 
     @property
     def representatives(self):
