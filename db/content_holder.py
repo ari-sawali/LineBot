@@ -367,9 +367,9 @@ class rps_holder(db_base):
         """Provide content only to delete representative."""
         self._cache_repr[cid] = battle_item_repr_manager(repr_dict)
 
-    def _set_cache_repr(self, repr_obj=None):
+    def _set_cache_repr(self, cid, repr_obj=None):
         """Set repr_obj to None to delete representative."""
-        self._cache_repr[cid].set_battle_item(content, repr_obj)
+        self._cache_repr[cid].set_battle_item(repr_obj)
 
     def _clear_cache_repr(self, cid):
         del self._cache_repr[cid]

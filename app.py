@@ -10,6 +10,7 @@
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
 # TODO: self silent (new db), turn off auto upload
+# TODO: modulize error message
 # TODO: self diagnostic
 # UNDONE: group_data will save empty mem field in database
 # UNDONE: game_msg_handler Shorten + Modulize
