@@ -839,6 +839,7 @@ class rps_message(object):
         @staticmethod
         def statistics(player_data_list):
             def sort_func(data):
+                print data
                 w = data[battle_player.RECORD][battle_player.WIN]
                 l = data[battle_player.RECORD][battle_player.LOSE]
                 t = data[battle_player.RECORD][battle_player.TIED]
