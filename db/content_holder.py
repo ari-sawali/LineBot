@@ -485,9 +485,9 @@ class battle_item_repr_manager(object):
         key_str = battle_item_representative.generate_key(is_sticker, content)
 
         if battle_item_enum is None:
-            del self._repr_list[key_str]
+            del self._repr_dict[key_str]
         else:
-            self._repr_list[key_str] = battle_item_representative.init_by_field(battle_item_enum, is_sticker, content)
+            self._repr_dict[key_str] = battle_item_representative.init_by_field(battle_item_enum, is_sticker, content)
 
 class battle_player(dict_like_mapping):
     """
