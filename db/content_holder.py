@@ -313,11 +313,11 @@ class rps_holder(db_base):
 
         rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
 
-        text_to_join = [u'【{}中】'.format(rps_message.message.game_enabled(rps_at_online.enabled)),
+        text_to_join = [u'【遊戲{}中】\n'.format(rps_message.message.game_enabled(rps_at_online.enabled)),
                         rps_at_online.players_data_str(),
                         rps_message.message.item_representatives_str(rps_at_online.representatives.itervalues())]
 
-        returnu'\n'.join(text_to_join)
+        return u'\n'.join(text_to_join)
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
