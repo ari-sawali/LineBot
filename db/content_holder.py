@@ -231,7 +231,7 @@ class rps_holder(db_base):
             return rps_message.error.player_already_exist()
 
         self._set_cache_player(cid, uid)
-        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$push': { rps_online.PLAYERS: battle_player.init_by_field(uid, uid_name) } }, None, None, False, pymongo.ReturnDocument.AFTER)
+        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$push': { rps_online.PLAYERS + '.' + uid: battle_player.init_by_field(uid, uid_name) } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         return rps_message.message.player_data_registered(uid)
 
@@ -247,7 +247,8 @@ class rps_holder(db_base):
             return rps_message.error.battle_item_alreay_exist()
 
         self._set_cache_repr(cid, content, is_sticker, item_enum)
-        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$push': { rps_online.REPRESENTATIVES: battle_item_representative.init_by_field(item_enum, is_sticker, content) } }, None, None, False, pymongo.ReturnDocument.AFTER)
+        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, 
+                                 { '$set': { rps_online.REPRESENTATIVES + '.' + battle_item_representative.generate_key(is_sticker, content): battle_item_representative.init_by_field(item_enum, is_sticker, content) } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
         return rps_message.message.battle_item_registered(item_enum, content, is_sticker)
 
