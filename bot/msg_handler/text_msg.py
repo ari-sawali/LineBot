@@ -1073,46 +1073,42 @@ class game_msg_handler(object):
             else:
                 text = u'遊戲已經存在。'
         elif params[1] is not None:
-            rps_obj = self._rps_holder.get_rps(cid)
             action = params[1]
 
-            if rps_obj is not None and isinstance(rps_obj, game.rps):
-                if action == 'DEL':
-                    self._game_data.del_rps(cid)
-                    text = u'猜拳遊戲已刪除。'
-                elif action == 'RST':
-                    rps_obj.reset_statistics()
-                    text = u'猜拳遊戲統計資料已重設。'
-                elif action == 'R':
-                    text = rps_obj.battle_item_dict_text(game.battle_item.rock)
-                elif action == 'P':
-                    text = rps_obj.battle_item_dict_text(game.battle_item.paper)
-                elif action == 'S':
-                    text = rps_obj.battle_item_dict_text(game.battle_item.scissor)
-                elif action == 'PLAY':
-                    uid = bot.line_api_wrapper.source_user_id(src)
-                    if bot.line_api_wrapper.is_valid_user_id(uid):
-                        player_name = self._line_api_wrapper.profile(uid).display_name
-                        reg_success = rps_obj.register_player(player_name, uid)
-                        if reg_success:
-                            text = u'成功註冊玩家 {}。'.format(player_name)
-                        else:
-                            text = u'玩家 {} 已存在於玩家清單中。'.format(player_name)
-                    else:
-                        text = error.line_bot_api.unable_to_receive_user_id()
-                elif action == 'SW':
-                    rps_obj.enabled = not rps_obj.enabled
-                    if rps_obj.enabled:
-                        text = u'遊戲已繼續。'
-                    else:
-                        text = u'遊戲已暫停。'
-                elif action == 'CLR':
-                    rps_obj.clear_battle_item()
-                    text = u'已清除所有拳代表物件。'
+            if action == 'DEL':
+                self._game_data.del_rps(cid)
+                text = u'猜拳遊戲已刪除。'
+            elif action == 'RST':
+                rps_obj.reset_statistics()
+                text = u'猜拳遊戲統計資料已重設。'
+            elif action == 'R':
+                text = rps_obj.battle_item_dict_text(game.battle_item.rock)
+            elif action == 'P':
+                text = rps_obj.battle_item_dict_text(game.battle_item.paper)
+            elif action == 'S':
+                text = rps_obj.battle_item_dict_text(game.battle_item.scissor)
+            elif action == 'PLAY':
+                uid = bot.line_api_wrapper.source_user_id(src)
+                try:
+                    player_name = self._line_api_wrapper.profile(uid).display_name
+                except bot.UserProfileNotFoundError:
+                    return error.line_bot_api.unable_to_receive_user_id()
+
+                if bot.line_api_wrapper.is_valid_user_id(uid):
+                    text = self._rps_holder.register_player(cid, uid, player_name)
                 else:
-                    text = error.main.incorrect_param(u'參數1', u'DEL, RST, R, P, S, PLAY, SW')
+                    text = error.line_bot_api.unable_to_receive_user_id()
+            elif action == 'SW':
+                rps_obj.enabled = not rps_obj.enabled
+                if rps_obj.enabled:
+                    text = u'遊戲已繼續。'
+                else:
+                    text = u'遊戲已暫停。'
+            elif action == 'CLR':
+                rps_obj.clear_battle_item()
+                text = u'已清除所有拳代表物件。'
             else:
-                text = error.main.miscellaneous(u'尚未建立猜拳遊戲。')
+                text = error.main.incorrect_param(u'參數1', u'DEL、RST、R、P、S、PLAY、SW')
         else:
             rps_obj = self._rps_holder.get_rps(cid)
             if rps_obj is not None and isinstance(rps_obj, game.rps):

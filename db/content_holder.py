@@ -150,9 +150,9 @@ class rps_holder(db_base):
         self._cache_local = { rps_data[rps_online.CHAT_INSTANCE_ID]: rps_local() for rps_data in rps_list }
         self._cache_repr = { rps_data[rps_online.CHAT_INSTANCE_ID]: battle_item_repr_manager(rps_data[rps_online.REPRESENTATIVES]) for rps_data in rps_list }
         self._cache_enabled = { rps_data[rps_online.CHAT_INSTANCE_ID]: rps_data[rps_online.PROPERTIES][rps_online.ENABLED] for rps_data in rps_list }
+        self._cache_players = { rps_data[rps_online.CHAT_INSTANCE_ID]: set([key for key in rps_data[rps_online.PLAYERS].iterkeys()]) for rps_data in rps_list }
 
-    # register player handle (not registered or <2 will return error message)
-    # cache register player
+    # register player handle
 
     def create_game(self, cid, creator_id, creator_name, rock_stk_id, paper_stk_id, scissor_stk_id):
         """Return False if duplicated, else return True."""
@@ -163,6 +163,7 @@ class rps_holder(db_base):
             self._create_cache_repr(cid, new_game_online.representatives)
             self._set_cache_local(cid, rps_local())
             self._set_cache_enabled(cid, new_game_online.enabled)
+            self._set_cache_player(cid, creator_id)
             return True
         except pymongo.errors.DuplicateKeyError:
             return False
@@ -172,6 +173,8 @@ class rps_holder(db_base):
         Return result string.
         If game is not exist, return rps_message.error.game_instance_not_exist().
         If game is disabled, return rps_message.error.game_is_not_enabled().
+        If count of player of the game is insufficient, return rps_message.error.insufficient_player_count().
+        If player data not found, return rps_message.error.player_data_not_found().
         """
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
@@ -182,6 +185,12 @@ class rps_holder(db_base):
         player_item = self._get_cache_repr(cid, content, is_sticker)
         if player_item is None:
             return
+
+        if self._get_cache_player_length(cid) < 2:
+            return rps_message.error.insufficient_player_count()
+
+        if not self._has_cache_player(cid, uid):
+            return rps_message.error.player_data_not_found()
 
         rps_at_local = self._get_cache_local(cid)
         is_vs_bot = bot.line_api_wrapper.is_valid_user_id(cid)
@@ -205,6 +214,26 @@ class rps_holder(db_base):
             self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, update_dict, None, None, False, pymongo.ReturnDocument.AFTER)
 
             return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time) + u'\n' + rps_message.result.statistics([player_data1, player_data2]) 
+
+    def register_player(self, cid, uid, uid_name):
+        """
+        Return result string.
+        If game is not exist, return rps_message.error.game_instance_not_exist().
+        If game is disabled, return rps_message.error.game_is_not_enabled().
+        """
+        if not self._check_instance_exist(cid):
+            return rps_message.error.game_instance_not_exist()
+
+        if not self._get_cache_enabled(cid):
+            return rps_message.error.game_is_not_enabled()
+
+        if self._has_cache_player(cid, uid):
+            return rps_message.error.player_already_exist()
+
+        self._set_cache_player(cid, uid)
+        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$push': battle_player.init_by_field(uid, uid_name) }, None, None, False, pymongo.ReturnDocument.AFTER)
+
+        return rps_message.message.player_data_registered(uid)
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
@@ -267,6 +296,28 @@ class rps_holder(db_base):
 
     def _get_cache_enabled(self, cid):
         return self._cache_enabled.get(cid, False)
+
+    def _set_cache_player(self, cid, uid):
+        if cid in self._cache_players:
+            self._cache_players[cid].add(uid)
+        else:
+            self._cache_players[cid] = set([uid])
+
+    def _get_cache_player_length(self, cid):
+        if cid in self._cache_players:
+            return len(self._cache_players[cid])
+        else:
+            return 0
+
+    def _has_cache_player(self, cid, uid):
+        if cid in self._cache_players:
+            return uid in self._cache_players[cid]
+        else:
+            return False
+
+    def _del_cache_player(self, cid, uid):
+        if cid in self._cache_players:
+            self._cache_players[cid].remove(uid)
 
 class battle_result(ext.IntEnum):
     UNDEFINED = -1
@@ -605,6 +656,19 @@ class rps_message(object):
         @staticmethod
         def game_is_not_enabled():
             return u'遊戲已暫停。'
+
+        @staticmethod
+        def insufficient_player_count():
+            return u'玩家人數不足，需要兩名玩家或以上。'
+
+        @staticmethod
+        def player_already_exist(uid):
+            return u'玩家資料已存在。(UID: {})'.format(uid)
+
+    class message(object):
+        @staticmethod
+        def player_data_registered(uid):
+            return u'玩家資料註冊成功。(UID: {})'.format(uid)
 
     class result(object):
         @staticmethod
