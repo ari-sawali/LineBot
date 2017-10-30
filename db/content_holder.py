@@ -262,7 +262,7 @@ class rps_holder(db_base):
 
         rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
         rps_at_online.reset_statistics()
-        self.update_one({ rps_online.CHAT_INSTANCE_ID: cid }, rps_at_online)
+        self.find_one_and_replace({ rps_online.CHAT_INSTANCE_ID: cid }, rps_at_online)
 
         return rps_message.message.statisics_reset_complete()
 
