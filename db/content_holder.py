@@ -574,7 +574,12 @@ class battle_player(dict_like_mapping):
         cont_mw = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_WIN]
         cont_ml = self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE]
 
-        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.3f} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, w / float(w + l), cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
+        try:
+            wr = w / float(w + l)
+        except ZeroDivisionError:
+            wr = 0.0
+
+        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.3f} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, wr, cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
 
     def win(self):
         self[battle_player.RECORD][battle_player.WIN] += 1
@@ -839,12 +844,16 @@ class rps_message(object):
         @staticmethod
         def statistics(player_data_list):
             def sort_func(data):
-                print data
                 w = data[battle_player.RECORD][battle_player.WIN]
                 l = data[battle_player.RECORD][battle_player.LOSE]
                 t = data[battle_player.RECORD][battle_player.TIED]
 
-                return (w + l + t) + w / (w + l)
+                try:
+                    wr = w / float(w + l)
+                except ZeroDivisionError:
+                    wr = 0.0
+
+                return (w + l + t) + wr
 
             text_to_join = [battle_player(data).statistic_string() for data in sorted(player_data_list.itervalues(), key=sort_func)]
 
