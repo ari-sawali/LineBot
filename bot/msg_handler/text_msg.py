@@ -28,7 +28,7 @@ class text_msg_handler(object):
         self._system_config = db.system_config(mongo_db_uri)
         self._system_stats = db.system_statistics(mongo_db_uri)
         self._command_manager = command_manager
-        sekf._stk_rec = db.sticker_recorder(mongo_db_uri)
+        self._stk_rec = db.sticker_recorder(mongo_db_uri)
 
         self._kwd_public = db.group_dict_manager(mongo_db_uri, config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.CREATE_DUPLICATE), config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.REPEAT_CALL))
         self._kwd_global = db.word_dict_global(mongo_db_uri)
