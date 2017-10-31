@@ -336,13 +336,7 @@ class rps_holder(db_base):
             } }
         ]).next()
 
-        print aggr_data
-        print list(aggr_data)
-        print uid
-        print rps_at_local.temp_uid_1
-        print rps_at_local.temp_uid_2
-
-        if len(aggr_data) == 2:
+        if len(aggr_data) >= 2 and all(k in aggr_data for k in (rps_at_local.temp_uid_1, rps_at_local.temp_uid_2)):
             return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2]
         else:
             return None
