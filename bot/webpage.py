@@ -79,12 +79,16 @@ class webpage_manager(object):
 
         if page_data.content_type == db.webpage_content_type.LATEX:
             latex_script, normal_content = content.split(webpage_manager.LATEX_SPLITTER)
-            return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=normal_content.replace(' ', '&nbsp;').split('\n'), Title=title)
+            return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=webpage_manager.proc_str_to_render(normal_content), Title=title)
         elif page_data.content_type == db.webpage_content_type.STICKER_RANKING:
             content_data, foot = content[:-1], content[-1]
-            return render_template('StickerRanking.html', Data=content_data, Foot=foot, Title=title)
+            return render_template('StickerRanking.html', Data=content_data, Foot=webpage_manager.proc_str_to_render(foot), Title=title)
         else:
-            return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
+            return render_template('WebPage.html', Contents=webpage_manager.proc_str_to_render(content), Title=title)
+
+    @staticmethod
+    def proc_str_to_render(s):
+        return s.replace(' ', '&nbsp;').split('\n')
 
     @staticmethod
     def html_render_error_list(boot_up, error_dict):
