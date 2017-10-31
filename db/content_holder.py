@@ -213,11 +213,11 @@ class rps_holder(db_base):
             player_data1 = battle_player(player_data1)
             player_data2 = battle_player(player_data2)
 
-            update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2)
+            update_dict = self._generate_update_dict_by_result(play_result, player_data1, player_data2, rps_at_local)
 
             self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, update_dict, None, None, False, pymongo.ReturnDocument.AFTER)
 
-            return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time) + u'\n' + rps_message.result.statistics([player_data1, player_data2]) 
+            return rps_message.result.result_report(player_data1.name, player_data2.name, play_result, rps_at_local.gap_time) + u'\n' + rps_message.result.statistics([player_data1, player_data2], False) 
 
     def register_player(self, cid, uid, uid_name):
         """
@@ -317,7 +317,7 @@ class rps_holder(db_base):
         rps_at_online = rps_online(self.find_one({ rps_online.CHAT_INSTANCE_ID: cid }))
 
         text_to_join = [u'【遊戲{}中】\n'.format(rps_message.message.game_enabled(rps_at_online.enabled)),
-                        rps_at_online.players_data_str(),
+                        rps_at_online.players_data_str(True),
                         rps_message.message.item_representatives_str(rps_at_online.representatives.itervalues())]
 
         return u'\n'.join(text_to_join)
@@ -341,7 +341,9 @@ class rps_holder(db_base):
         else:
             return None
 
-    def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data):
+    def _generate_update_dict_by_result(self, result_enum, player1_data, player2_data, rps_at_local):
+        player1_data.rec_last_item(rps_at_local.temp_item_1)
+        player2_data.rec_last_item(rps_at_local.temp_item_2)
         if result_enum == battle_result.PLAYER1_WIN:
             player1_data.win()
             player2_data.lose()
@@ -544,6 +546,8 @@ class battle_player(dict_like_mapping):
     MAX_CONTINUOUS_LOSE = 'mx_cl'
     CONTINUOUS_COUNT = 'c_ct'
     IS_CONTINUNOUS_WIN = 'c_w'
+    LAST_10_RESULT = 'l10r'
+    LAST_10_ITEM = 'l10i'
 
     @staticmethod
     def init_by_field(user_id, name):
@@ -570,7 +574,9 @@ class battle_player(dict_like_mapping):
                 battle_player.MAX_CONTINUOUS_WIN: 0,
                 battle_player.MAX_CONTINUOUS_LOSE: 0,
                 battle_player.CONTINUOUS_COUNT: 0,
-                battle_player.IS_CONTINUNOUS_WIN: False
+                battle_player.IS_CONTINUNOUS_WIN: False,
+                battle_player.LAST_10_RESULT: '----------',
+                battle_player.LAST_10_ITEM: []
             }
 
         super(battle_player, self).__init__(org_dict)
@@ -583,7 +589,7 @@ class battle_player(dict_like_mapping):
     def name(self):
         return self[battle_player.NAME]
 
-    def statistic_string(self):
+    def statistic_string(self, detailed=False):
         w = self[battle_player.RECORD][battle_player.WIN]
         l = self[battle_player.RECORD][battle_player.LOSE]
         t = self[battle_player.RECORD][battle_player.TIED]
@@ -598,10 +604,19 @@ class battle_player(dict_like_mapping):
         except ZeroDivisionError:
             wr = 0.0
 
-        return u'{}\n{}戰 {}勝{}敗{}和 勝率{:.3f} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, wr, cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
+        result = u'{}\n{}戰 {}勝{}敗{}和 勝率{:.3f} {}連{}中 最高{}連勝、{}連敗'.format(self[battle_player.NAME], w + l + t, w, l, t, wr, cont_count, u'勝' if cont_w else u'敗', cont_mw, cont_ml)
+
+        if detailed:
+            l10r = self[battle_player.STATISTICS][battle_player.LAST_10_RESULT]
+            l10i = u''.join([unicode(battle_item(item))[0] for item in self[battle_player.STATISTICS][battle_player.LAST_10_ITEM])
+
+            result += u'\n近10場戰績: {}\n近10場出拳: {}'.format(l10r, l10i)
+
+        return result
 
     def win(self):
         self[battle_player.RECORD][battle_player.WIN] += 1
+        self[battle_player.STATISTICS][battle_player.LAST_10_RESULT] = self[battle_player.STATISTICS][battle_player.LAST_10_RESULT][1:] + battle_player.WIN
 
         if self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN]:
             self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] += 1
@@ -614,9 +629,11 @@ class battle_player(dict_like_mapping):
 
     def tied(self):
         self[battle_player.RECORD][battle_player.TIED] += 1
+        self[battle_player.STATISTICS][battle_player.LAST_10_RESULT] = self[battle_player.STATISTICS][battle_player.LAST_10_RESULT][1:] + battle_player.TIED
 
     def lose(self):
         self[battle_player.RECORD][battle_player.LOSE] += 1
+        self[battle_player.STATISTICS][battle_player.LAST_10_RESULT] = self[battle_player.STATISTICS][battle_player.LAST_10_RESULT][1:] + battle_player.LOSE
 
         if not self[battle_player.STATISTICS][battle_player.IS_CONTINUNOUS_WIN]:
             self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] += 1
@@ -626,6 +643,9 @@ class battle_player(dict_like_mapping):
 
         if self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT] > self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE]:
             self[battle_player.STATISTICS][battle_player.MAX_CONTINUOUS_LOSE] = self[battle_player.STATISTICS][battle_player.CONTINUOUS_COUNT]
+
+    def rec_last_item(self, item):
+        self[battle_player.STATISTICS][battle_player.LAST_10_ITEM] = self[battle_player.STATISTICS][battle_player.LAST_10_ITEM][1:] + [item]
 
     def reset(self):
         self[battle_player.RECORD][battle_player.WIN] = 0
@@ -691,8 +711,8 @@ class rps_online(dict_like_mapping):
 
         return super(rps_online, self).__init__(org_dict)
 
-    def players_data_str(self):
-        return rps_message.result.statistics(self[rps_online.PLAYERS].values())
+    def players_data_str(self, detailed):
+        return rps_message.result.statistics(self[rps_online.PLAYERS].values(), detailed)
 
     def reset_statistics(self):
         self[rps_online.PLAYERS] = { uid: battle_player.init_by_field(data[battle_player.USER_ID], data[battle_player.NAME]) for uid, data in self[rps_online.PLAYERS].iteritems() }
@@ -772,8 +792,16 @@ class rps_local(object):
         return self._temp_uid1
 
     @property
+    def temp_item_1(self):
+        return self._temp_item1
+
+    @property
     def temp_uid_2(self):
         return self._temp_uid2
+
+    @property
+    def temp_item_2(self):
+        return self._temp_item2
 
     @property
     def gap_time(self):
@@ -879,7 +907,7 @@ class rps_message(object):
             return u'{}\n\n兩拳相隔時間(含程式處理) {:.3f} 秒'.format(result, gap_time)
 
         @staticmethod
-        def statistics(player_data_list):
+        def statistics(player_data_list, detailed=False):
             def sort_func(data):
                 w = data[battle_player.RECORD][battle_player.WIN]
                 l = data[battle_player.RECORD][battle_player.LOSE]
@@ -893,6 +921,6 @@ class rps_message(object):
                 return (w + l + t) + wr
 
             text_to_join = [u'【玩家資料】']
-            text_to_join.extend([battle_player(data).statistic_string() for data in sorted(player_data_list, key=sort_func, reverse=True)])
+            text_to_join.extend([battle_player(data).statistic_string(detailed) for data in sorted(player_data_list, key=sort_func, reverse=True)])
 
             return u'\n'.join(text_to_join)
