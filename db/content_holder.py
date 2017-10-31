@@ -740,10 +740,10 @@ class rps_local(object):
             self._result_generated = True
             self._waiting = False
         else:
-            if self._temp_uid1 is not None and self._temp_uid1 == uid:
-                return battle_result.DUPLICATED
-
             if self._waiting:
+                if self._temp_uid1 is not None and self._temp_uid1 == uid:
+                    return battle_result.DUPLICATED
+
                 self._gap_time = time.time() - self._start_time
                 self._start_time = rps_local.TIME_NOT_STARTED
 
