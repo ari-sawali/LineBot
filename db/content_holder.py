@@ -609,7 +609,7 @@ class battle_player(dict_like_mapping):
 
         if detailed:
             l10r = self[battle_player.STATISTICS][battle_player.LAST_10_RESULT]
-            l10i = u''.join([unicode(battle_item(item))[0] for item in self[battle_player.STATISTICS][battle_player.LAST_10_ITEM])
+            l10i = u''.join([unicode(battle_item(item))[0] for item in self[battle_player.STATISTICS][battle_player.LAST_10_ITEM]])
 
             result += u'\n近10場戰績: {}\n近10場出拳: {}'.format(l10r, l10i)
 
