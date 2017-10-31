@@ -18,6 +18,7 @@ class command_object(object):
     def __init__(self, min_split, max_split, cmd_category, remotable, group_id_allow_public, lowest_permission_req=permission.USER):
         self._split_max = max_split
         self._split_min = min_split
+        self._category = cmd_category
         self._count = 0
         self._remotable = remotable
         self._gid_allow_public = group_id_allow_public
@@ -42,6 +43,10 @@ class command_object(object):
     def count(self, value):
         """Called count."""
         self._count = value 
+
+    @property
+    def category(self):
+        return self._category
 
     @property
     def lowest_permission(self):

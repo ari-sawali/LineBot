@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: RPS + last 10
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: rank of messages
 # IMPORTANT: cache keyword_dict

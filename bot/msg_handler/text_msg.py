@@ -963,6 +963,9 @@ class text_msg_handler(object):
             return error.main.invalid_thing(u'指令', cmd)
 
         cmd_obj = self._command_manager.get_command_data(cmd)
+        if cmd_obj.category == bot.cmd_category.GAME:
+            return error.main.miscellaneous(u'此指令為遊戲指令，請將標頭之"JC"替換為"G"。')
+
         max_prm = cmd_obj.split_max
         min_prm = cmd_obj.split_min
         params = split(param_text, text_msg_handler.SPLITTER, max_prm)
