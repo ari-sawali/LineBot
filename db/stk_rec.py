@@ -34,7 +34,7 @@ class sticker_recorder(db_base):
         COUNT = 'ct'
 
         if hours_range_within is not None:
-            title += u' - {}小時內'.format(hours_range_within)
+            text_to_join[0] += u' - {}小時內'.format(hours_range_within)
             pipeline.append({ '$match': { '_id': { '$gt': ObjectId.from_datetime(datetime.now() - timedelta(hours=hours_range_within)) } } })
 
         pipeline.append({ '$group': { 
