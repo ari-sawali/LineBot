@@ -26,6 +26,7 @@ class global_msg_handle(object):
         self._system_data = self._txt_handle._system_data 
         self._string_calculator = self._txt_handle._string_calculator 
         self._get_kwd_instance = self._txt_handle._get_kwd_instance 
+        self._stk_rec = self._txt_handle._stk_rec
         
         self._rps_data = self._game_handle._rps_holder
 
@@ -395,12 +396,14 @@ class global_msg_handle(object):
     ###############################
 
     def handle_sticker(self, event):
+        package_id = event.message.package_id
         sticker_id = event.message.sticker_id
         token = event.reply_token
         src = event.source
         cid = bot.line_api_wrapper.source_channel_id(src)
         
         self._print_intercepted(event)
+        self._stk_rec.record(package_id, sticker_id)
         
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
