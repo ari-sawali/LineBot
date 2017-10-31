@@ -985,7 +985,7 @@ class text_msg_handler(object):
 
         if isinstance(result, db.PackedResult):
             full_url = self._webpage_generator.rec_webpage(packed_result.full, db.webpage_content_type.STICKER_RANKING)
-            return packed_result.limited + u'\n\n詳細資訊: ' + full_url
+            return result.limited + u'\n\n詳細資訊: ' + full_url
         else:
             return result
 
