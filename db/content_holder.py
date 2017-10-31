@@ -749,18 +749,18 @@ class rps_local(object):
                 self._gap_time = time.time() - self._start_time
                 self._start_time = rps_local.TIME_NOT_STARTED
 
-                self._temp_item1 = player_item
-                self._temp_uid1 = uid
-                self._temp_item2 = None
+                self._temp_item2 = player_item
+                self._temp_uid2 = uid
 
                 self._result_generated = True
                 self._waiting = False
             else:
                 self._gap_time = rps_local.TIME_NOT_STARTED
                 self._start_time = time.time()
-                
-                self._temp_item2 = player_item
-                self._temp_uid2 = uid
+
+                self._temp_item1 = player_item
+                self._temp_uid1 = uid
+                self._temp_item2 = None
 
                 self._result_generated = False
                 self._waiting = True
