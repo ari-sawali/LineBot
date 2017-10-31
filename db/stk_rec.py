@@ -16,9 +16,11 @@ def package_id_to_url(package_id):
 
 class sticker_recorder(db_base):
     COLLECTION_NAME = 'stk'
+    DATA_EXPIRE_SECS = 21 * 24 * 60 * 60
 
     def __init__(self, mongo_db_uri):
-        return super(sticker_recorder, self).__init__(mongo_db_uri, DB_NAME, sticker_recorder.COLLECTION_NAME, False)
+        super(sticker_recorder, self).__init__(mongo_db_uri, DB_NAME, sticker_recorder.COLLECTION_NAME, False)
+        self.create_index([(sticker_record_data.TIMESTAMP, pymongo.DESCENDING)], expireAfterSeconds=sticker_recorder.DATA_EXPIRE_SECS)
 
     def record(self, package_id, sticker_id):
         self.insert_one(sticker_record_data.init_by_field(package_id, sticker_id))
@@ -104,10 +106,12 @@ class sticker_recorder(db_base):
 class sticker_record_data(dict_like_mapping):
     """
     {
+        timestamp: DATETIME
         package_id: INTEGER,
         sticker_id: INTEGER
     }
     """
+    TIMESTAMP = 'ts'
     PACKAGE_ID = 'pkg'
     STICKER_ID = 'stk'
 
@@ -122,5 +126,8 @@ class sticker_record_data(dict_like_mapping):
     def __init__(self, org_dict):
         if not all(k in org_dict for k in (sticker_record_data.STICKER_ID, sticker_record_data.PACKAGE_ID)):
             raise ValueError(error.error.main.miscellaneous(u'Incomplete data.'))
+
+        if sticker_record_data.TIMESTAMP not in org_dict:
+            org_dict[sticker_record_data.TIMESTAMP] = datetime.now()
 
         super(sticker_record_data, self).__init__(org_dict)

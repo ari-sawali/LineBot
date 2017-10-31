@@ -27,12 +27,11 @@ class webpage_content_type(ext.EnumWithName):
 
 class webpage_content_holder(db_base):
     COLLECTION_NAME = 'webpage'
-
     DATA_EXPIRE_SECS = 15 * 24 * 60 * 60
 
     def __init__(self, mongo_db_uri):
         return super(webpage_content_holder, self).__init__(mongo_db_uri, CONTENT_HOLDER_DB_NAME, webpage_content_holder.COLLECTION_NAME, True)
-        self.create_index([(webpage_data.TIMESTAMP, pymongo.DESCENDING)], webpage_content_holder=system_statistics.DATA_EXPIRE_SECS)
+        self.create_index([(webpage_data.TIMESTAMP, pymongo.DESCENDING)], expireAfterSeconds=webpage_content_holder.DATA_EXPIRE_SECS)
 
     def _get_timestamp_in_datetime(self):
         return datetime.now() + timedelta(hours=8)
