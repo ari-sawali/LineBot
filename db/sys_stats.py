@@ -40,13 +40,14 @@ class system_statistics(db_base):
     def extend_function_used(self, extend_cat_enum):
         today = self._get_today_date()
         result = self.update_one({ system_data.RECORD_DATE: today },
-                                 { '$inc': { system_data.EXTEND_USED + '.' + str(extend_cat_enum): 1 } }, True)
+                                 { '$inc': { system_data.EXTEND_FUNCTION_USED + '.' + str(extend_cat_enum): 1 } }, True)
 
     def get_statistics(self):
         SEPARATOR = '_'
 
         keys = {system_data.COMMAND_CALLED: list(bot.cmd_dict.keys()), 
-                system_data.WEBPAGE_VIEWED: list([unicode(type_enum) for type_enum in webpage_content_type])}
+                system_data.WEBPAGE_VIEWED: list([unicode(type_enum) for type_enum in webpage_content_type]),
+                system_data.EXTEND_FUNCTION_USED: list([unicode(type_enum) for type_enum in extend_function_category])}
 
         group_dict = {cat + SEPARATOR + c: { '$sum': '${}.{}'.format(cat, c.encode('utf-8')) } for cat, arr in keys.iteritems() for c in arr}
         group_dict['_id'] = None
