@@ -64,7 +64,7 @@ class system_statistics(db_base):
 
         proc_data = { cat: { c: StatisticsData({ day_in: data.get(c, 0) for day_in, data in aggr_data.iteritems() }) for c in cat_keys } for cat, cat_keys in keys.iteritems() }
 
-        return u'\n'.join([u'【{}】'.format(system_data.translate_category(cat)) + u'\n' + u'\n'.join([c + u'\n' + StatisticsData({ day_in: data.get(cat + SEPARATOR + c, 0) for day_in, data in aggr_data.iteritems() }).get_string() for c in cat_keys]) for cat, cat_keys in keys.iteritems()])
+        return u'\n\n'.join([u'【{}】'.format(system_data.translate_category(cat)) + u'\n' + u'\n'.join([c + u'\n' + StatisticsData({ day_in: data.get(cat + SEPARATOR + c, 0) for day_in, data in aggr_data.iteritems() }).get_string() for c in cat_keys]) for cat, cat_keys in keys.iteritems()])
 
     def all_data(self):
         return [system_data(data) for data in list(self.find())]
