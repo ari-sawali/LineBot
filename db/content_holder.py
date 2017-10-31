@@ -187,6 +187,8 @@ class rps_holder(db_base):
         if player_item is None:
             return
 
+        print self._cache_players[cid]
+
         if not self._has_cache_player(cid, uid):
             return rps_message.error.player_data_not_found()
 
