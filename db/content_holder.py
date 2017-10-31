@@ -233,9 +233,9 @@ class rps_holder(db_base):
             return rps_message.error.player_already_exist()
 
         self._set_cache_player(cid, uid)
-        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$push': { rps_online.PLAYERS + '.' + uid: battle_player.init_by_field(uid, uid_name) } }, None, None, False, pymongo.ReturnDocument.AFTER)
+        self.find_one_and_update({ rps_online.CHAT_INSTANCE_ID: cid }, { '$set': { rps_online.PLAYERS + '.' + uid: battle_player.init_by_field(uid, uid_name) } }, None, None, False, pymongo.ReturnDocument.AFTER)
 
-        return rps_message.message.player_data_registered(uid)
+        return rps_message.message.player_data_registered(uid, uid_name)
 
     def register_battleitem(self, cid, content, is_sticker, item_enum):
         """
@@ -815,8 +815,8 @@ class rps_message(object):
             return u'遊戲已建立。\n剪刀代表貼圖ID: {}\n石頭代表貼圖ID: {}\n布代表貼圖ID: {}'.format(scissor, rock, paper)
 
         @staticmethod
-        def player_data_registered(uid):
-            return u'玩家資料註冊成功。(UID: {})'.format(uid)
+        def player_data_registered(uid, uid_name):
+            return u'玩家 {} 資料註冊成功。(UID: {})'.format(uid, uid_name)
 
         @staticmethod
         def battle_item_registered(repr):
