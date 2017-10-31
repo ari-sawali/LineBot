@@ -63,6 +63,8 @@ class global_msg_handle(object):
 
     def _handle_auto_reply(self, event, reply_data):
         """THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
+        self._system_stats.extend_function_used(db.extend_function_category.AUTO_REPLY)
+
         self._system_data.set(bot.system_data_category.LAST_PAIR_ID, bot.line_api_wrapper.source_channel_id(event.source), reply_data.seq_id)
         src = event.source
         msg = event.message
@@ -195,6 +197,7 @@ class global_msg_handle(object):
         rps_result = self._rps_data.play(src_cid, src_uid, content, False)
 
         if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
+            self._system_stats.command_called('RPS')
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 
@@ -212,10 +215,11 @@ class global_msg_handle(object):
 
     def _handle_text_str_calc(self, event):
         """Return whether message has been replied."""
+
         full_text = event.message.text
         calc_result = self._string_calculator.calculate(full_text, self._system_config.get(db.config_data.CALCULATOR_DEBUG))
         if calc_result.success or calc_result.timeout:
-            self._system_stats.command_called('FX')
+            self._system_stats.extend_function_used(db.extend_function_category.BASIC_CALCUALTE)
 
             result_str = calc_result.get_basic_text()
 
@@ -358,6 +362,7 @@ class global_msg_handle(object):
         rps_result = self._rps_data.play(src_cid, src_uid, content, True)
 
         if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
+            self._system_stats.command_called('RPS')
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 
@@ -366,6 +371,7 @@ class global_msg_handle(object):
     def _handle_sticker_data(self, event):
         """Return whether message has been replied."""
         if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+            self._system_stats.extend_function_used(db.extend_function_category.GET_STICKER_ID)
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
 
@@ -466,6 +472,7 @@ class global_msg_handle(object):
 
     def _handle_image_upload(self, event, image_sha):
         if bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+            self._system_stats.extend_function_used(db.extend_function_category.IMGUR_UPLOAD)
             upload_result = self._img_handle.upload_imgur(event.message)
 
             rep_list = [bot.line_api_wrapper.wrap_text_message(u'檔案雜湊碼(SHA224)', self._webpage_generator), 

@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 import pymongo
+from datetime import date, datetime, timedelta
+from collections import OrderedDict
 
-from datetime import date, datetime
 from .base import db_base, dict_like_mapping, SYSTEM_DATABASE_NAME
+from .content_holder import webpage_content_type
+import bot, ext
+
+class extend_function_category(ext.EnumWithName):
+    IMGUR_UPLOAD = 1, 'IMGUR圖片上傳'
+    GET_STICKER_ID = 2, '獲取貼圖ID'
+    BASIC_CALCUALTE = 3, '基本計算功能'
+    AUTO_REPLY = 4, '自動回覆'
 
 class system_statistics(db_base):
     COLLECTION_NAME = 'statistics'
@@ -28,9 +37,33 @@ class system_statistics(db_base):
         result = self.update_one({ system_data.RECORD_DATE: today },
                                  { '$inc': { system_data.WEBPAGE_VIEWED + '.' + str(webpage_type_enum): 1 } }, True)
 
-    # UNDONE: asked at https://stackoverflow.com/questions/46806932/how-to-sum-the-value-of-keys-in-subcollection-within-a-range
+    def extend_function_used(self, extend_cat_enum):
+        today = self._get_today_date()
+        result = self.update_one({ system_data.RECORD_DATE: today },
+                                 { '$inc': { system_data.EXTEND_USED + '.' + str(extend_cat_enum): 1 } }, True)
+
     def get_statistics(self):
-        raise NotImplementedError()
+        SEPARATOR = '_'
+
+        keys = {system_data.COMMAND_CALLED: list(bot.cmd_dict.keys()), 
+                system_data.WEBPAGE_VIEWED: list([unicode(type_enum) for type_enum in webpage_content_type])}
+
+        group_dict = {cat + SEPARATOR + c: { '$sum': '${}.{}'.format(cat, c.encode('utf-8')) } for cat, arr in keys.iteritems() for c in arr}
+        group_dict['_id'] = None
+
+        aggr_data = { d_in: None for d_in in StatisticsData.DAYS_IN }
+
+        for day_in in aggr_data.iterkeys():
+            aggr_dict = self.aggregate([
+                { '$match': { 'rec_date': { '$gte': self._get_today_date() - timedelta(days=day_in) } } },
+                { '$group': group_dict }
+            ]).next()
+            del aggr_dict['_id']
+            aggr_data[day_in] = aggr_dict
+
+        proc_data = { cat: { c: StatisticsData({ day_in: data.get(c, 0) for day_in, data in aggr_data.iteritems() }) for c in cat_keys } for cat, cat_keys in keys.iteritems() }
+
+        return u'\n'.join([u'【{}】'.format(system_data.translate_category(cat)) + u'\n' + u'\n'.join([c + u' - ' + StatisticsData({ day_in: data.get(cat + SEPARATOR + c, 0) for day_in, data in aggr_data.iteritems() }).get_string() for c in cat_keys]) for cat, cat_keys in keys.iteritems()])
 
     def all_data(self):
         return [system_data(data) for data in list(self.find())]
@@ -51,18 +84,31 @@ class system_data(dict_like_mapping):
             webpage_type: INTEGER,
             ...
             ...
+        },
+        extend_func_used: {
+            ext_func_cat: INTEGER,
+            ...
+            ...
         }
     }
     """
     RECORD_DATE = 'rec_date'
     COMMAND_CALLED = 'cmd'
     WEBPAGE_VIEWED = 'wp'
+    EXTEND_FUNCTION_USED = 'ext'
+
+    _CAT_TRANS_DICT = { COMMAND_CALLED: u'指令使用次數', WEBPAGE_VIEWED: u'網頁瀏覽次數', EXTEND_FUNCTION_USED: u'延展功能使用' }
+
+    @staticmethod
+    def translate_category(cat):
+        return system_data._CAT_TRANS_DICT.get(cat, cat)
 
     @staticmethod
     def init_by_field(date=None):
         init_dict = {
             system_data.COMMAND_CALLED: {},
-            system_data.WEBPAGE_VIEWED: {}
+            system_data.WEBPAGE_VIEWED: {},
+            system_data.EXTEND_FUNCTION_USED: {}
         }
         if data is not None:
             init_dict[system_data.RECORD_DATE] = date
@@ -79,6 +125,9 @@ class system_data(dict_like_mapping):
 
             if not system_data.WEBPAGE_VIEWED in org_dict:
                 org_dict[system_data.WEBPAGE_VIEWED] = {}
+
+            if not system_data.EXTEND_FUNCTION_USED in org_dict:
+                org_dict[system_data.EXTEND_FUNCTION_USED] = {}
         else:
             raise ValueError('Dictionary is none.')
 
@@ -93,70 +142,22 @@ class system_data(dict_like_mapping):
         return self[system_data.WEBPAGE_VIEWED]
 
     @property
+    def extend_func_used(self):
+        return self[system_data.EXTEND_FUNCTION_USED]
+
+    @property
     def date(self):
         return self.get(system_data.RECORD_DATE, None)
 
-class StatisticsResult(dict_like_mapping):
-    """
-    {
-        command_called: {
-            command: STATISTICS_DATA,
-            ...
-            ...
-        },
-        webpage_viewed: {
-            webpage_type: STATISTICS_DATA,
-            ...
-            ...
-        }
-    }
-    """
-    def __init__(self, org_dict):
-        if org_dict is not None:
-            if not system_data.COMMAND_CALLED in org_dict:
-                org_dict[system_data.COMMAND_CALLED] = {}
+class StatisticsData(object):
+    DAYS_IN = [1, 3, 7, 15]
 
-            if not system_data.WEBPAGE_VIEWED in org_dict:
-                org_dict[system_data.WEBPAGE_VIEWED] = {}
-        else:
-            raise ValueError('Dictionary is none.')
-        return super(StatisticsResult, self).__init__(org_dict)
-
-    def __repr__(self):
-        cmd_list = [u'{} - {}'.format(cmd_type, cmd_data.get_string()) for cmd_type, cmd_data in self[system_data.COMMAND_CALLED]]
-        wp_list = [u'{} - {}'.format(cmd_type, cmd_data.get_string()) for cmd_type, cmd_data in self[system_data.WEBPAGE_VIEWED]]
-
-        text = u'【指令呼叫次數】\n'
-        text += u'\n'.join(cmd_list)
-        text += u'【網頁瀏覽次數】\n'
-        text += u'\n'.join(wp_list)
-
-        return text
-
-class StatisticsData(dict_like_mapping):
-    """
-    {
-        in_1: INTEGER,
-        in_3: INTEGER,
-        in_7: INTEGER,
-        in_15: INTEGER
-    }
-    """
-    IN_1_DAY = 'in_1'
-    IN_3_DAYS = 'in_3'
-    IN_7_DAYS = 'in_7'
-    IN_15_DAYS = 'in_15'
-
-    def __init__(self, in_1_count, in_3_count, in_7_count, in_15_count):
-        init_dict = {
-            StatisticsData.IN_1_DAY: system_data(in_1_count, True),
-            StatisticsData.IN_3_DAYS: system_data(in_3_count, True),
-            StatisticsData.IN_7_DAYS: system_data(in_7_count, True),
-            StatisticsData.IN_15_DAYS: system_data(in_15_count, True)
-        }
-
-        return super(StatisticsData, self).__init__(init_dict)
+    def __init__(self, dict):
+        """
+        Dict format:
+        { DAYS_IN: count, DAYS_IN: count... }
+        """
+        self._dict = OrderedDict(sorted(dict.iteritems()))
 
     def get_string(self):
-        return u'1日內: {}、3日內: {}、7日內: {}、15日內: {}'.format(self[StatisticsData.IN_1_DAY], self[StatisticsData.IN_3_DAYS], self[StatisticsData.IN_7_DAYS], self[StatisticsData.IN_15_DAYS])
-        pass
+        return u'、'.join([u'{}日內: {}'.format(d_in, num) for d_in, num in self._dict.iteritems()])

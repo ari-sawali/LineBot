@@ -13,8 +13,6 @@ import tool
 from error import error
 import bot, db, ext
 
-# IMPORTANT: JC P SYS will throw NotImplementedError
-
 class text_msg_handler(object):
     HEAD = 'JC'
     SPLITTER = '\n'

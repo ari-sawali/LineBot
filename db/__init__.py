@@ -9,7 +9,7 @@ from .group_manage import (
 )
 
 from .sys_stats import (
-    system_statistics, system_data
+    extend_function_category, system_statistics, system_data
 )
 
 from .sys_config import (
