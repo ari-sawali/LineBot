@@ -161,4 +161,4 @@ class StatisticsData(object):
         self._dict = OrderedDict(sorted(dict.iteritems()))
 
     def get_string(self):
-        return u'、'.join([u'{}日內: {}'.format(d_in, num) for d_in, num in self._dict.iteritems()])
+        return u' | '.join([u'{}日內 {}'.format(d_in, num) for d_in, num in self._dict.iteritems()])
