@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# IMPORTANT: total count of messages
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
-# IMPORTANT: rank of messages
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair

@@ -972,10 +972,10 @@ class text_msg_handler(object):
             hour_range = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
             limit_count = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.LIMIT_COUNT)
 
-        if hour_range is not None and not bot.string_can_be_int(hour_range):
+        if hour_range is not None and hour_range != '' and not bot.string_can_be_int(hour_range):
             return error.main.invalid_thing_with_correct_format(u'參數1(小時範圍)', u'整數', limit_count)
 
-        if limit_count is not None and not bot.string_can_be_int(limit_count):
+        if limit_count is not None and limit_count != '' and not bot.string_can_be_int(limit_count):
             return error.main.invalid_thing_with_correct_format(u'參數2(結果數量)', u'正整數', limit_count)
 
         hour_range = None if hour_range is None else int(hour_range)
