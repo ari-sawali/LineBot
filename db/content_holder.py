@@ -816,7 +816,7 @@ class rps_message(object):
 
         @staticmethod
         def player_data_registered(uid, uid_name):
-            return u'玩家 {} 資料註冊成功。(UID: {})'.format(uid, uid_name)
+            return u'玩家 {} 資料註冊成功。(UID: {})'.format(uid_name, uid)
 
         @staticmethod
         def battle_item_registered(repr):
