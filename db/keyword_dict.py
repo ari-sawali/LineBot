@@ -6,7 +6,7 @@ from error import error
 import ext
 
 from .base import db_base, dict_like_mapping
-from .misc import FormattedStringResult
+from .misc import PackedStringResult
 
 PUBLIC_GROUP_ID = 'C--------------------------------'
 
@@ -506,7 +506,7 @@ class group_dict_manager(db_base):
             if data_left > 0:
                 _list_limited.append(u'...(還有{}筆)'.format(data_left))
 
-        return FormattedStringResult(_list_limited, _list_full)
+        return PackedStringResult(_list_limited, _list_full)
 
     @staticmethod
     def _keyword_repr(kw_data, simplify=True, simplify_max_length=8):
@@ -635,7 +635,7 @@ class group_dict_manager(db_base):
 
             return u'#{} {} @{}'.format(data.seq_id, kw, (data.last_call + timedelta(hours=8)).strftime('%m/%d %H:%M'))
 
-        return FormattedStringResult.init_by_field(data_list, format_string, limit, u'回覆組呼叫排行(前{}名):'.format(len(data_list)), error.main.no_result()).limited
+        return PackedStringResult.init_by_field(data_list, format_string, limit, u'回覆組呼叫排行(前{}名):'.format(len(data_list)), error.main.no_result()).limited
 
     def get_statistics_string(self, is_active_only=False):
         result = KeywordDictionaryStatistics()
@@ -724,7 +724,7 @@ class group_dict_manager(db_base):
 
             return u'#{}{}{} {} → {}'.format(data.seq_id, u'X' if data.disabled else u'', u'P' if data.pinned else u'', kw, rep)
 
-        return FormattedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result)
+        return PackedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result)
 
     @staticmethod
     def list_keyword_info(data_list, kwd_mgr=None, line_api_wrapper=None, limit=3, append_first=None, no_result=None):
@@ -732,7 +732,7 @@ class group_dict_manager(db_base):
             data = pair_data(data)
             return data.detailed_text(True, line_api_wrapper, kwd_mgr)
 
-        return FormattedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result, '\n\n')
+        return PackedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result, '\n\n')
 
 def sticker_png_url(sticker_id):
     return 'https://sdl-stickershop.line.naver.jp/stickershop/v1/sticker/{}/android/sticker.png'.format(sticker_id)

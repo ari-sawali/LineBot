@@ -27,6 +27,7 @@
     <Content Include="templates\Base.html" />
     <Content Include="templates\ErrorList.html" />
     <Content Include="templates\LaTeX.html" />
+    <Content Include="templates\StickerRanking.html" />
     <Content Include="templates\WebPage.html" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +49,9 @@
     <Compile Include="db\keyword_dict.py" />
     <Compile Include="db\keyword_dict_global.py" />
     <Compile Include="db\misc.py" />
+    <Compile Include="db\stk_rec.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="db\sys_config.py">
       <SubType>Code</SubType>
     </Compile>

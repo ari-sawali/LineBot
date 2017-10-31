@@ -23,6 +23,7 @@ class webpage_content_type(ext.EnumWithName):
     INFO = 2, '資料查詢紀錄(詳細)'
     TEXT = 3, '文字'
     LATEX = 4, 'LaTeX (數學)'
+    STICKER_RANKING = 5, '熱門貼圖排行'
 
 class webpage_content_holder(db_base):
     COLLECTION_NAME = 'webpage'

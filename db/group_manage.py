@@ -14,7 +14,7 @@ import tool
 from bot.commands import permission
 import bot
 from .base import db_base, dict_like_mapping
-from .misc import FormattedStringResult
+from .misc import PackedStringResult
 
 GROUP_DB_NAME = 'group'
 
@@ -274,10 +274,10 @@ class group_manager(db_base):
                 text += msg_stats_data(data.message_track_record).get_string()
                 return text
 
-            return FormattedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
+            return PackedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
         else:
             err = error.main.miscellaneous(u'沒有輸入群組資料。')
-            return FormattedStringResult([err], [err])
+            return PackedStringResult([err], [err])
 
 class group_data(dict_like_mapping):
     """

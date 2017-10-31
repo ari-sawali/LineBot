@@ -1,0 +1,10 @@
+﻿{% extends "Base.html" %}
+{% block title %} {{ Title }} {% endblock %}
+{% block content -%}
+<p>
+    {% for sticker_url, description_txt in Data.iteritems() -%}
+    {{ description_txt|safe }}<br/>
+    <img src="{{ sticker_url|safe }}" /><br />
+    {%- endfor %}
+</p>
+{%- endblock %}

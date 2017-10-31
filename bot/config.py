@@ -6,6 +6,7 @@ import ext
 class config_category(ext.EnumWithName):
     KEYWORD_DICT = 0, 'KeywordDictionary'
     TIMEOUT = 1, 'Timeout'
+    STICKER_RANKING = 2, 'StickerRanking'
 
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
@@ -19,6 +20,10 @@ class config_category_kw_dict(ext.EnumWithName):
 
 class config_category_timeout(ext.EnumWithName):
     CALCULATOR = 0, 'Calculator'
+
+class config_category_sticker_ranking(ext.EnumWithName):
+    LIMIT_COUNT = 0, 'LimitCount'
+    HOUR_RANGE = 1, 'HourRange'
 
 class config_manager(object):
     def __init__(self, file_path):

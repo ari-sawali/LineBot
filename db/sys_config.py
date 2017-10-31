@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO: print error message -> field
-
 import pymongo
 from .base import db_base, dict_like_mapping, SYSTEM_DATABASE_NAME
 
