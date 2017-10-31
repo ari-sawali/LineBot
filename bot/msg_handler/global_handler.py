@@ -194,7 +194,7 @@ class global_msg_handle(object):
 
         rps_result = self._rps_data.play(src_cid, src_uid, content, False)
 
-        if rps_result is not None and not any(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found())):
+        if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 
@@ -357,9 +357,10 @@ class global_msg_handle(object):
 
         rps_result = self._rps_data.play(src_cid, src_uid, content, True)
 
-        print rps_result.encode('utf-8')
+        if rps_result is not None:
+            print rps_result.encode('utf-8')
 
-        if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found())):
+        if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 

@@ -177,6 +177,9 @@ class rps_holder(db_base):
         If count of player of the game is insufficient, return rps_message.error.insufficient_player_count().
         If player data not found, return rps_message.error.player_data_not_found().
         """
+
+        print self._cache_players[cid]
+
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
@@ -185,7 +188,7 @@ class rps_holder(db_base):
 
         player_item = self._get_cache_repr(cid, content, is_sticker)
         if player_item is None:
-            return
+            return rps_message.error.unknown_battle_item()
 
         if not self._has_cache_player(cid, uid):
             return rps_message.error.player_data_not_found()
@@ -201,6 +204,8 @@ class rps_holder(db_base):
 
         if play_result == battle_result.UNDEFINED:
             return rps_message.result.waiting()
+        elif play_result == battle_result.DUPLICATED:
+            return rps_message.error.duplicate_play()
         else:
             player_datas = self._get_player_data(cid, uid, rps_at_local, is_vs_bot)
             if player_datas is None:
@@ -417,6 +422,7 @@ class rps_holder(db_base):
         del self._cache_players[cid]
 
 class battle_result(ext.IntEnum):
+    DUPLICATED = -2
     UNDEFINED = -1
     TIED = 0
     PLAYER1_WIN = 1
@@ -722,6 +728,7 @@ class rps_local(object):
         self._temp_uid2 = None
 
     def play(self, uid, player_item, is_vs_bot=False):
+
         if is_vs_bot:
             self._start_time = time.time()
 
@@ -735,6 +742,9 @@ class rps_local(object):
             self._result_generated = True
             self._waiting = False
         else:
+            if self._temp_uid1 is not None and self._temp_uid1 == uid:
+                return battle_result.DUPLICATED
+
             if self._waiting:
                 self._gap_time = time.time() - self._start_time
                 self._start_time = rps_local.TIME_NOT_STARTED
@@ -773,6 +783,10 @@ class rps_local(object):
 
 class rps_message(object):
     class error(object):
+        @staticmethod
+        def duplicate_play():
+            return u'同一玩家不可重複出拳。'
+
         @staticmethod
         def player_data_not_found():
             return u'找不到玩家資料。'
