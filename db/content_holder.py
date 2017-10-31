@@ -187,11 +187,11 @@ class rps_holder(db_base):
         if player_item is None:
             return
 
-        if self._get_cache_player_length(cid) < 2:
-            return rps_message.error.insufficient_player_count()
-
         if not self._has_cache_player(cid, uid):
             return rps_message.error.player_data_not_found()
+
+        if self._get_cache_player_length(cid) < 2:
+            return rps_message.error.insufficient_player_count()
 
         rps_at_local = self._get_cache_local(cid)
         is_vs_bot = bot.line_api_wrapper.is_valid_user_id(cid)
