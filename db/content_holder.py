@@ -178,10 +178,6 @@ class rps_holder(db_base):
         If player data not found, return rps_message.error.player_data_not_found().
         """
 
-        print self._cache_players.get(cid, None)
-        print self._has_cache_player(cid, uid)
-        print uid
-
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
@@ -328,7 +324,7 @@ class rps_holder(db_base):
 
     def _get_player_data(self, cid, uid, rps_at_local, is_vs_bot):
         aggr_data = self.aggregate([
-            { '$match': {
+            { '$match': { 
                 rps_online.CHAT_INSTANCE_ID: cid,
                 '$or': [
                     { rps_online.PLAYERS + '.' + uid + '.' + battle_player.USER_ID: uid }, 
@@ -340,8 +336,14 @@ class rps_holder(db_base):
             } }
         ]).next()
 
+        print aggr_data
+        print list(aggr_data)
+        print uid
+        print rps_at_local.temp_uid_1
+        print rps_at_local.temp_uid_2
+
         if len(aggr_data) == 2:
-            return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2 if is_vs_bot else uid]
+            return aggr_data[rps_at_local.temp_uid_1], aggr_data[rps_at_local.temp_uid_2]
         else:
             return None
 
