@@ -179,6 +179,8 @@ class rps_holder(db_base):
         """
 
         print self._cache_players.get(cid, None)
+        print self._has_cache_player(cid, uid)
+        print uid
 
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
