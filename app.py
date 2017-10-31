@@ -212,12 +212,14 @@ def handle_text_message(event):
             except UnicodeDecodeError:
                 error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
         
+        tb = traceback.format_exc()
+
         try:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb, str(event))
         except UnicodeEncodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
