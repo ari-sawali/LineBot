@@ -74,8 +74,7 @@ class sticker_recorder(db_base):
             pipeline.append({ '$match': { '_id': { '$gt': ObjectId.from_datetime(datetime.now() - timedelta(hours=hours_range_within)) } } })
 
         pipeline.append({ '$group': { 
-            '_id': '$' + sticker_record_data.STICKER_ID,
-            sticker_record_data.PACKAGE_ID: '$' + sticker_record_data.PACKAGE_ID,
+            '_id': { k: '$' + k for k in (sticker_record_data.STICKER_ID, sticker_record_data.PACKAGE_ID) },
             COUNT: { '$sum': 1 }
         } })
 
@@ -93,12 +92,12 @@ class sticker_recorder(db_base):
         full = []
 
         for index, data in enumerate(aggr_cursor, start=1):
-            stk_id = data['_id']
+            stk_id = data['_id'][sticker_record_data.STICKER_ID]
 
             limited_text = u'第{}名 - 貼圖ID {} ({})'.format(index, stk_id, stk_count)
 
             limited.append(limited_text)
-            full.append((limited_text, package_id_to_url(data[sticker_record_data.PACKAGE_ID]), sticker_png_url(stk_id)))
+            full.append((limited_text, package_id_to_url(data['_id'][sticker_record_data.PACKAGE_ID]), sticker_png_url(stk_id)))
 
         return PackedResult(u'\n'.join(limited), full)
 
