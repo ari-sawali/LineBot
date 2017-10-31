@@ -437,6 +437,7 @@ class battle_result(ext.IntEnum):
         return battle_result((player1_item - player2_item) % 3)
 
 class battle_item(ext.EnumWithName):
+    UNDEFINED = -1, '無'
     ROCK = 0, '石頭'
     PAPER = 1, '布'
     SCISSOR = 2, '剪刀'
@@ -576,7 +577,7 @@ class battle_player(dict_like_mapping):
                 battle_player.CONTINUOUS_COUNT: 0,
                 battle_player.IS_CONTINUNOUS_WIN: False,
                 battle_player.LAST_10_RESULT: '----------',
-                battle_player.LAST_10_ITEM: []
+                battle_player.LAST_10_ITEM: [battle_item.UNDEFINED for i in range(10)]
             }
 
         super(battle_player, self).__init__(org_dict)
