@@ -23,3 +23,7 @@ from .content_holder import (
 from .stk_rec import (
     sticker_recorder, sticker_record_data
 )
+
+from .misc import (
+    PackedResult
+)

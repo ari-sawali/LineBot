@@ -7,10 +7,18 @@ class PackedResult(object):
         self._limited = limited_object
         self._full = full_object
 
+    @property
+    def limited(self):
+        return self._limited
+
+    @property
+    def full(self):
+        return self._full
+
     def __repr__(self):
         return u'LIMITED:\n{}\n\nFULL:\n{}'.format(self._limited, self._full).encode('utf-8')
 
-class PackedStringResult(object):
+class PackedStringResult(PackedResult):
     def __init__(self, limited_list, full_list, has_result=None, separator='\n'):
         if has_result is None:
             self._has_result = len(limited_list) > 0 and len(full_list) > 0
@@ -79,14 +87,6 @@ class PackedStringResult(object):
                 _list_limited.append(u'...(還有{}筆)'.format(data_left))
 
         return PackedStringResult(_list_limited, _list_full, has_result, separator)
-
-    @property
-    def limited(self):
-        return self._limited
-
-    @property
-    def full(self):
-        return self._full
 
     @property
     def has_result(self):

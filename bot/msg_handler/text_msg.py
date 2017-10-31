@@ -959,27 +959,32 @@ class text_msg_handler(object):
             text = error.main.lack_of_thing(u'參數')
 
     def _STK(self, src, params, key_permission_lv, group_config_type):
-        hours_range_or_pkg = params[1]
-        limit_count = params[2]
+        category = params[1]
+        hour_range = params[2]
+        limit_count = params[3]
 
-        if hours_range_or_pkg is None and limit_count is None:
-            hours_range_or_pkg = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
+        category_action_dict = { 'STK': self._stk_rec.hottest_sticker, 'PKG': self._stk_rec.hottest_package_str }
+
+        if category not in category_action_dict:
+            return error.main.invalid_thing_with_correct_format(u'參數1', u'STK(貼圖排行)或PKG(圖包排行)', category)
+
+        if hour_range is None and limit_count is None:
+            hour_range = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
             limit_count = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.LIMIT_COUNT)
+
+        if hour_range is not None and not bot.string_can_be_int(hour_range):
+            return error.main.invalid_thing_with_correct_format(u'參數1(小時範圍)', u'整數', limit_count)
 
         if limit_count is not None and not bot.string_can_be_int(limit_count):
             return error.main.invalid_thing_with_correct_format(u'參數2(結果數量)', u'正整數', limit_count)
 
-        if hours_range_or_pkg is not None:
-            if hours_range_or_pkg == 'PKG':
-                return self._stk_rec.hottest_package_str(hours_range_or_pkg, limit_count)
-            elif not bot.string_can_be_int(hours_range_or_pkg):
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'整數(代表小時範圍)或PKG(查閱熱門圖包)', limit_count)
+        result = category_action_dict[category](hour_range, limit_count)
 
-        packed_result = self._stk_rec.hottest_sticker(hours_range_or_pkg, limit_count)
-
-        full_url = self._webpage_generator.rec_webpage(packed_result.full, db.webpage_content_type.STICKER_RANKING)
-
-        return packed_result.limited + u'\n\n詳細資訊: ' + full_url
+        if isinstance(result, db.PackedResult):
+            full_url = self._webpage_generator.rec_webpage(packed_result.full, db.webpage_content_type.STICKER_RANKING)
+            return packed_result.limited + u'\n\n詳細資訊: ' + full_url
+        else:
+            return result
 
     def split_verify(self, cmd, splitter, param_text):
         if not self._command_manager.is_command_exist(cmd):
