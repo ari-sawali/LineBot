@@ -109,15 +109,18 @@ class text_msg_handler(object):
         spec_gid -> Range = +GROUP
         """
 
-        if config is not None and config == db.config_type.ALL:
-            manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
-        else:
-            manager_range = db.group_dict_manager_range.GROUP_ONLY
-
         if spec_gid is None and params is not None:
             remote_gid = self._get_remote_gid(params, None, False, allow_global)
         else:
             remote_gid = spec_gid
+
+        if bot.line_api_wrapper.is_valid_room_group_id(remote_gid):
+            config = self._group_manager.get_group_config_type(remote_gid)
+
+        if config is not None and config == db.config_type.ALL:
+            manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
+        else:
+            manager_range = db.group_dict_manager_range.GROUP_ONLY
 
         if remote_gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE:
             return self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)

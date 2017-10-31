@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: prevent loop (https://stackoverflow.com/questions/4751092/identify-which-iteration-you-are-on-in-a-loop-in-python)
+# IMPORTANT: RPS + last 10
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: rank of messages
 # IMPORTANT: cache keyword_dict
