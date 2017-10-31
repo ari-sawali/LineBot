@@ -51,9 +51,14 @@ class webpage_content_holder(db_base):
             if data.content_type == webpage_content_type.LATEX:
                 data.content += bot.webpage_manager.LATEX_SPLITTER
 
-            data.content += u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=webpage_content_holder.DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
-            data.content += u'\n\n網頁紀錄時間: {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-            data.content += u'\n網頁種類: {}'.format(unicode(data.content_type))
+            webpage_foot = u'\n\n網頁內容將在{}後清除。'.format((data.timestamp + timedelta(seconds=webpage_content_holder.DATA_EXPIRE_SECS)).strftime('%Y-%m-%d %H:%M:%S'))
+            webpage_foot += u'\n\n網頁紀錄時間: {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+            webpage_foot += u'\n網頁種類: {}'.format(unicode(data.content_type))
+                
+            if data.content_type == webpage_content_type.STICKER_RANKING:
+                data.content.append(webpage_foot)
+            else:
+                data.content += webpage_foot
 
             return data
         else:

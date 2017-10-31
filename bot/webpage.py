@@ -81,8 +81,8 @@ class webpage_manager(object):
             latex_script, normal_content = content.split(webpage_manager.LATEX_SPLITTER)
             return render_template('LaTeX.html', LaTeX_script=latex_script, Contents=normal_content.replace(' ', '&nbsp;').split('\n'), Title=title)
         elif page_data.content_type == db.webpage_content_type.STICKER_RANKING:
-            print content
-            return render_template('StickerRanking.html', Data=content, Title=title)
+            content_data, foot = content[:-1], content[-1]
+            return render_template('StickerRanking.html', Data=content_data, Foot=foot, Title=title)
         else:
             return render_template('WebPage.html', Contents=content.replace(' ', '&nbsp;').split('\n'), Title=title)
 
