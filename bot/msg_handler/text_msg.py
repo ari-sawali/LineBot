@@ -978,8 +978,8 @@ class text_msg_handler(object):
         if limit_count is not None and limit_count != '' and not bot.string_can_be_int(limit_count):
             return error.main.invalid_thing_with_correct_format(u'參數2(結果數量)', u'正整數', limit_count)
 
-        hour_range = None if hour_range is None else int(hour_range)
-        limit_count = None if limit_count is None else int(limit_count)
+        hour_range = None if hour_range is None or hour_range == '' else int(hour_range)
+        limit_count = None if limit_count is None or hour_range == '' else int(limit_count)
 
         result = category_action_dict[category](hour_range, limit_count)
 
