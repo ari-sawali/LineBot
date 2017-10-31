@@ -94,7 +94,7 @@ class sticker_recorder(db_base):
         for index, data in enumerate(aggr_cursor, start=1):
             stk_id = data['_id'][sticker_record_data.STICKER_ID]
 
-            limited_text = u'第{}名 - 貼圖ID {} ({})'.format(index, stk_id, stk_count)
+            limited_text = u'第{}名 - 貼圖ID {} ({})'.format(index, stk_id, data[COUNT])
 
             limited.append(limited_text)
             full.append((limited_text, package_id_to_url(data['_id'][sticker_record_data.PACKAGE_ID]), sticker_png_url(stk_id)))
