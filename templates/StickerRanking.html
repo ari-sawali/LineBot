@@ -2,8 +2,11 @@
 {% block title %} {{ Title }} {% endblock %}
 {% block content -%}
 <p>
-    {% for sticker_url, description_txt in Data.iteritems() -%}
-    {{ description_txt|safe }}<br/>
+    點選文字連結可進入該貼圖所屬圖包的購買頁面。
+</p>
+<p>
+    {% for description_txt, package_url, sticker_url in Data -%}
+    <a href="{{ package_url }}">{{ description_txt|safe }}</a><br/>
     <img src="{{ sticker_url|safe }}" /><br />
     {%- endfor %}
 </p>

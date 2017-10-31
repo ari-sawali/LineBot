@@ -75,6 +75,7 @@ class sticker_recorder(db_base):
 
         pipeline.append({ '$group': { 
             '_id': '$' + sticker_record_data.STICKER_ID,
+            sticker_record_data.PACKAGE_ID: '$' + sticker_record_data.PACKAGE_ID,
             COUNT: { '$sum': 1 }
         } })
 
@@ -97,7 +98,7 @@ class sticker_recorder(db_base):
             limited_text = u'第{}名 - 貼圖ID {} ({})'.format(index, stk_id, stk_count)
 
             limited.append(limited_text)
-            full.append((limited_text, sticker_png_url(stk_id)))
+            full.append((limited_text, package_id_to_url(data[sticker_record_data.PACKAGE_ID]), sticker_png_url(stk_id)))
 
         return PackedResult(u'\n'.join(limited), full)
 
