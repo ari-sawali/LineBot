@@ -984,7 +984,7 @@ class text_msg_handler(object):
         result = category_action_dict[category](hour_range, limit_count)
 
         if isinstance(result, db.PackedResult):
-            full_url = self._webpage_generator.rec_webpage(packed_result.full, db.webpage_content_type.STICKER_RANKING)
+            full_url = self._webpage_generator.rec_webpage(result.full, db.webpage_content_type.STICKER_RANKING)
             return result.limited + u'\n\n詳細資訊: ' + full_url
         else:
             return result
