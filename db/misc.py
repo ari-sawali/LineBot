@@ -25,7 +25,7 @@ class PackedStringResult(PackedResult):
         else:
             self._has_result = has_result
 
-        super(PackedResult, self).__init__(separator.join(limited_list), separator.join(full_list))
+        super(PackedStringResult, self).__init__(separator.join(limited_list), separator.join(full_list))
 
     @staticmethod
     def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None, separator='\n', insert_ranking=False):

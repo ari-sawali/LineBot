@@ -3,7 +3,6 @@
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: rank of messages
 # IMPORTANT: cache keyword_dict
-# IMPORTANT: statistics of sticker 
 # IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking
