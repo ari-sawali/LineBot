@@ -178,7 +178,7 @@ class rps_holder(db_base):
         If player data not found, return rps_message.error.player_data_not_found().
         """
 
-        print self._cache_players[cid]
+        print self._cache_players.get(cid, None)
 
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
