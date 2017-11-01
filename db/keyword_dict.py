@@ -434,7 +434,7 @@ class group_dict_manager(db_base):
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def _search(self, filter_dict):
-        result = self.find(filter_dict)
+        result = self.find(filter_dict).sort([(pair_data.SEQUENCE, pymongo.ASCENDING)])
         return None if result.count() <= 0 else [pair_data(data) for data in result]
 
     # statistics (output dict)
