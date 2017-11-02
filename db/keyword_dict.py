@@ -343,7 +343,7 @@ class group_dict_manager(db_base):
                       pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.now(), 
                       pair_data.STATISTICS + '.' + pair_data.DISABLER: disabler }
         })
-        query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() + timedelta(hours=8, seconds=-self._duplicate_cd_secs) }
+        query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) }
         query_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = True
         print query_dict
         print list(self.find(query_dict))
