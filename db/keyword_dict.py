@@ -344,7 +344,8 @@ class group_dict_manager(db_base):
                       pair_data.STATISTICS + '.' + pair_data.DISABLER: disabler }
         })
         query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) }
-        self.delete_many(query_dict)
+        print query_dict
+        print self.delete_many(query_dict).deleted_count
         return [pair_data(data) for data in disabled_pair_data]
 
     def get_reply_data(self, keyword, kw_type=word_type.TEXT):
