@@ -412,23 +412,23 @@ class text_msg_handler(object):
         uid = bot.line_api_wrapper.source_user_id(src)
 
         if params[2] is not None:
+            if key_permission_lv < bot.permission.MODERATOR:
+                return error.main.restricted(bot.permission.MODERATOR)
             flags = params[1]
             source_gid = params[2]
 
             if bot.line_api_wrapper.is_valid_room_group_id(source_gid) or source_gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP:
-                if key_permission_lv < bot.permission.MODERATOR:
-                    return error.main.restricted(bot.permission.MODERATOR)
                 result_ids = self._kwd_global.clone_from_group(source_gid, target_gid, uid, 'D' in flags, 'P' in flags)
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', source_gid)
         elif params[1] is not None:
-            if key_permission_lv < bot.permission.ADMIN:
-                return error.main.restricted(bot.permission.ADMIN)
-            
             if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
                 ids = params[1]
                 result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), target_gid, uid, True, key_permission_lv >= low_perm)
             elif hashlib.sha224('clear').hexdigest() == params[1]:
+                if key_permission_lv < bot.permission.ADMIN:
+                    return error.main.restricted(bot.permission.ADMIN)
+
                 try:
                     clear_count = self._kwd_global.clear(target_gid, uid)
                 except db.ActionNotAllowed as ex:
