@@ -344,7 +344,7 @@ class group_dict_manager(db_base):
                       pair_data.STATISTICS + '.' + pair_data.DISABLER: disabler }
         })
         query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() + timedelta(hours=8, seconds=-self._duplicate_cd_secs) }
-        print query_dict
+        query_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = True
         print self.delete_many(query_dict).deleted_count
         return [pair_data(data) for data in disabled_pair_data]
 
