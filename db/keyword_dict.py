@@ -343,7 +343,7 @@ class group_dict_manager(db_base):
                       pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.now(), 
                       pair_data.STATISTICS + '.' + pair_data.DISABLER: disabler }
         })
-        query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': { datetime.now() - timedelta(seconds=self._duplicate_cd_secs) } }
+        query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) }
         self.delete_many(query_dict)
         return [pair_data(data) for data in disabled_pair_data]
 
