@@ -304,9 +304,9 @@ class group_dict_manager(db_base):
 
         if insert_result is not None:
             self.disable_keyword(keyword, creator_id, pinned, insert_result.inserted_seq_id)
-            self.delete_many({ pair_data.KEYWORD: keyword,
-                               pair_data.STATISTICS + '.' + pair_data.CREATED_TIME: { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) },
-                               pair_data.SEQUENCE: { '$ne': insert_result.inserted_seq_id }})
+            self.find_and_modify({ pair_data.KEYWORD: keyword,
+                                   pair_data.STATISTICS + '.' + pair_data.CREATED_TIME: { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) },
+                                   pair_data.SEQUENCE: { '$ne': insert_result.inserted_seq_id }}, sort=[(pair_data.SEQUENCE, pymongo.DESCENDING)], remove=True)
 
             return pair
         else:
