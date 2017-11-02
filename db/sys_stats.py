@@ -56,7 +56,7 @@ class system_statistics(db_base):
 
         for day_in in aggr_data.iterkeys():
             aggr_dict = self.aggregate([
-                { '$match': { 'rec_date': { '$gte': self._get_today_date() - timedelta(days=day_in) } } },
+                { '$match': { 'rec_date': { '$gt': self._get_today_date() - timedelta(days=day_in) } } },
                 { '$group': group_dict }
             ]).next()
             del aggr_dict['_id']
