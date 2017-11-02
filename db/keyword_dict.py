@@ -347,6 +347,7 @@ class group_dict_manager(db_base):
         query_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = True
         print query_dict
         print list(self.find(query_dict))
+        print list(self.find({'_seq': 1121}))
         return [pair_data(data) for data in disabled_pair_data]
 
     def get_reply_data(self, keyword, kw_type=word_type.TEXT):
