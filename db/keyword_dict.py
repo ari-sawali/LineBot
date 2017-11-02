@@ -304,9 +304,9 @@ class group_dict_manager(db_base):
 
         if insert_result is not None:
             self.disable_keyword(keyword, creator_id, pinned, insert_result.inserted_seq_id)
-            self.delete_many({ '$and': [{ pair_data.KEYWORD: keyword }, 
-                                        { pair_data.STATISTICS + '.' + pair_data.CREATED_TIME: { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) } },
-                                        { pair_data.SEQUENCE: { '$ne': insert_result.inserted_seq_id } }] })
+            self.delete_many({ pair_data.KEYWORD: keyword,
+                               pair_data.STATISTICS + '.' + pair_data.CREATED_TIME: { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) },
+                               pair_data.SEQUENCE: { '$ne': insert_result.inserted_seq_id }})
 
             return pair
         else:
@@ -343,11 +343,6 @@ class group_dict_manager(db_base):
                       pair_data.STATISTICS + '.' + pair_data.DISABLED_TIME: datetime.now(), 
                       pair_data.STATISTICS + '.' + pair_data.DISABLER: disabler }
         })
-        query_dict[pair_data.STATISTICS + '.' + pair_data.CREATED_TIME] = { '$gt': datetime.now() - timedelta(seconds=self._duplicate_cd_secs) }
-        query_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = True
-        print query_dict
-        print list(self.find(query_dict))
-        print list(self.find({'_seq': 1121}))
         return [pair_data(data) for data in disabled_pair_data]
 
     def get_reply_data(self, keyword, kw_type=word_type.TEXT):
