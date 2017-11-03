@@ -63,7 +63,7 @@ levels = [(0, ''), (3, 'K'), (6, 'M'), (9, 'G'), (12, 'T'), (15, 'P'), (18, 'E')
 
 def simplify_num(value):
     if value < 1000:
-        return u'{}'.format(value)
+        return u'{:.2f}'.format(value)
 
     lads = int(log10(value) / 3)
 
