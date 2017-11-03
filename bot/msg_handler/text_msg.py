@@ -577,7 +577,7 @@ class text_msg_handler(object):
             text = self._imgur_api_wrapper.get_status_string(ip_address)
         elif category == 'EXC':
             usage_dict = self._oxr_client.get_usage_dict()
-            text = tool.oxr.usage_str(usage_dict)
+            text = self._oxr_client.usage_str(usage_dict)
         else:
             uid = category
 
