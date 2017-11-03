@@ -588,7 +588,17 @@ class group_dict_manager(db_base):
             } },
             { '$addFields': {
                 PairCreatorRankingData.UID: '$_id', 
-                PairCreatorRankingData.ACTIVITY_POINT: { '$multiply': ['$' + PairCreatorRankingData.PAIR_USED_COUNT, '$' + PairCreatorRankingData.PAIR_COUNT] }
+                PairCreatorRankingData.ACTIVITY_POINT: { '$let': {
+                    'vars': {
+                        'sum_num': { '$add': ['$' + PairCreatorRankingData.PAIR_USED_COUNT, '$' + PairCreatorRankingData.PAIR_COUNT] },
+                        'ct_pow': { '$pow': ['$' + PairCreatorRankingData.PAIR_USED_COUNT, 2] }
+                    },
+                    'in': { '$cond': [
+                        { '$eq': [ '$$sum_num', 0 ] },
+                        0,
+                        { '$divide': [ '$$ct_pow', '$$sum_num' ] }
+                    ] }
+                } }
             } }, 
             { '$sort': { PairCreatorRankingData.ACTIVITY_POINT: pymongo.DESCENDING } }
         ]
