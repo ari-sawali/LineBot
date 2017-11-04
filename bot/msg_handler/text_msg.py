@@ -846,7 +846,6 @@ class text_msg_handler(object):
                 return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
 
             if any(last_item_cat == type_cat for type_cat in (bot.system_data_category.LAST_STICKER, bot.system_data_category.LAST_PAIR_ID, bot.system_data_category.LAST_PIC_SHA)):
-                print text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + self._array_separator.join([str(item) for item in last_array])
                 action_dict = { 
                     '相關回覆組(簡潔)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + self._array_separator.join([str(item) for item in last_array]),
                     '相關回覆組(詳細)': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + self._array_separator.join([str(item) for item in last_array])
