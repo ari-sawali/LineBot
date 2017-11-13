@@ -849,8 +849,8 @@ class text_msg_handler(object):
                 action_dict = {}
                 for item in last_array:
                     item = str(item)
-                    action_dict['相關回覆組(簡潔) - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
-                    action_dict['相關回覆組(詳細) - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
+                    action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
+                    action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
             elif last_item_cat == bot.system_data_category.LAST_UID:
                 action_dict = { 
                     '使用者{}製作'.format(uid[0:8]): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid for uid in last_array
