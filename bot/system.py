@@ -18,6 +18,7 @@ from linebot.models import (
 
 import db
 import ext
+from .config import config_manager
 
 class system_data_category(ext.EnumWithName):
     LAST_STICKER = 0, '末三張貼圖ID'
@@ -43,14 +44,16 @@ class system_data(object):
             system_data_category.LAST_UID: self._last_uid
         }
 
-    def set(self, category_enum, cid, content, unique=False):
+    def set(self, category_enum, cid, content):
         d = self._field_dict[category_enum]
 
         if cid not in d:
             d[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-        if ~(unique ^ content not in d):
-            d[cid].append(content)
+        if content in d:
+            return
+
+        d[cid].append(content)
         self._field_dict[category_enum] = d
 
     def get(self, category_enum, cid):
@@ -64,36 +67,32 @@ class infinite_loop_preventer(object):
     def __init__(self):
         self._last_message = {}
 
-    def rec_last_content_and_get_status(self, uid, content):
+    def rec_last_content_and_get_status(self, uid, content, msg_type):
         if uid in self._last_message:
             banned = self._last_message[uid].banned
             if banned:
                 return True
-            self._last_message[uid].last_content = content
+            self._last_message[uid].set_last_content(content, msg_type)
         else:
             self._last_message[uid] = infinite_loop_prevent_data(uid, content)
 
         return self._last_message[uid].banned
 
 class infinite_loop_prevent_data(object):
-    MAX_LOOP_COUNT = 3
-
-    def __init__(self, uid, init_content=None):
+    def __init__(self, max_loop_count, uid, init_content=None):
         self._uid = uid
         self._last_content = init_content
         self._repeat_count = 0
+        self._msg_type = None
+        self._max_loop_count = max_loop_count
 
-    @property
-    def last_content(self):
-        return self._last_content
-
-    @last_content.setter
-    def last_content(self, value):
-        if self._last_content == value:
+    def set_last_content(self, content, msg_type):
+        self._msg_type = msg_type
+        if self._last_content == value and self._msg_type == msg_type:
             self._repeat_count += 1
         else:
             self._repeat_count = 0
-            self._last_content = value
+            self._last_content = content
 
     @property
     def user_id(self):
@@ -101,7 +100,7 @@ class infinite_loop_prevent_data(object):
 
     @property
     def banned(self):
-        return self._repeat_count > infinite_loop_prevent_data.MAX_LOOP_COUNT
+        return self._repeat_count > self._max_loop_count
 
 class line_event_source_type(ext.EnumWithName):
     USER = 0, '私訊'

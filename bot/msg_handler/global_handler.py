@@ -14,7 +14,7 @@ class global_msg_handle(object):
         self._mongo_uri = mongo_db_uri
         self._line_api_wrapper = line_api_wrapper
         self._system_config = system_config
-        self._loop_preventer = bot.infinite_loop_preventer()
+        self._loop_preventer = bot.infinite_loop_preventer(self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.DUPLICATE_CONTENT_BAN_COUNT))
 
         self._txt_handle = txt_handle
         self._game_handle = game_handle
@@ -280,7 +280,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text)
+        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.TEXT)
 
         if terminate_2:
             print 'terminate 2'
@@ -292,7 +292,7 @@ class global_msg_handle(object):
 
         group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
-        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
@@ -424,7 +424,7 @@ class global_msg_handle(object):
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
         user_permission = self._get_user_permission(src)
 
-        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
         self._system_data.set(bot.system_data_category.LAST_STICKER, cid, sticker_id)
 
         #######################################################
@@ -437,14 +437,24 @@ class global_msg_handle(object):
             print 'terminate 1'
             return
 
+        #####################################
+        ### TERMINATE CHECK - LOOP TO BAN ###
+        #####################################
+
+        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.STICKER)
+
+        if terminate_2:
+            print 'terminate 2'
+            return
+
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
         ####################################
 
-        terminate_2 = self._handle_sticker_rps(event, sticker_id)
+        terminate_3 = self._handle_sticker_rps(event, sticker_id)
 
-        if terminate_2 or group_config <= db.config_type.SYS_ONLY:
-            print 'terminate 2'
+        if terminate_3 or group_config <= db.config_type.SYS_ONLY:
+            print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
 
@@ -452,10 +462,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - STICKER DATA ###
         ######################################
 
-        terminate_3 = self._handle_sticker_data(event)
+        terminate_4 = self._handle_sticker_data(event)
 
-        if terminate_3:
-            print 'terminate 3'
+        if terminate_4:
+            print 'terminate 4'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
 
@@ -463,10 +473,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
 
-        terminate_4 = self._handle_sticker_auto_reply(event, group_config)
+        terminate_5 = self._handle_sticker_auto_reply(event, group_config)
 
-        if terminate_4:
-            print 'terminate 4'
+        if terminate_5:
+            print 'terminate 5'
             return
 
         self._group_manager.log_message_activity(cid, db.msg_type.STICKER)
@@ -530,7 +540,7 @@ class global_msg_handle(object):
         user_permission = self._get_user_permission(src)
         image_sha = self._img_handle.image_sha224_of_message(event.message)
         
-        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
         self._system_data.set(bot.system_data_category.LAST_PIC_SHA, cid, image_sha)
 
         #######################################################

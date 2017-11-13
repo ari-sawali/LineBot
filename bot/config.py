@@ -7,6 +7,7 @@ class config_category(ext.EnumWithName):
     KEYWORD_DICT = 0, 'KeywordDictionary'
     TIMEOUT = 1, 'Timeout'
     STICKER_RANKING = 2, 'StickerRanking'
+    SYSTEM = 3, 'System'
 
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
@@ -24,6 +25,9 @@ class config_category_timeout(ext.EnumWithName):
 class config_category_sticker_ranking(ext.EnumWithName):
     LIMIT_COUNT = 0, 'LimitCount'
     HOUR_RANGE = 1, 'HourRange'
+
+class config_category_system(ext.EnumWithName):
+    DUPLICATE_CONTENT_BAN_COUNT = 0, 'DuplicateContentBanCount'
 
 class config_manager(object):
     def __init__(self, file_path):

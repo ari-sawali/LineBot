@@ -14,5 +14,5 @@ from .commands import (
 )
 
 from .config import (
-    config_manager, config_category, config_category_kw_dict, config_category_timeout, config_category_sticker_ranking
+    config_manager, config_category, config_category_kw_dict, config_category_timeout, config_category_sticker_ranking, config_category_system
 )
