@@ -89,7 +89,7 @@ class infinite_loop_prevent_data(object):
 
     def set_last_content(self, content, msg_type):
         self._msg_type = msg_type
-        if self._last_content == value and self._msg_type == msg_type:
+        if self._last_content == content and self._msg_type == msg_type:
             self._repeat_count += 1
         else:
             self._repeat_count = 0
