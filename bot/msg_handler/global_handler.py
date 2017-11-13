@@ -441,7 +441,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.STICKER)
+        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, sticker_id, db.msg_type.STICKER)
 
         if terminate_2:
             print 'terminate 2'
@@ -553,14 +553,24 @@ class global_msg_handle(object):
             print 'terminate 1'
             return
 
+        #####################################
+        ### TERMINATE CHECK - LOOP TO BAN ###
+        #####################################
+
+        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, image_sha, db.msg_type.PICTURE)
+
+        if terminate_2:
+            print 'terminate 2'
+            return
+
         ######################################
         ### TERMINATE CHECK - UPLOAD IMAGE ###
         ######################################
         
-        terminate_2 = self._handle_image_upload(event, image_sha)
+        terminate_3 = self._handle_image_upload(event, image_sha)
         
-        if terminate_2:
-            print 'terminate 2'
+        if terminate_3:
+            print 'terminate 3'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE, db.msg_type.TEXT, 1, 4)
             return
 
@@ -568,10 +578,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_3 = self._handle_image_auto_reply(event, image_sha, group_config)
+        terminate_4 = self._handle_image_auto_reply(event, image_sha, group_config)
              
-        if terminate_3:
-            print 'pass 3'
+        if terminate_4:
+            print 'terminate 4'
             return
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
