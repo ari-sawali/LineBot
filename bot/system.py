@@ -50,6 +50,9 @@ class system_data(object):
         if cid not in d:
             d[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
+        print content
+        print d
+        print content in d
         if content in d:
             return
 
