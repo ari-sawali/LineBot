@@ -43,13 +43,14 @@ class system_data(object):
             system_data_category.LAST_UID: self._last_uid
         }
 
-    def set(self, category_enum, cid, content):
+    def set(self, category_enum, cid, content, unique=False):
         d = self._field_dict[category_enum]
 
         if cid not in d:
             d[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
 
-        d[cid].append(content)
+        if ~(unique ^ content not in d):
+            d[cid].append(content)
         self._field_dict[category_enum] = d
 
     def get(self, category_enum, cid):

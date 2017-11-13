@@ -292,7 +292,7 @@ class global_msg_handle(object):
 
         group_config = self._get_group_config(cid)
         user_permission = self._get_user_permission(src)
-        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
@@ -401,6 +401,7 @@ class global_msg_handle(object):
         token = event.reply_token
         src = event.source
         cid = bot.line_api_wrapper.source_channel_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
         
         self._print_intercepted(event)
         self._stk_rec.record(package_id, sticker_id)
@@ -423,6 +424,7 @@ class global_msg_handle(object):
         group_config = self._get_group_config(bot.line_api_wrapper.source_channel_id(src))
         user_permission = self._get_user_permission(src)
 
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
         self._system_data.set(bot.system_data_category.LAST_STICKER, cid, sticker_id)
 
         #######################################################
@@ -507,6 +509,7 @@ class global_msg_handle(object):
         src = event.source
         token = event.reply_token
         cid = bot.line_api_wrapper.source_channel_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
 
         ####################################################
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
@@ -527,6 +530,7 @@ class global_msg_handle(object):
         user_permission = self._get_user_permission(src)
         image_sha = self._img_handle.image_sha224_of_message(event.message)
         
+        self._system_data.set(bot.system_data_category.LAST_UID, cid, uid, True)
         self._system_data.set(bot.system_data_category.LAST_PIC_SHA, cid, image_sha)
 
         #######################################################

@@ -86,7 +86,6 @@ class db_base(pymongo.collection.Collection):
 
     def find(self, *args, **kwargs):
         print 'MongoDB FIND @{}.{}'.format(self._db_name, self._collection_name)
-        print args
 
         return super(db_base, self).find(*args, **kwargs)
 
