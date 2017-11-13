@@ -287,6 +287,12 @@ class group_dict_manager(db_base):
         elif len(linked_word) > 15:
             return error.main.miscellaneous(u'相關關鍵字最高只能寫入15組關鍵字。')
 
+        if kw_type == word_type.STICKER:
+            keyword = keyword.replace(' ', '')
+
+        if rep_type == word_type.STICKER:
+            reply = reply.replace(' ', '')
+
         if not pinned:
             check_result = self.count({
                 '$and': [
