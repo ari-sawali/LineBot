@@ -64,8 +64,9 @@ class system_data(object):
         return self._boot_up
 
 class infinite_loop_preventer(object):
-    def __init__(self):
+    def __init__(self, max_loop_count):
         self._last_message = {}
+        self._max_loop_count = max_loop_count
 
     def rec_last_content_and_get_status(self, uid, content, msg_type):
         if uid in self._last_message:
@@ -74,7 +75,7 @@ class infinite_loop_preventer(object):
                 return True
             self._last_message[uid].set_last_content(content, msg_type)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(uid, content)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, content)
 
         return self._last_message[uid].banned
 
