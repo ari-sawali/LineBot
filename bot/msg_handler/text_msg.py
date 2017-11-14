@@ -513,11 +513,13 @@ class text_msg_handler(object):
         ranking_type = params[1]
 
         default = self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
-        limit = default if params[2] is None else int(params[2])
+        limit = default if params[2] is None else params[2]
 
         # validate parameters
         if not bot.string_can_be_int(limit):
             return error.main.incorrect_param(u'參數2(數量)', u'整數')
+        else:
+            limit = int(params[2])
         
         if limit > 50:
             return error.main.incorrect_param(u'參數2(數量)', u'小於50的整數')
