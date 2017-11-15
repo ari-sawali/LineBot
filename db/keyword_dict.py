@@ -251,6 +251,20 @@ class group_dict_manager(db_base):
             sort.append(sort_tuple)
         return super(group_dict_manager, self).find_one_and_update(filter, update, projection, sort, upsert, return_document, **kwargs)
 
+    def find_and_modify(self, query=None, update=None, upsert=False, sort=None, full_response=False, manipulate=False, **kwargs):
+        if query is None:
+            query = {}
+
+        query[pair_data.AFFILIATED_GROUP] = self._group_id
+
+        sort_tuple = (pair_data.AFFILIATED_GROUP, pymongo.DESCENDING)
+        if sort is None:
+            sort = [sort_tuple]
+        else:
+            sort.append(sort_tuple)
+
+        return super(group_dict_manager, self).find_and_modify(query, update, upsert, sort, full_response, manipulate, **kwargs)
+
     def count(self, filter=None, **kwargs):
         if filter is None:
             filter = {}
