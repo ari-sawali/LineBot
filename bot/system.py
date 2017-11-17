@@ -339,7 +339,7 @@ class imgur_api_wrapper(object):
             text += u'今日API上限額度: {}'.format(self.client_limit)
         except (ValueError, TypeError):
             import json
-            text = json.dump(self._imgur_api.credits)
+            text = json.dumps(self._imgur_api.credits)
 
         return text
 
