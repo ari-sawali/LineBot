@@ -53,6 +53,8 @@ class PackedStringResult(PackedResult):
             _list_full.append(no_res)
         else:
             has_result = True
+            count -= skip_data_count
+
             _list_full.append(u'共有{}筆結果\n'.format(count))
 
             if limit is not None:
@@ -62,7 +64,7 @@ class PackedStringResult(PackedResult):
 
             # increase performance (duplicate flag determination if integrate)
             if insert_ranking:
-                for index, data in enumerate(data_list, start=1):
+                for index, data in enumerate(data_list, start=1 - skip_data_count):
                     if not skip_data_count < index:
                         txt = u''
                     else:
