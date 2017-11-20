@@ -236,7 +236,9 @@ class group_manager(db_base):
             if not isinstance(group_data_or_list, list):
                 group_data_or_list = [group_data_or_list]
 
-            if sum_msg_data is not None:
+            has_msg_sum_stats_int = int(sum_msg_data is not None)
+
+            if has_msg_sum_stats_int == 0:
                 group_data_or_list = [sum_msg_data] + group_data_or_list
 
             def format_string(data):
@@ -261,7 +263,7 @@ class group_manager(db_base):
                 text += stats_data.get_string()
                 return text
 
-            return PackedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
+            return PackedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking, has_msg_sum_stats_int)
         else:
             err = error.main.miscellaneous(u'沒有輸入群組資料。')
             return PackedStringResult([err], [err])

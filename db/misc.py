@@ -28,7 +28,7 @@ class PackedStringResult(PackedResult):
         super(PackedStringResult, self).__init__(separator.join(limited_list), separator.join(full_list))
 
     @staticmethod
-    def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None, separator='\n', insert_ranking=False):
+    def init_by_field(data_list, string_format_function, limit=None, append_first_list=None, no_result_text=None, separator='\n', insert_ranking=False, skip_data_count=0):
         has_result = False
 
         _list_limited = []
@@ -62,8 +62,14 @@ class PackedStringResult(PackedResult):
 
             # increase performance (duplicate flag determination if integrate)
             if insert_ranking:
+                skip_data_count -= 1
                 for index, data in enumerate(data_list, start=1):
-                    data = u'第{}名:\n{}'.format(index, string_format_function(data))
+                    if not skip_data_count < index:
+                        data = u''
+                    else:
+                        data = u'第{}名:\n{}'.format(index)
+
+                    data += string_format_function(data)
 
                     if limit is None or index < limit:
                         _list_limited.append(data)
