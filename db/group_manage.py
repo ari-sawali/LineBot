@@ -231,24 +231,34 @@ class group_manager(db_base):
         return self._cache_config.get(gid, None)
         
     @staticmethod
-    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True, insert_ranking=False):
+    def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True, insert_ranking=False, sum_msg_data=None):
         if group_data_or_list is not None and len(group_data_or_list) > 0:
             if not isinstance(group_data_or_list, list):
                 group_data_or_list = [group_data_or_list]
 
+            if sum_msg_data is not None:
+                group_data_or_list = [sum_msg_data] + group_data_or_list
+
             def format_string(data):
-                data = group_data(data)
-                gid = data.group_id
-
-                if gid.startswith('U'):
-                    activation_status = u'私訊頻道'
-                else:
-                    activation_status = unicode(data.config_type)
-
                 text = u''
-                if including_channel_id:
-                    text += u'頻道ID: {} 【{}】\n'.format(gid, activation_status)
-                text += msg_stats_data(data.message_track_record).get_string()
+
+                if isinstance(data, msg_stats_data):
+                    stats_data = data
+                else:
+                    data = group_data(data)
+                    gid = data.group_id
+
+                    if gid.startswith('U'):
+                        activation_status = u'私訊頻道'
+                    else:
+                        activation_status = unicode(data.config_type)
+
+                    if including_channel_id:
+                        text += u'頻道ID: {} 【{}】\n'.format(gid, activation_status)
+
+                    stats_data = msg_stats_data(data.message_track_record)
+
+                text += stats_data.get_string()
                 return text
 
             return PackedStringResult.init_by_field(group_data_or_list, format_string, limit, append_first_list, no_result_text, u'\n\n', insert_ranking)
