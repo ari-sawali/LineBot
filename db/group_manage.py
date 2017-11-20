@@ -156,7 +156,6 @@ class group_manager(db_base):
             u_permission = user_data.permission_level
         else:
             u_permission = bot.permission.USER
-        self._set_cache_permission(gid, uid, u_permission)
         return u_permission
         
     def get_user_owned_permissions(self, uid):
