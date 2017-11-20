@@ -599,7 +599,7 @@ class user_data_manager(db_base):
         if self._check_action_is_allowed(setter_uid, group_id, new_lv):
             updated_data = self.find_one_and_update({ user_data.USER_ID: target_uid, user_data.GROUP: group_id },
                                                     { '$set': { user_data.PERMISSION_LEVEL: new_lv } }, None, None, True, pymongo.ReturnDocument.AFTER)
-            self._set_cache(group_id, user_data.init_by_field(target_uid, new_lv))
+            self._set_cache(group_id, user_data.init_by_field(target_uid, group_id, new_lv))
         else:
             raise InsufficientPermissionError()
 
