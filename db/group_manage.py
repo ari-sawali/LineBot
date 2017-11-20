@@ -376,8 +376,8 @@ class group_data(dict_like_mapping):
         mod_arr = self[group_data.SPECIAL_USER][group_data.MODERATORS]
         ban_arr = self[group_data.SPECIAL_USER][group_data.RESTRICTS]
         text = u'管理員({}人):\n{}'.format(len(admin_arr), '\n'.join([data.user_id for data in admin_arr]))
-        text += u'\n副管({}人):\n{}'.format(len(admin_arr), '\n'.join([data.user_id for data in mod_arr]))
-        text += u'\n限制用戶({}人):\n{}'.format(len(admin_arr), '\n'.join([data.user_id for data in ban_arr]))
+        text += u'\n副管({}人):\n{}'.format(len(mod_arr), '\n'.join([data.user_id for data in mod_arr]))
+        text += u'\n限制用戶({}人):\n{}'.format(len(ban_arr), '\n'.join([data.user_id for data in ban_arr]))
 
         return text
 
