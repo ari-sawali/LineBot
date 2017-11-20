@@ -88,7 +88,7 @@ class webpage_manager(object):
 
     @staticmethod
     def proc_str_to_render(s):
-        return s.split('\n')
+        return s.replace(' ', '&nbsp;').split('\n')
 
     @staticmethod
     def html_render_error_list(boot_up, error_dict):
