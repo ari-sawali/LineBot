@@ -3,7 +3,7 @@
 {% block content -%}
 <p>
     {% for Content in Contents -%}
-    {{ Content|e }}<br />
+    {{ Content|safe|e }}<br />
     {%- endfor %}
 </p>
 {%- endblock %}
