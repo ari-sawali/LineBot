@@ -62,7 +62,6 @@ class PackedStringResult(PackedResult):
 
             # increase performance (duplicate flag determination if integrate)
             if insert_ranking:
-                skip_data_count -= 1
                 for index, data in enumerate(data_list, start=1):
                     if not skip_data_count < index:
                         txt = u''
