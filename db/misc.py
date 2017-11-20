@@ -67,7 +67,7 @@ class PackedStringResult(PackedResult):
                     if not skip_data_count < index:
                         data = u''
                     else:
-                        data = u'第{}名:\n{}'.format(index)
+                        data = u'第{}名:\n'.format(index)
 
                     data += string_format_function(data)
 
