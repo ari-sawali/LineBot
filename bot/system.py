@@ -333,13 +333,13 @@ class imgur_api_wrapper(object):
                 text += u'連結IP: {}\n'.format(ip_addr)
                 text += u'IP可用額度: {} ({:.2%})\n'.format(self.user_remaining, float(self.user_remaining) / float(self.user_limit))
                 text += u'IP上限額度: {}\n'.format(self.user_limit)
-                text += u'IP積分重設時間: {} (UTC+8)\n\n'.format((self.user_reset + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S'))
+                text += u'IP積分重設時間: {} (UTC+8)\n\n'.format((float(self.user_reset) + timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S'))
 
             text += u'目前API擁有額度: {} ({:.2%})\n'.format(self.client_remaining, float(self.client_remaining) / float(self.client_limit))
             text += u'今日API上限額度: {}'.format(self.client_limit)
         except (ValueError, TypeError):
             import json
-            text = json.dump(self._imgur_api.credits)
+            text = json.dumps(self._imgur_api.credits)
 
         return text
 
