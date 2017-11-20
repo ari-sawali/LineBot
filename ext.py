@@ -53,6 +53,8 @@ def object_to_json(o, level=0, indent=4, space=" ", newline="\n"):
         ret += "[" + ','.join(map(str, o.flatten().tolist())) + "]"
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
         ret += "[" + ','.join(map(lambda x: '%.7g' % x, o.flatten().tolist())) + "]"
+    elif isinstance(o, bson.timestamp.Timestamp):
+        ret += o
     elif o is None:
         ret += 'null'
     else:

@@ -6,13 +6,13 @@
 </p>
 <p>
     {% for description_txt, package_url, sticker_url in Data -%}
-    <a href="{{ package_url }}">{{ description_txt|safe }}</a><br/>
-    <img src="{{ sticker_url|safe }}" style="max-width: 200px; max-height: 200px;"/><br />
+    <a href="{{ package_url }}">{{ description_txt|e }}</a><br/>
+    <img src="{{ sticker_url|e }}" style="max-width: 200px; max-height: 200px;"/><br />
     {%- endfor %}
 </p>
 <p>
     {% for foot in Foot -%}
-    {{ foot|safe }}<br />
+    {{ foot|e }}<br />
     {%- endfor %}
 </p>
 {%- endblock %}
