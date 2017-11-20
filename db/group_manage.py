@@ -238,13 +238,12 @@ class group_manager(db_base):
 
             has_msg_sum_stats_int = int(sum_msg_data is not None)
 
-            if has_msg_sum_stats_int == 0:
+            if has_msg_sum_stats_int == 1:
                 group_data_or_list = [sum_msg_data] + group_data_or_list
 
             def format_string(data):
                 text = u''
 
-                print type(data)
                 if isinstance(data, msg_stats_data):
                     stats_data = data
                 else:
