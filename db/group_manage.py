@@ -151,17 +151,13 @@ class group_manager(db_base):
         if uid == self._ADMIN_UID:
             return bot.permission.BOT_ADMIN
 
-        u_permission = self._get_cache_permission(gid, uid)
-        if u_permission is not None:
-            return u_permission
+        user_data = self._permission_manager.get_user_data(gid, uid)
+        if user_data is not None:
+            u_permission = user_data.permission_level
         else:
-            user_data = self._permission_manager.get_user_data(gid, uid)
-            if user_data is not None:
-                u_permission = user_data.permission_level
-            else:
-                u_permission = bot.permission.USER
-            self._set_cache_permission(gid, uid, u_permission)
-            return u_permission
+            u_permission = bot.permission.USER
+        self._set_cache_permission(gid, uid, u_permission)
+        return u_permission
         
     def get_user_owned_permissions(self, uid):
         """This will not use cache."""
@@ -234,24 +230,6 @@ class group_manager(db_base):
     def _get_cache_config(self, gid):
         """Return none if key not exists"""
         return self._cache_config.get(gid, None)
-
-    def _set_cache_permission(self, gid, uid, user_permission):
-        if not isinstance(user_permission, permission):
-            user_permission = permission(user_permission)
-
-        group_permission_data = self._cache_permission.get(gid, None)
-        if group_permission_data is None:
-            self._cache_permission[gid] = { uid: user_permission }
-        else:
-            self._cache_permission[gid][uid] = user_permission
-    
-    def _get_cache_permission(self, gid, uid):
-        """Return none if key not exists"""
-        group_permission_data = self._cache_permission.get(gid, None)
-        if group_permission_data is None:
-            return None
-        else:
-            return group_permission_data.get(uid, None)
         
     @staticmethod
     def message_track_string(group_data_or_list, limit=None, append_first_list=None, no_result_text=None, including_channel_id=True, insert_ranking=False):

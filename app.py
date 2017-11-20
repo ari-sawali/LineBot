@@ -194,10 +194,6 @@ def handle_text_message(event):
     src = event.source
 
     try:
-        s = event.message.text.split('\n')
-        if bot.line_api_wrapper.is_valid_user_id(s[0]):
-            event.source.sender_id = s[0]
-            event.source.user_id = s[0]
         global_handler.handle_text(event)
     except Exception as ex:
         error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
