@@ -65,7 +65,7 @@ class PackedStringResult(PackedResult):
             # increase performance (duplicate flag determination if integrate)
             if insert_ranking:
                 for index, data in enumerate(data_list, start=1 - skip_data_count):
-                    if not skip_data_count < index:
+                    if not skip_data_count <= index:
                         txt = u''
                     else:
                         txt = u'第{}名:\n'.format(index)
