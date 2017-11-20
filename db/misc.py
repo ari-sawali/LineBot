@@ -65,24 +65,24 @@ class PackedStringResult(PackedResult):
                 skip_data_count -= 1
                 for index, data in enumerate(data_list, start=1):
                     if not skip_data_count < index:
-                        data = u''
+                        txt = u''
                     else:
-                        data = u'第{}名:\n'.format(index)
+                        txt = u'第{}名:\n'.format(index)
 
-                    data += string_format_function(data)
+                    txt += string_format_function(data)
 
                     if limit is None or index < limit:
-                        _list_limited.append(data)
+                        _list_limited.append(txt)
 
-                    _list_full.append(data)
+                    _list_full.append(txt)
             else:
                 for index, data in enumerate(data_list):
-                    data = string_format_function(data)
+                    txt = string_format_function(data)
 
                     if limit is None or index < limit:
-                        _list_limited.append(data)
+                        _list_limited.append(txt)
 
-                    _list_full.append(data)
+                    _list_full.append(txt)
 
             if limit is not None:
                 data_left = count - limit
