@@ -55,7 +55,7 @@ def object_to_json(o, level=0, indent=4, space=" ", newline="\n"):
     elif isinstance(o, numpy.ndarray) and numpy.issubdtype(o.dtype, numpy.inexact):
         ret += "[" + ','.join(map(lambda x: '%.7g' % x, o.flatten().tolist())) + "]"
     elif isinstance(o, bson.timestamp.Timestamp):
-        ret += time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(o) / 1000))
+        ret += o.as_datetime().strftime('%Y-%m-%d %H:%M:%S.%f')
     elif o is None:
         ret += 'null'
     else:
