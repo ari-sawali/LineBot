@@ -244,9 +244,10 @@ class group_manager(db_base):
             def format_string(data):
                 text = u''
 
-                if isinstance(data, msg_stats_data):
-                    stats_data = data
-                else:
+                print type(data)
+
+
+                try:
                     data = group_data(data)
                     gid = data.group_id
 
@@ -259,6 +260,8 @@ class group_manager(db_base):
                         text += u'頻道ID: {} 【{}】\n'.format(gid, activation_status)
 
                     stats_data = msg_stats_data(data.message_track_record)
+                except ValueError:
+                    stats_data = data
 
                 text += stats_data.get_string()
                 return text
