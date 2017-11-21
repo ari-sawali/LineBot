@@ -219,6 +219,7 @@ class global_msg_handle(object):
 
         full_text = event.message.text
         calc_result = self._string_calculator.calculate(full_text, self._system_config.get(db.config_data.CALCULATOR_DEBUG), event.reply_token)
+        print calc_result.token
         if calc_result.success or calc_result.timeout:
             self._system_stats.extend_function_used(db.extend_function_category.BASIC_CALCUALTE)
 

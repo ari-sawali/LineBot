@@ -69,6 +69,8 @@ class text_calculator(object):
                 print result_data.get_debug_text().encode('utf-8')
 
         result_data.token = token
+        print token
+        print result_data.token
         return result_data
 
     def _get_calculate_proc(self, type_enum, args_tuple):
