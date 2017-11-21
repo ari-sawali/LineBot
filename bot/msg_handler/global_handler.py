@@ -5,7 +5,7 @@ from linebot.models import (
 )
 
 from .text_msg import text_msg_handler, game_msg_handler, split
-import db, bot, error
+import db, bot, tool, error
 
 class global_msg_handle(object):
     SPLITTER = '\n'
@@ -218,8 +218,7 @@ class global_msg_handle(object):
         """Return whether message has been replied."""
 
         full_text = event.message.text
-        calc_result = self._string_calculator.calculate(full_text, self._system_config.get(db.config_data.CALCULATOR_DEBUG), event.reply_token)
-        print calc_result.token
+        calc_result = self._string_calculator.calculate(full_text, self._system_config.get(db.config_data.CALCULATOR_DEBUG), False, tool.calc_type.NORMAL, event.reply_token)
         if calc_result.success or calc_result.timeout:
             self._system_stats.extend_function_used(db.extend_function_category.BASIC_CALCUALTE)
 
