@@ -23,7 +23,7 @@ class text_calculator(object):
         self._queue = MultiQueue()
         self._timeout = timeout
 
-    def calculate(self, text, debug=False, sympy_calc=False, calculation_type=None):
+    def calculate(self, text, debug=False, sympy_calc=False, calculation_type=None, token=None):
         """
         Set calc_type to None to use auto detect.
 
@@ -68,6 +68,7 @@ class text_calculator(object):
             if debug:
                 print result_data.get_debug_text().encode('utf-8')
 
+        result_data.token = token
         return result_data
 
     def _get_calculate_proc(self, type_enum, args_tuple):
@@ -271,6 +272,7 @@ class calc_result_data(object):
         self._success = False
         self._over_length = False
         self._latex_avaliable = latex_avaliable
+        self._token = None # Prevent Data reply in the wrong chatting instance
 
     @property
     def formula_str(self):
@@ -352,6 +354,14 @@ class calc_result_data(object):
     @over_length.setter
     def over_length(self, value):
         self._over_length = value
+
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        self._token = value
 
     def auto_record_time(self, start_time):
         if self._calc_time == -1.0:
