@@ -850,12 +850,18 @@ class text_msg_handler(object):
             else:
                 return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
 
-            if any(last_item_cat == type_cat for type_cat in (bot.system_data_category.LAST_STICKER, bot.system_data_category.LAST_PAIR_ID, bot.system_data_category.LAST_PIC_SHA)):
+            if any(last_item_cat == type_cat for type_cat in (bot.system_data_category.LAST_STICKER, bot.system_data_category.LAST_PIC_SHA)):
                 action_dict = {}
                 for item in last_array:
                     item = str(item)
                     action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
                     action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
+            elif last_item_cat == bot.system_data_category.LAST_PAIR_ID:
+                action_dict = {}
+                for item in last_array:
+                    item = str(item)
+                    action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(item)
+                    action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(item)
             elif last_item_cat == bot.system_data_category.LAST_UID:
                 action_dict = { 
                     '使用者{}製作'.format(uid[0:8]): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid for uid in last_array

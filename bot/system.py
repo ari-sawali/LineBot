@@ -231,6 +231,7 @@ class line_api_wrapper(object):
         """
         MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
+        MAX_LABEL_TEXT_LENGTH = 17
 
         data_dict = [(key, value) for key, value in data_dict.iteritems()]
 
@@ -248,7 +249,7 @@ class line_api_wrapper(object):
                     d.append((u'(空)', u'小水母'))
 
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
-            action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
+            action_list = [MessageTemplateAction(label=simplified_string(repr_text, MAX_LABEL_TEXT_LENGTH), text=action_text) for repr_text, action_text in d]
 
             column_list.append(CarouselColumn(text=explain_text, title=title_unicode, actions=action_list))
 
@@ -391,6 +392,14 @@ def string_can_be_float(s):
         return True
     except ValueError:
         return False
+
+def simplified_string(s, max_length=8):
+    """max_length excludes ..."""
+    s = s.replace('\n', '\\n')
+    if len(s) > (max_length + 3):
+        s = s[:max_length] + '...'
+    return s
+
 
 class UserProfileNotFoundError(Exception):
     def __init__(self, *args):
