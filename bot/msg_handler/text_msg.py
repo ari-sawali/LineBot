@@ -116,6 +116,9 @@ class text_msg_handler(object):
         if bot.line_api_wrapper.is_valid_room_group_id(remote_gid):
             config = self._group_manager.get_group_config_type(remote_gid)
 
+        print remote_gid
+        print params
+
         if config is not None and config == db.config_type.ALL:
             manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
         else:
