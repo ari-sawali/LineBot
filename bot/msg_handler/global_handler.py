@@ -115,13 +115,11 @@ class global_msg_handle(object):
         
         self._line_api_wrapper.reply_message(token, rep_list) 
 
-    def _handle_auto_ban(self, event):
+    def _handle_auto_ban(self, event, content, content_type):
         token = event.reply_token
-        full_text = event.message.text
-        
         uid = bot.line_api_wrapper.source_user_id(event.source)
 
-        banned = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.TEXT)
+        banned = self._loop_preventer.rec_last_content_and_get_status(uid, content, db.msg_type.TEXT)
 
         if banned:
             pw = self._loop_preventer.get_pw(uid)
@@ -131,6 +129,10 @@ class global_msg_handle(object):
                 unlock_result = self._loop_preventer.unlock(uid, full_text)
                 if unlock_result:
                     self._line_api_wrapper.reply_message_text(token, u'解鎖成功。')
+                else:
+                    return False
+
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
             return True
 
         return False
@@ -300,7 +302,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event)
+        terminate_2 = self._handle_auto_ban(event, full_text, db.msg_type.TEXT)
 
         if terminate_2:
             print 'terminate 2'
@@ -322,6 +324,7 @@ class global_msg_handle(object):
 
         if terminate_3:
             print 'terminate 3'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
 
         #########################################
@@ -455,13 +458,14 @@ class global_msg_handle(object):
 
         if terminate_1:
             print 'terminate 1'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
 
         #####################################
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event)
+        terminate_2 = self._handle_auto_ban(event, sticker_id, db.msg_type.STICKER)
 
         if terminate_2:
             print 'terminate 2'
@@ -571,13 +575,14 @@ class global_msg_handle(object):
 
         if terminate_1:
             print 'terminate 1'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
 
         #####################################
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event)
+        terminate_2 = self._handle_auto_ban(event, image_sha, db.msg_type.PICTURE)
 
         if terminate_2:
             print 'terminate 2'
