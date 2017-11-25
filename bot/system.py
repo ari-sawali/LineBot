@@ -123,7 +123,7 @@ class infinite_loop_prevent_data(object):
 
     @property
     def banned(self):
-        return self._repeat_count > self._max_loop_count
+        return self._repeat_count >= self._max_loop_count
 
     @property
     def unlock_noticed(self):
