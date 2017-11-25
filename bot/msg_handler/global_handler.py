@@ -125,13 +125,13 @@ class global_msg_handle(object):
         if banned:
             pw = self._loop_preventer.get_pw(uid)
             if pw is not None:
+                self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
                 self._line_api_wrapper.reply_message_text(token, u'因洗板疑慮，已鎖定使用者對小水母的所有操作。輸入: {} 以解鎖。'.format(pw))
             else:
                 unlock_result = self._loop_preventer.unlock(uid, content)
                 if unlock_result:
+                    self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
                     self._line_api_wrapper.reply_message_text(token, u'解鎖成功。')
-                else:
-                    return False
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
             return True
