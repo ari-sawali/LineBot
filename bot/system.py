@@ -93,7 +93,7 @@ class infinite_loop_preventer(object):
         if uid in self._last_message:
             data = self._last_message[uid]
             data.unlock_noticed = False
-            return data.unlock()
+            return data.unlock(password)
         else:
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
