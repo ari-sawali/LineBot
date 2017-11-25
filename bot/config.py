@@ -28,6 +28,7 @@ class config_category_sticker_ranking(ext.EnumWithName):
 
 class config_category_system(ext.EnumWithName):
     DUPLICATE_CONTENT_BAN_COUNT = 0, 'DuplicateContentBanCount'
+    UNLOCK_PASSWORD_LENGTH = 1, 'UnlockPasswordLength'
 
 class config_manager(object):
     def __init__(self, file_path):

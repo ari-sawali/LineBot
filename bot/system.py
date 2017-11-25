@@ -8,7 +8,7 @@ from linebot import exceptions
 import hashlib
 import operator
 import traceback
-import error
+import error, tool
 
 from linebot.models import (
     SourceGroup, SourceRoom, SourceUser,
@@ -64,9 +64,10 @@ class system_data(object):
         return self._boot_up
 
 class infinite_loop_preventer(object):
-    def __init__(self, max_loop_count):
+    def __init__(self, max_loop_count, unlock_pw_length):
         self._last_message = {}
         self._max_loop_count = max_loop_count
+        self._unlock_pw_length = unlock_pw_length
 
     def rec_last_content_and_get_status(self, uid, content, msg_type):
         if uid in self._last_message:
@@ -75,17 +76,38 @@ class infinite_loop_preventer(object):
                 return True
             self._last_message[uid].set_last_content(content, msg_type)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, content)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, content)
 
         return self._last_message[uid].banned
 
+    def get_pw(self, uid):
+        if uid in self._last_message:
+            data = self._last_message[uid]
+            data.unlock_noticed = True
+            return data.generate_pw()
+        else:
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
+
+    def unlock(self, uid, password):
+        """Return result"""
+        if uid in self._last_message:
+            data = self._last_message[uid]
+            data.unlock_noticed = False
+            return data.unlock()
+        else:
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
+
 class infinite_loop_prevent_data(object):
-    def __init__(self, max_loop_count, uid, init_content=None):
+    def __init__(self, max_loop_count, uid, unlock_pw_length, init_content=None):
         self._uid = uid
         self._last_content = init_content
-        self._repeat_count = 0
+        self._repeat_count = int(init_content is not None)
         self._msg_type = None
         self._max_loop_count = max_loop_count
+
+        self._unlock_noticed = False
+        self._unlock_key = None
+        self._unlock_key_length = unlock_pw_length
 
     def set_last_content(self, content, msg_type):
         self._msg_type = msg_type
@@ -102,6 +124,29 @@ class infinite_loop_prevent_data(object):
     @property
     def banned(self):
         return self._repeat_count > self._max_loop_count
+
+    @property
+    def unlock_noticed(self):
+        return self._unlock_noticed
+
+    @unlock_noticed.setter
+    def unlock_noticed(self, value):
+        self._unlock_noticed = value
+
+    def generate_pw(self):
+        """if generated, return None"""
+        if self._unlock_key is None:
+            self._unlock_key = tool.random_drawer.generate_random_string(self._unlock_key_length)
+            return self._unlock_key
+
+    def unlock(self, password):
+        """Clear password if success. Return result of unlocking."""
+        if password == self._unlock_key:
+            self._repeat_count = 0
+            self._unlock_key = None
+            return True
+
+        return False
 
 class line_event_source_type(ext.EnumWithName):
     USER = 0, '私訊'

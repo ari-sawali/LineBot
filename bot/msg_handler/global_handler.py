@@ -26,7 +26,7 @@ class global_msg_handle(object):
         self._string_calculator = self._txt_handle._string_calculator 
         self._get_kwd_instance = self._txt_handle._get_kwd_instance 
         self._stk_rec = self._txt_handle._stk_rec
-        self._loop_preventer = bot.infinite_loop_preventer(self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.DUPLICATE_CONTENT_BAN_COUNT))
+        self._loop_preventer = bot.infinite_loop_preventer(self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.DUPLICATE_CONTENT_BAN_COUNT), self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.UNLOCK_PASSWORD_LENGTH))
         
         self._rps_data = self._game_handle._rps_holder
 
@@ -114,6 +114,26 @@ class global_msg_handle(object):
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
         
         self._line_api_wrapper.reply_message(token, rep_list) 
+
+    def _handle_auto_ban(self, event):
+        token = event.reply_token
+        full_text = event.message.text
+        
+        uid = bot.line_api_wrapper.source_user_id(event.source)
+
+        banned = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.TEXT)
+
+        if banned:
+            pw = self._loop_preventer.get_pw(uid)
+            if pw is not None:
+                self._line_api_wrapper.reply_message_text(token, u'因洗板疑慮，已鎖定使用者對小水母的所有操作。輸入: {} 以解鎖。'.format(pw))
+            else:
+                unlock_result = self._loop_preventer.unlock(uid, full_text)
+                if unlock_result:
+                    self._line_api_wrapper.reply_message_text(token, u'解鎖成功。')
+            return True
+
+        return False
 
     def _print_intercepted(self, event, display_user_name=False):
         intercept = self._system_config.get(db.config_data.INTERCEPT)
@@ -280,7 +300,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, full_text, db.msg_type.TEXT)
+        terminate_2 = self._handle_auto_ban(event)
 
         if terminate_2:
             print 'terminate 2'
@@ -441,7 +461,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, sticker_id, db.msg_type.STICKER)
+        terminate_2 = self._handle_auto_ban(event)
 
         if terminate_2:
             print 'terminate 2'
@@ -557,7 +577,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._loop_preventer.rec_last_content_and_get_status(uid, image_sha, db.msg_type.PICTURE)
+        terminate_2 = self._handle_auto_ban(event)
 
         if terminate_2:
             print 'terminate 2'
