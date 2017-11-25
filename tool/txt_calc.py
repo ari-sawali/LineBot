@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from multiprocessing import Process, Queue as MultiQueue
+import Queue
 
 from enum import Enum
 import re
