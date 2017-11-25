@@ -117,7 +117,8 @@ class global_msg_handle(object):
 
     def _handle_auto_ban(self, event, content, content_type):
         token = event.reply_token
-        uid = bot.line_api_wrapper.source_user_id(event.source)
+        src = event.source
+        uid = bot.line_api_wrapper.source_user_id(src)
 
         banned = self._loop_preventer.rec_last_content_and_get_status(uid, content, db.msg_type.TEXT)
 
@@ -126,7 +127,7 @@ class global_msg_handle(object):
             if pw is not None:
                 self._line_api_wrapper.reply_message_text(token, u'因洗板疑慮，已鎖定使用者對小水母的所有操作。輸入: {} 以解鎖。'.format(pw))
             else:
-                unlock_result = self._loop_preventer.unlock(uid, full_text)
+                unlock_result = self._loop_preventer.unlock(uid, content)
                 if unlock_result:
                     self._line_api_wrapper.reply_message_text(token, u'解鎖成功。')
                 else:
