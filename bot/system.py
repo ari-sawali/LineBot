@@ -163,7 +163,8 @@ class infinite_loop_prevent_data(object):
         self._message_record.append(new_data)
 
         print new_data.__dict__
-        print last_data.__dict__
+        if last_data is not None:
+            print last_data.__dict__
         print self._repeat_count
         if new_data == last_data:
             self._repeat_count += 1
