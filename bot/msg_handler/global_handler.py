@@ -125,7 +125,7 @@ class global_msg_handle(object):
 
         if banned:
             pw_notice_text = self._loop_preventer.get_pw_notice_text(uid)
-            if pw is not None:
+            if pw_notice_text is not None:
                 self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
                 self._line_api_wrapper.reply_message_text(token, pw_notice_text)
             else:
@@ -135,6 +135,7 @@ class global_msg_handle(object):
                     self._line_api_wrapper.reply_message_text(token, unlock_result)
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
+
             return True
 
         return False
