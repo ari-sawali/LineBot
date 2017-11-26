@@ -121,7 +121,7 @@ class global_msg_handle(object):
         uid = bot.line_api_wrapper.source_user_id(src)
         cid = bot.line_api_wrapper.source_channel_id(src)
 
-        banned = self._loop_preventer.rec_last_content_and_get_status(uid, cid, content, db.msg_type.TEXT)
+        banned = self._loop_preventer.rec_last_content_and_get_status(uid, cid, content, content_type)
 
         if banned:
             pw_notice_text = self._loop_preventer.get_pw_notice_text(uid, self._line_api_wrapper)
