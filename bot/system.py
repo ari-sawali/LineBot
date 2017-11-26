@@ -186,8 +186,8 @@ class infinite_loop_prevent_data(object):
         cid_set = Set([])
         for msg_pack in self._message_record:
             content_set.add(msg_pack.content)
-            msgtype_set.add(msg_pack.msg_type)
-            timestamp_set.add(msg_pack.timestamp)
+            msgtype_set.add(unicode(msg_pack.msg_type))
+            timestamp_set.add(msg_pack.timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
             cid_set.add(msg_pack.channel_id)
 
         return u'發送頻道ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(u'、'.join(cid_set), u'、'.join(content_set), u'、'.join(msgtype_set), u'、'.join(timestamp_set))
