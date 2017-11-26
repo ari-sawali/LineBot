@@ -110,11 +110,11 @@ class infinite_loop_prevent_data(object):
 
     def __init__(self, max_loop_count, uid, unlock_pw_length, init_cid=None, init_content=None, init_content_type=db.msg_type.TEXT):
         self._uid = uid
+        self._max_loop_count = max_loop_count
         self._repeat_count = int(init_content is not None)
         self._message_record = deque(maxlen=max_loop_count)
         if self._repeat_count == 1:
             self.rec_content(init_cid, init_content, init_content_type)
-        self._max_loop_count = max_loop_count
 
         self._unlock_noticed = False
         self._unlock_key = None
