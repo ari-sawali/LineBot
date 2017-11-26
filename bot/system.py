@@ -153,7 +153,12 @@ class infinite_loop_prevent_data(object):
 
     def rec_content(self, cid, content, msg_type):
         new_data = message_pack(content, cid, msg_type)
-        last_data = self._message_record[self._max_loop_count - 1]
+
+        msg_rec_count = len(self._message_record)
+        if msg_rec_count > 0:
+            last_data = self._message_record[msg_rec_count - 1]
+        else:
+            last_data = None 
 
         self._message_record.append(new_data)
 
