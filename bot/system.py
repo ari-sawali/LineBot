@@ -162,6 +162,8 @@ class infinite_loop_prevent_data(object):
 
         self._message_record.append(new_data)
 
+        print new_data
+        print last_data
         if new_data == last_data:
             self._repeat_count += 1
         else:
