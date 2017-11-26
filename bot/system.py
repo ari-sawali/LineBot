@@ -76,7 +76,7 @@ class infinite_loop_preventer(object):
                 return True
             self._last_message[uid].rec_content(cid, content, msg_type)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, content, msg_type)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, cid, content, msg_type)
 
         return self._last_message[uid].banned
 
@@ -100,7 +100,7 @@ class infinite_loop_preventer(object):
             if unlock_result:
                 return u'使用者UUID: {}\n解鎖成功。'.format(uid)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, password)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
 class infinite_loop_prevent_data(object):
     CONTENT = 'cont'
@@ -108,12 +108,12 @@ class infinite_loop_prevent_data(object):
     CHANNEL_ID = 'cid'
     TIMESTAMP = 'ts'
 
-    def __init__(self, max_loop_count, uid, unlock_pw_length, init_content=None, init_content_type=db.msg_type.TEXT):
+    def __init__(self, max_loop_count, uid, unlock_pw_length, init_cid=None, init_content=None, init_content_type=db.msg_type.TEXT):
         self._uid = uid
         self._repeat_count = int(init_content is not None)
         self._message_record = deque(maxlen=max_loop_count)
         if self._repeat_count == 1:
-            self.rec_content(init_content, init_content_type)
+            self.rec_content(init_cid, init_content, init_content_type)
         self._max_loop_count = max_loop_count
 
         self._unlock_noticed = False
