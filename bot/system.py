@@ -80,14 +80,23 @@ class infinite_loop_preventer(object):
 
         return self._last_message[uid].banned
 
-    def get_pw_notice_text(self, uid):
+    def get_all_banned_str(self):
+        banned_dict = dict((k, v) for k, v in self._last_message if v.banned)
+        if len(banned_dict) < 1:
+            return u'(無)'
+        output = []
+        for k, v in banned_dict.iteritems():
+            output.append(u'UUID: {}\n驗證碼: {}\n訊息紀錄:\n{}'.format(k, v.unlock_key, v.rec_content_str()))
+        return u'\n==========\n'.join(output)
+
+    def get_pw_notice_text(self, uid, line_api_wrapper):
         """Return None if pw is generated. Else, return str."""
         if uid in self._last_message:
             data = self._last_message[uid]
             data.unlock_noticed = True
             pw = data.generate_pw()
             if pw is not None:
-                return u'因洗板、濫用小水母疑慮，已鎖定對小水母的所有操作。請使用者UUID: {} 輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄: {}'.format(uid, pw, data.rec_content_str())
+                return u'目標: {} ({})\n\n因連續發送相同的訊息內容、訊息文字{}次，故有洗板、濫用小水母之疑慮。小水母已鎖定使用者的所有操作。請輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄:\n{}'.format(uid, line_api_wrapper.profile_name(uid), self._max_loop_count, pw, data.rec_content_str())
         else:
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
@@ -129,6 +138,10 @@ class infinite_loop_prevent_data(object):
         return self._repeat_count >= self._max_loop_count
 
     @property
+    def unlock_key(self):
+        return self._unlock_key
+
+    @property
     def unlock_noticed(self):
         return self._unlock_noticed
 
@@ -162,10 +175,6 @@ class infinite_loop_prevent_data(object):
 
         self._message_record.append(new_data)
 
-        print new_data.__dict__
-        if last_data is not None:
-            print last_data.__dict__
-        print self._repeat_count
         if new_data == last_data:
             self._repeat_count += 1
         else:
@@ -180,7 +189,7 @@ class message_pack(object):
         self._content = content
         self._channel_id = channel_id
         self._msg_type = msg_type
-        self._timestamp = datetime.now()
+        self._timestamp = datetime.now() + timedelta(hours=8)
 
     def __eq__(self, other):
         if other is None:

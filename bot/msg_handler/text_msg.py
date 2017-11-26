@@ -29,6 +29,7 @@ class text_msg_handler(object):
         self._system_stats = db.system_statistics(mongo_db_uri)
         self._command_manager = command_manager
         self._stk_rec = db.sticker_recorder(mongo_db_uri)
+        self._loop_prev = bot.infinite_loop_preventer(self._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.DUPLICATE_CONTENT_BAN_COUNT), self._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.UNLOCK_PASSWORD_LENGTH))
 
         self._kwd_public = db.group_dict_manager(mongo_db_uri, config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.CREATE_DUPLICATE), config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.REPEAT_CALL))
         self._kwd_global = db.word_dict_global(mongo_db_uri)
@@ -583,6 +584,9 @@ class text_msg_handler(object):
         elif category == 'EXC':
             usage_dict = self._oxr_client.get_usage_dict()
             text = self._oxr_client.usage_str(usage_dict)
+        elif category == 'BAN':
+            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}'.format(self._system_data.boot_up)
+            text += self._loop_prev.get_all_banned_str()
         else:
             uid = category
 

@@ -26,7 +26,7 @@ class global_msg_handle(object):
         self._string_calculator = self._txt_handle._string_calculator 
         self._get_kwd_instance = self._txt_handle._get_kwd_instance 
         self._stk_rec = self._txt_handle._stk_rec
-        self._loop_preventer = bot.infinite_loop_preventer(self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.DUPLICATE_CONTENT_BAN_COUNT), self._txt_handle._config_manager.getint(bot.config_category.SYSTEM, bot.config_category_system.UNLOCK_PASSWORD_LENGTH))
+        self._loop_preventer = self._txt_handle._loop_prev
         
         self._rps_data = self._game_handle._rps_holder
 
@@ -124,7 +124,7 @@ class global_msg_handle(object):
         banned = self._loop_preventer.rec_last_content_and_get_status(uid, cid, content, db.msg_type.TEXT)
 
         if banned:
-            pw_notice_text = self._loop_preventer.get_pw_notice_text(uid)
+            pw_notice_text = self._loop_preventer.get_pw_notice_text(uid, self._line_api_wrapper)
             if pw_notice_text is not None:
                 self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
                 self._line_api_wrapper.reply_message_text(token, pw_notice_text)
