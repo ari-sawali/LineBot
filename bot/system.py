@@ -179,6 +179,8 @@ class message_pack(object):
         self._timestamp = datetime.now()
 
     def __eq__(self, other):
+        if other is None:
+            return False
         return self.__dict__ == other.__dict__
 
     def get_repr_str(self):
