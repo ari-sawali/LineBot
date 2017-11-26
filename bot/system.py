@@ -96,7 +96,7 @@ class infinite_loop_preventer(object):
             data.unlock_noticed = True
             pw = data.generate_pw()
             if pw is not None:
-                return u'目標: {} ({})\n\n因連續發送相同的訊息內容、訊息文字{}次，故有洗板、濫用小水母之疑慮。小水母已鎖定使用者的所有操作。請輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄:\n{}'.format(uid, line_api_wrapper.profile_name(uid), self._max_loop_count, pw, data.rec_content_str())
+                return u'目標: {} ({})\n\n因連續發送相同的訊息內容、訊息文字{}次，有洗板、濫用小水母之疑慮，故小水母已鎖定使用者的所有操作。請輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄:\n{}'.format(uid, line_api_wrapper.profile_name(uid), self._max_loop_count, pw, data.rec_content_str())
         else:
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
