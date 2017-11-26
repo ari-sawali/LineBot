@@ -69,53 +69,56 @@ class infinite_loop_preventer(object):
         self._max_loop_count = max_loop_count
         self._unlock_pw_length = unlock_pw_length
 
-    def rec_last_content_and_get_status(self, uid, content, msg_type):
+    def rec_last_content_and_get_status(self, uid, cid, content, msg_type):
         if uid in self._last_message:
             banned = self._last_message[uid].banned
             if banned:
                 return True
-            self._last_message[uid].set_last_content(content, msg_type)
+            self._last_message[uid].rec_content(cid, content, msg_type)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, content)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, content, msg_type)
 
         return self._last_message[uid].banned
 
-    def get_pw(self, uid):
+    def get_pw_notice_text(self, uid):
+        """Return None if pw is generated. Else, return str."""
         if uid in self._last_message:
             data = self._last_message[uid]
             data.unlock_noticed = True
-            return data.generate_pw()
+            pw = data.generate_pw()
+            if pw is not None:
+                return u'因洗板、濫用小水母疑慮，已鎖定對小水母的所有操作。請使用者UUID: {} 輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄: {}'.format(uid, pw, data.rec_content_str())
         else:
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
     def unlock(self, uid, password):
-        """Return result"""
+        """Return str if unlocked. Else, return None."""
         if uid in self._last_message:
             data = self._last_message[uid]
             data.unlock_noticed = False
-            return data.unlock(password)
+            unlock_result = data.unlock(password)
+            if unlock_result:
+                return u'使用者UUID: {}\n解鎖成功。'.format(uid)
         else:
-            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
+            self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length, password)
 
 class infinite_loop_prevent_data(object):
-    def __init__(self, max_loop_count, uid, unlock_pw_length, init_content=None):
+    CONTENT = 'cont'
+    MESSAGE_TYPE = 'typ'
+    CHANNEL_ID = 'cid'
+    TIMESTAMP = 'ts'
+
+    def __init__(self, max_loop_count, uid, unlock_pw_length, init_content=None, init_content_type=db.msg_type.TEXT):
         self._uid = uid
-        self._last_content = init_content
         self._repeat_count = int(init_content is not None)
-        self._msg_type = None
+        self._message_record = deque(maxlen=max_loop_count)
+        if self._repeat_count == 1:
+            self.rec_content(init_content, init_content_type)
         self._max_loop_count = max_loop_count
 
         self._unlock_noticed = False
         self._unlock_key = None
         self._unlock_key_length = unlock_pw_length
-
-    def set_last_content(self, content, msg_type):
-        self._msg_type = msg_type
-        if self._last_content == content and self._msg_type == msg_type:
-            self._repeat_count += 1
-        else:
-            self._repeat_count = 0
-            self._last_content = content
 
     @property
     def user_id(self):
@@ -147,6 +150,50 @@ class infinite_loop_prevent_data(object):
             return True
 
         return False
+
+    def rec_content(self, cid, content, msg_type):
+        new_data = message_pack(content, cid, msg_type)
+        last_data = self._message_record[self._max_loop_count - 1]
+
+        self._message_record.append(new_data)
+
+        if new_data == last_data:
+            self._repeat_count += 1
+        else:
+            self._repeat_count = 0
+
+    def rec_content_str(self):
+        l = [msg_pack.get_repr_str() for msg_pack in self._message_record]
+        return u'\n\n'.join(l)
+
+class message_pack(object):
+    def __init__(self, content, channel_id, msg_type=db.msg_type.TEXT):
+        self._content = content
+        self._channel_id = channel_id
+        self._msg_type = msg_type
+        self._timestamp = datetime.now()
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def get_repr_str(self):
+        return u'群組ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(simplified_string(self._channel_id), simplified_string(self._content, 20), unicode(self._msg_type), self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
+
+    @property
+    def content(self):
+        return self._content
+    
+    @property
+    def channel_id(self):
+        return self._channel_id
+    
+    @property
+    def msg_type(self):
+        return self._msg_type
+    
+    @property
+    def timestamp(self):
+        return self._timestamp
 
 class line_event_source_type(ext.EnumWithName):
     USER = 0, '私訊'

@@ -119,19 +119,20 @@ class global_msg_handle(object):
         token = event.reply_token
         src = event.source
         uid = bot.line_api_wrapper.source_user_id(src)
+        cid = bot.line_api_wrapper.source_channel_id(src)
 
-        banned = self._loop_preventer.rec_last_content_and_get_status(uid, content, db.msg_type.TEXT)
+        banned = self._loop_preventer.rec_last_content_and_get_status(uid, cid, content, db.msg_type.TEXT)
 
         if banned:
-            pw = self._loop_preventer.get_pw(uid)
+            pw_notice_text = self._loop_preventer.get_pw_notice_text(uid)
             if pw is not None:
                 self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
-                self._line_api_wrapper.reply_message_text(token, u'因洗板疑慮，已鎖定使用者對小水母的所有操作。輸入: {} 以解鎖。'.format(pw))
+                self._line_api_wrapper.reply_message_text(token, pw_notice_text)
             else:
                 unlock_result = self._loop_preventer.unlock(uid, content)
-                if unlock_result:
+                if unlock_result is not None:
                     self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
-                    self._line_api_wrapper.reply_message_text(token, u'解鎖成功。')
+                    self._line_api_wrapper.reply_message_text(token, unlock_result)
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), content_type, db.msg_type.TEXT)
             return True
