@@ -185,7 +185,18 @@ class message_pack(object):
     def __eq__(self, other):
         if other is None:
             return False
-        return self.__dict__ == other.__dict__
+
+        def equal_dicts(d1, d2, ignore_keys):
+            ignored = set(ignore_keys)
+            for k1, v1 in d1.iteritems():
+                if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
+                    return False
+            for k2, v2 in d2.iteritems():
+                if k2 not in ignored and k2 not in d1:
+                    return False
+            return True
+
+        return equal_dicts(self.__dict__, other.__dict__, ['_timestamp'])
 
     def get_repr_str(self):
         return u'群組ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(simplified_string(self._channel_id), simplified_string(self._content, 20), unicode(self._msg_type), self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
