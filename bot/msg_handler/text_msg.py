@@ -585,7 +585,7 @@ class text_msg_handler(object):
             usage_dict = self._oxr_client.get_usage_dict()
             text = self._oxr_client.usage_str(usage_dict)
         elif category == 'BAN':
-            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}'.format(self._system_data.boot_up)
+            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format(self._system_data.boot_up)
             text += self._loop_prev.get_all_banned_str()
         else:
             uid = category
