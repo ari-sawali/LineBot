@@ -4,7 +4,10 @@ import os, sys
 import requests
 from datetime import datetime, timedelta
 from collections import deque
+from sets import Set
+
 from linebot import exceptions
+
 import hashlib
 import operator
 import traceback
@@ -96,7 +99,7 @@ class infinite_loop_preventer(object):
             data.unlock_noticed = True
             pw = data.generate_pw()
             if pw is not None:
-                return u'目標: {} ({})\n\n因連續發送相同的訊息內容、訊息文字超過{}次，有洗板、濫用小水母之疑慮，故小水母已鎖定使用者的所有操作。請輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄:\n{}'.format(uid, line_api_wrapper.profile_name(uid), self._max_loop_count, pw, data.rec_content_str())
+                return u'目標: {} ({})\n\n因於同頻道中，連續發送相同的訊息內容、訊息文字超過{}次，有洗板、濫用小水母之疑慮，故小水母已鎖定使用者的所有操作。請輸入驗證碼以解鎖。\n驗證碼: {}。\n\n訊息紀錄:\n{}'.format(uid, line_api_wrapper.profile_name(uid), self._max_loop_count, pw, data.rec_content_str())
         else:
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
@@ -112,11 +115,6 @@ class infinite_loop_preventer(object):
             self._last_message[uid] = infinite_loop_prevent_data(self._max_loop_count, uid, self._unlock_pw_length)
 
 class infinite_loop_prevent_data(object):
-    CONTENT = 'cont'
-    MESSAGE_TYPE = 'typ'
-    CHANNEL_ID = 'cid'
-    TIMESTAMP = 'ts'
-
     def __init__(self, max_loop_count, uid, unlock_pw_length, init_cid=None, init_content=None, init_content_type=db.msg_type.TEXT):
         self._uid = uid
         self._max_loop_count = max_loop_count
@@ -181,8 +179,18 @@ class infinite_loop_prevent_data(object):
             self._repeat_count = 0
 
     def rec_content_str(self):
-        l = [msg_pack.get_repr_str() for msg_pack in self._message_record]
-        return u'\n\n'.join(l)
+        """Only gives unique result"""
+        content_set = Set([])
+        msgtype_set = Set([])
+        timestamp_set = Set([])
+        cid_set = Set([])
+        for msg_pack in self._message_record:
+            content_set.add(msg_pack.content)
+            msgtype_set.add(msg_pack.msg_type)
+            timestamp_set.add(msg_pack.timestamp)
+            cid_set.add(msg_pack.channel_id)
+
+        return u'發送頻道ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(u'、'.join(cid_set), u'、'.join(content_set), u'、'.join(msgtype_set), u'、'.join(timestamp_set))
 
 class message_pack(object):
     def __init__(self, content, channel_id, msg_type=db.msg_type.TEXT):
@@ -206,9 +214,6 @@ class message_pack(object):
             return True
 
         return equal_dicts(self.__dict__, other.__dict__, ['_timestamp'])
-
-    def get_repr_str(self):
-        return u'發訊頻道ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(simplified_string(self._channel_id), simplified_string(self._content, 20), unicode(self._msg_type), self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
 
     @property
     def content(self):
