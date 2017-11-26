@@ -208,7 +208,7 @@ class message_pack(object):
         return equal_dicts(self.__dict__, other.__dict__, ['_timestamp'])
 
     def get_repr_str(self):
-        return u'群組ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(simplified_string(self._channel_id), simplified_string(self._content, 20), unicode(self._msg_type), self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
+        return u'發訊頻道ID: {}\n內容: {}\n訊息種類: {}\n時間: {}'.format(simplified_string(self._channel_id), simplified_string(self._content, 20), unicode(self._msg_type), self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f'))
 
     @property
     def content(self):
