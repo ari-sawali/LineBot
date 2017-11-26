@@ -81,7 +81,7 @@ class infinite_loop_preventer(object):
         return self._last_message[uid].banned
 
     def get_all_banned_str(self):
-        banned_dict = dict((k, v) for k, v in self._last_message if v.banned)
+        banned_dict = dict((k, v) for k, v in self._last_message.iteritems() if v.banned)
         if len(banned_dict) < 1:
             return u'(無)'
         output = []
