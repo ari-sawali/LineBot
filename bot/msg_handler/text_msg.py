@@ -615,7 +615,7 @@ class text_msg_handler(object):
                 text = u'UID:\n{}\n\n名稱:\n{}\n\n擁有權限:\n{}\n\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
 
                 return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator), 
-                        bot.line_api_wrapper.wrap_template_with_action({ '查詢該使用者製作的回覆組': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]
+                        bot.line_api_wrapper.wrap_template_with_action({ u'查詢該使用者製作的回覆組': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]
             else:
                 return wrong_param1
 
