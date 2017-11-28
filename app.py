@@ -321,6 +321,9 @@ def handle_join(event):
             activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
             
             group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
+            print group_action_dict
+            print template_alt_text
+            print template_title
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
@@ -328,6 +331,9 @@ def handle_join(event):
                                     group_template])
         else:
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
+            print group_action_dict
+            print template_alt_text
+            print template_title
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
                                     bot.line_api_wrapper.wrap_text_message('群組資料已存在。', webpage_generator),
