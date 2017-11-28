@@ -501,7 +501,7 @@ class msg_stats_data(dict_like_mapping):
         return self.get(msg_stats_data.CHAT_INSTANCE_ID, None)
 
     def get_string(self):
-        text = u'收到:\n{}'.format('\n'.join(u'{} - {} (觸發{})'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in self.received.iteritems()))
+        text = u'收到:\n{}'.format('\n'.join(u'{} - 未觸發{} 觸發{}'.format(type_string, pair.not_triggered, pair.triggered) for type_string, pair in self.received.iteritems()))
         text += u'\n回覆:\n{}'.format('\n'.join(u'{} - {}'.format(type_string, count) for type_string, count in self.reply.iteritems()))
         return text
 
