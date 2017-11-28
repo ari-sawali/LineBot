@@ -168,6 +168,8 @@ class text_msg_handler(object):
                     ids = params[2]
                     id_list = ext.string_to_int(*ids.split(self._array_separator))
                     if id_list is not None:
+                        if isinstance(id_list, int):
+                            id_list = [id_list]
                         title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join([unicode(id) for id in id_list]))
                         result_data = kwd_instance.search_pair_by_index(id_list)
                     else:
