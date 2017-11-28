@@ -47,7 +47,7 @@ class gmail_api(object):
             sys.exit(1)
         else:
             with open(gmail_api.CREDENTIAL_FILE,'w') as f:
-                f.write(foo)
+                f.write(_credential_json_content)
 
         self._default_subject_prefix = default_subject_prefix
         self._credentials = gmail_api.get_credentials()
