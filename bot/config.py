@@ -8,7 +8,7 @@ class config_category(ext.EnumWithName):
     TIMEOUT = 1, 'Timeout'
     STICKER_RANKING = 2, 'StickerRanking'
     SYSTEM = 3, 'System'
-    ERROR_REPORT = 3, 'ErrorReport'
+    ERROR_REPORT = 4, 'ErrorReport'
 
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
