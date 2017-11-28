@@ -3,7 +3,6 @@
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: set expire time to pair
-# TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
 # TODO: self silent (new db), turn off auto upload
 # TODO: modulize error message
