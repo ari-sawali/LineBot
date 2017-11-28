@@ -105,10 +105,10 @@ class gmail_api(object):
             <html>
                 <head>
                     <style>
-                    body {
+                    body {{
                         font-family: monospace;
                         word-wrap: break-word;
-                    }
+                    }}
                     </style>
                 </head>
                 <body>
