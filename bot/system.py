@@ -315,7 +315,11 @@ class line_api_wrapper(object):
 
     def reply_message(self, reply_token, msgs):
         print 'e'
-        self._line_api.reply_message(reply_token, msgs)
+        try:
+            self._line_api.reply_message(reply_token, msgs)
+        except Exception as e:
+            print e.message
+            print traceback.format_exc()
         print 'ee'
 
     def reply_message_text(self, reply_token, msgs):

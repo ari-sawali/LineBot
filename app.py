@@ -305,61 +305,31 @@ def handle_follow(event):
 
 @handler.add(JoinEvent)
 def handle_join(event):
-    try:
-        reply_token = event.reply_token
-        cid = bot.line_api_wrapper.source_channel_id(event.source)
-        
-        if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
-            group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
-            group_action_dict = { '點此查看群組資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
+    reply_token = event.reply_token
+    cid = bot.line_api_wrapper.source_channel_id(event.source)
+    
+    if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+        group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
+        group_action_dict = { '點此查看群組資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
 
-            template_alt_text = u'群組資料查閱快捷樣板'
-            template_title = u'相關指令'
+        template_alt_text = u'群組資料查閱快捷樣板'
+        template_title = u'相關指令'
 
-            if group_data is None:
-                activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
-                
-                group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' +   bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
-                group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
-                line_api.reply_message(reply_token, 
-                                       [bot.line_api_wrapper.introduction_template(),
-                                        bot.line_api_wrapper.wrap_text_message(u'群組資料註冊{}。'.format(u'成功' if activation_token is not None else    u'失敗'), webpage_generator),
-                                        group_template])
-            else:
-                group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
-                line_api.reply_message(reply_token, 
-                                       [bot.line_api_wrapper.introduction_template(),
-                                        bot.line_api_wrapper.wrap_text_message(u'群組資料已存在。', webpage_generator),
-                                        group_template])
-    except Exception as ex:
-        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
-        if isinstance(ex, LineBotApiError):
-            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
-            if ex.status_code == 429:
-                return
+        if group_data is None:
+            activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
+            
+            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
+            group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
+            line_api.reply_message(reply_token, 
+                                   [bot.line_api_wrapper.introduction_template(),
+                                    bot.line_api_wrapper.wrap_text_message(u'群組資料註冊{}。'.format(u'成功' if activation_token is not None else u'失敗'), webpage_generator),
+                                    group_template])
         else:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            try:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message)
-            except UnicodeEncodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.encode("utf-8"))
-            except UnicodeDecodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
-        
-        tb = traceback.format_exc()
-
-        try:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb, str(event))
-        except UnicodeEncodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.encode('utf-8'), str(event).encode("utf-8"))
-        except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
-
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
-
-        if sys_config.get(db.config_data.REPLY_ERROR):
-            line_api.reply_message_text(token, error_msg)
+            group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
+            line_api.reply_message(reply_token, 
+                                   [bot.line_api_wrapper.introduction_template(),
+                                    bot.line_api_wrapper.wrap_text_message(u'群組資料已存在。', webpage_generator),
+                                    group_template])
 
 
 # Not Using
