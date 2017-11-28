@@ -97,7 +97,7 @@ def string_to_int(*args):
             return new_args
         else:
             return new_args[0]
-    except ValueError:
+    except ValueError, TypeError:
         return None
 
 def string_to_float(s):
