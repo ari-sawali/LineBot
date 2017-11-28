@@ -79,17 +79,17 @@ def simplify_num(value):
     return u'{:.2f} {}'.format(simp, simp_text)
 
 def simplified_string(s, max_length=8):
-    """max_length excludes ..."""
-    print repr(s)
-    s = unicode(s, 'utf-8')
+    """\
+    max_length excludes ...\
+    Return unicode.
+    """
+    if isinstance(s, str):
+        s = unicode(s, 'utf-8')
+
     s = s.replace('\n', '\\n')
-    print 's'
     if len(s) > (max_length + 3):
-        print 's'
         s = s[:max_length] + '...'
         
-        print 's'
-    print 'b'
     return s
 
 def left_alphabet(s):
