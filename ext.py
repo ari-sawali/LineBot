@@ -81,7 +81,7 @@ def simplify_num(value):
 def simplified_string(s, max_length=8):
     """max_length excludes ..."""
     print 's'
-    s = unicode(s.encode('utf-8'))
+    s = unicode(s.decode('utf-8'))
     s = s.replace('\n', '\\n')
     print 's'
     if len(s) > (max_length + 3):
