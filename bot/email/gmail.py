@@ -101,7 +101,7 @@ class gmail_api(object):
 
             mail_message = {'raw': base64.urlsafe_b64encode(mime_message.as_string())}
 
-            message = (self._service.users().messages().send(userId='me', body=mime_message)
+            message = (self._service.users().messages().send(userId='me', body=mail_message)
                        .execute())
             result = u'成功' if 'SENT' in message['labelIds'] else u'失敗'
             return u'錯誤訊息寄送{}。信件ID: {}'.format(result, message['id'])
