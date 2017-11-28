@@ -53,6 +53,8 @@ class webpage_manager(object):
                 if self._system_config.get(db.config_data.SEND_ERROR_REPORT):
                     err_detail += u'\n\nError URL: {}'.format(error_url)
                     report_send_result = self._gmail_api.send_message(' ({})'.format(err_type.encode('utf-8')), err_detail)
+                else:
+                    report_send_result = u'(已停用錯誤報告寄送功能。)'
 
                 return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))
         except Exception as e:

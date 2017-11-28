@@ -167,6 +167,8 @@ class text_msg_handler(object):
                 elif action == 'ID':
                     ids = params[2]
                     id_list = ext.string_to_int(ids.split(self._array_separator))
+                    print self._array_separator
+                    print ids.split(self._array_separator)
                     print id_list
                     title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join([id for id in id_list]))
                     if id_list is not None:
