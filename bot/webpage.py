@@ -24,37 +24,37 @@ class webpage_manager(object):
 
     def rec_error(self, error_instance, decoded_traceback, occurred_at, simplified=None):
         """Get error webpage url + error list url"""
-        self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
-        with self._flask_app.app_context():
-            err_type = error_instance.__class__.__name__
+        try:
+            self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
+            with self._flask_app.app_context():
+                err_type = error_instance.__class__.__name__
 
-            err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
-            err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
-            err_detail += decoded_traceback
-            if simplified is not None:
-                err_detail += u'\n\n'
-                try:
-                    err_detail += simplified
-                except UnicodeEncodeError:
-                    err_detail += simplified.encode('utf-8')
-                except UnicodeDecodeError:
-                    err_detail += simplified.decode('utf-8')
-            
-            print '===================================='
-            print 'ERROR CAPTURED.'
-            print err_detail.encode('utf-8')
-            print '===================================='
-            
-            try:
-                report_send_result = self._gmail_api.send_message(' ({})'.format(err_type), err_detail)
-            except Exception as e:
-                print e
-                import traceback
-                print traceback.format_exc()
+                err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
+                err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
+                err_detail += decoded_traceback
+                if simplified is not None:
+                    err_detail += u'\n\n'
+                    try:
+                        err_detail += simplified
+                    except UnicodeEncodeError:
+                        err_detail += simplified.encode('utf-8')
+                    except UnicodeDecodeError:
+                        err_detail += simplified.decode('utf-8')
+                
+                print '===================================='
+                print 'ERROR CAPTURED.'
+                print err_detail.encode('utf-8')
+                print '===================================='
+                
+                report_send_result = self._gmail_api.send_message(u' ({})'.format(err_type), err_detail)
 
-            error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
+                error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
 
-            return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))
+                return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))
+        except Exception as e:
+            print e
+            import traceback
+            print traceback.format_exc()
     
     def rec_webpage(self, content, type, short_description=None):
         """Return recorded webpage url."""
