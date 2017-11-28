@@ -382,7 +382,7 @@ class line_api_wrapper(object):
                     d.append((u'(空)', u'小水母'))
 
             explain_text = '#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
-            action_list = [MessageTemplateAction(label=repr_text, text=action_text) for repr_text, action_text in d]
+            action_list = [MessageTemplateAction(label=ext.simplified_string(repr_text, MAX_LABEL_TEXT_LENGTH), text=action_text) for repr_text, action_text in d]
 
             column_list.append(CarouselColumn(text=explain_text, title=title_unicode, actions=action_list))
 

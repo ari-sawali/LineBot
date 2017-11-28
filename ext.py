@@ -80,9 +80,15 @@ def simplify_num(value):
 
 def simplified_string(s, max_length=8):
     """max_length excludes ..."""
+    print 's'
     s = s.replace('\n', '\\n')
+    print 's'
     if len(s) > (max_length + 3):
+        print 's'
         s = s[:max_length] + '...'
+        
+        print 's'
+    print 'b'
     return s
 
 def left_alphabet(s):
