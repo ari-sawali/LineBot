@@ -315,6 +315,7 @@ class line_api_wrapper(object):
 
     def reply_message(self, reply_token, msgs):
         try:
+            print msgs
             self._line_api.reply_message(reply_token, msgs)
         except Exception as e:
             print type(e)
