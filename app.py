@@ -342,22 +342,22 @@ def handle_postback(event):
 # Not Using
 @handler.add(MessageEvent, message=LocationMessage)
 def handle_location_message(event):
-    text_handler._group_manager.log_message_activity(cid, db.msg_type.LOCATION)
+    text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.LOCATION)
 
 # Not Using
 @handler.add(MessageEvent, message=VideoMessage)
 def handle_media_message(event):
-    text_handler._group_manager.log_message_activity(cid, db.msg_type.VIDEO)
+    text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.VIDEO)
     
 # Not Using
 @handler.add(MessageEvent, message=AudioMessage)
 def handle_media_message(event):
-    text_handler._group_manager.log_message_activity(cid, db.msg_type.AUDIO)
+    text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.AUDIO)
     
 # Not Using
 @handler.add(MessageEvent, message=FileMessage)
 def handle_media_message(event):
-    text_handler._group_manager.log_message_activity(cid, db.msg_type.FILE)
+    text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.FILE)
 
     reply_token = event.reply_token
     cid = bot.line_api_wrapper.source_channel_id(event.source)

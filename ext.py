@@ -80,8 +80,7 @@ def simplify_num(value):
 
 def simplified_string(s, max_length=8):
     """max_length excludes ..."""
-    print 's'
-    print s
+    print repr(s)
     s = unicode(s, 'utf-8')
     s = s.replace('\n', '\\n')
     print 's'
