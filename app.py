@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: total count of messages
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: use mail api to send error report
@@ -91,7 +90,7 @@ config_mgr = bot.config_manager('SystemConfig.ini')
 sys_config = db.system_config(MONGO_DB_URI)
     
 # Webpage auto generator
-webpage_generator = bot.webpage_manager(app, MONGO_DB_URI)
+webpage_generator = bot.webpage_manager(app, MONGO_DB_URI, config_mgr.getint(bot.config_category.SYSTEM, bot.config_category_system.MAX_ERROR_LIST_OUTPUT))
 
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)

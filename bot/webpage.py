@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from cgi import escape
 from collections import OrderedDict
 import time
 from datetime import datetime, timedelta
 from flask import Flask, url_for, render_template
-from flask.globals import current_app
-from linebot.models import TextSendMessage
 
 from error import error
 
@@ -15,10 +12,11 @@ import db
 class webpage_manager(object):
     LATEX_SPLITTER = '(LaTeX_END)'
 
-    def __init__(self, flask_app, mongo_db_uri):
+    def __init__(self, flask_app, mongo_db_uri, max_error_list_output):
         self._flask_app = flask_app
         self._route_method_name = 'get_webpage'
         self._error_list_route_name = 'get_error_list'
+        self._max_error_list_output = max_error_list_output
 
         self._system_stats = db.system_statistics(mongo_db_uri)
         self._content_holder = db.webpage_content_holder(mongo_db_uri)
@@ -59,8 +57,7 @@ class webpage_manager(object):
         """
         { seq_id: url }
         """
-        MAX_COUNT = 100
-        return OrderedDict([(u'{} - {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'), data.short_description), url_for(self._route_method_name, seq_id=data.seq_id)) for data in self._content_holder.get_error_page_list(MAX_COUNT)])
+        return OrderedDict([(u'{} - {}'.format(data.timestamp.strftime('%Y-%m-%d %H:%M:%S'), data.short_description), url_for(self._route_method_name, seq_id=data.seq_id)) for data in self._content_holder.get_error_page_list(self._max_error_list_output)])
 
     def get_webpage_data(self, id):
         if isinstance(id, (str, unicode)):

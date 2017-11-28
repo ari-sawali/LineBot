@@ -89,6 +89,7 @@ class text_msg_handler(object):
                 self._line_api_wrapper.reply_message_text(token, handle_result)
                 return True
             else:
+                print handle_result
                 self._line_api_wrapper.reply_message(token, handle_result)
                 return True
             

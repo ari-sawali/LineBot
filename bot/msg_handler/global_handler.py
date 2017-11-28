@@ -140,7 +140,7 @@ class global_msg_handle(object):
 
         return False
 
-    def _print_intercepted(self, event, display_user_name=False):
+    def _print_intercepted(self, event):
         intercept = self._system_config.get(db.config_data.INTERCEPT)
         intercept_display_name = self._system_config.get(db.config_data.INTERCEPT_DISPLAY_NAME)
         if intercept:
@@ -184,8 +184,6 @@ class global_msg_handle(object):
     def _handle_text_sys_config(self, event):
         """Return whether message has been replied."""
         full_text = event.message.text
-
-        # IMPORTANT: make dict
 
         action_dict = { self._silence_key: (db.config_data.SILENCE, 'BOT SILENCE: {}'),
                         self._intercept_key: (db.config_data.INTERCEPT, 'MESSAGE INTERCEPTION: {}'),

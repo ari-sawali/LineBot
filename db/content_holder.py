@@ -109,7 +109,7 @@ class webpage_data(dict_like_mapping):
         if org_dict is None:
             raise ValueError(error.error.main.miscellaneous(u'Dict is None.'))
 
-        if not all(k in org_dict for k in (webpage_data.CONTENT, webpage_data.TIMESTAMP, webpage_data.TIMESTAMP)):
+        if not all(k in org_dict for k in (webpage_data.CONTENT, webpage_data.TIMESTAMP, webpage_data.TYPE)):
             raise ValueError(error.error.main.miscellaneous(u'Incomplete webpage data keys.'))
 
         if webpage_data.SHORT_DESCRIPTION not in org_dict:
