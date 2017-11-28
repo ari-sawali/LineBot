@@ -105,3 +105,5 @@ class gmail_api(object):
             return u'錯誤訊息寄送{}。信件ID: {}'.format(result, message['id'])
         except googleapiclient.errors.HttpError as error:
             return u'發生錯誤: {}'.format(error)
+        except Exception as e:
+            raise e
