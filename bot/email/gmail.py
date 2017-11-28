@@ -101,5 +101,5 @@ class gmail_api(object):
                        .execute())
             result = u'成功' if 'SENT' in message['labelIds'] else u'失敗'
             return u'錯誤訊息寄送{}。信件ID: {}'.format(result, message['id'])
-        except googleapiclient.errors.HttpError, error:
+        except googleapiclient.errors.HttpError as error:
             return u'發生錯誤: {}'.format(error)

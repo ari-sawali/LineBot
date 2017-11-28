@@ -44,8 +44,14 @@ class webpage_manager(object):
             print 'ERROR CAPTURED.'
             print err_detail.encode('utf-8')
             print '===================================='
+            
+            print 'GG'
+            try:
+                report_send_result = self._gmail_api.send_message(' ({})'.format(err_type), err_detail)
+            except Exception as e:
+                raise e
 
-            report_send_result = self._gmail_api.send_message(' ({})'.format(err_type), err_detail)
+            print 'G'
             error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
 
             return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))

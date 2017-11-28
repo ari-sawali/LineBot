@@ -221,9 +221,7 @@ def handle_text_message(event):
         except UnicodeDecodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
 
-        print 'B'
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
-        print 'BBB'
 
         if sys_config.get(db.config_data.REPLY_ERROR):
             line_api.reply_message_text(token, error_msg)

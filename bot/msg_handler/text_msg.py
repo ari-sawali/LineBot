@@ -88,7 +88,6 @@ class text_msg_handler(object):
             if isinstance(handle_result, (str, unicode)):
                 self._line_api_wrapper.reply_message_text(token, handle_result)
             else:
-                print handle_result
                 self._line_api_wrapper.reply_message(token, handle_result)
 
             return True
