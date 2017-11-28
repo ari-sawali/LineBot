@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-import error
 
 import urlparse
-import psycopg2
-from sqlalchemy.exc import IntegrityError
+from datetime import datetime
 import hashlib
-import ext
 import pymongo
-import tool
 
-import bot
+import error
+import ext, tool, bot
+
 from .base import db_base, dict_like_mapping
 from .misc import PackedStringResult
 
@@ -392,7 +390,7 @@ class group_activator(db_base):
 
     def __init__(self, mongo_db_uri):
         super(group_activator, self).__init__(mongo_db_uri, GROUP_DB_NAME, self.__class__.__name__, False, [group_data.GROUP_ID])
-        self.create_index([(group_activation_data.TOKEN, pymongo.DESCENDING)], expireAfterSeconds=group_activator.DATA_EXPIRE_SECS)
+        self.create_index([(group_activation_data.TIMESTAMP, pymongo.DESCENDING)], expireAfterSeconds=group_activator.DATA_EXPIRE_SECS)
 
     def new_data(self, group_id):
         """Return token string."""
@@ -408,22 +406,28 @@ class group_activation_data(dict_like_mapping):
     """
     {
         group_id: STRING - INDEX,
-        token: STRING
+        token: STRING,
+        timestamp: DATETIME
     }
     """
     TOKEN = 'token'
+    TIMESTAMP = 'ts'
 
     @staticmethod
     def init_by_field(group_id, token):
         init_dict = {
             group_data.GROUP_ID: group_id,
-            group_activation_data.TOKEN: token
+            group_activation_data.TOKEN: token,
+            group_activation_data.TIMESTAMP: datetime.now()
         }
         return group_activation_data(init_dict)
         
     def __init__(self, org_dict):
         if not all(k in org_dict for k in (group_data.GROUP_ID, group_activation_data.TOKEN)):
             raise ValueError('Incomplete user data.')
+
+        if group_activation_data.TIMESTAMP not in org_dict:
+            self[group_activation_data.TIMESTAMP] = datetime.now()
         
         super(group_activation_data, self).__init__(org_dict)
 
