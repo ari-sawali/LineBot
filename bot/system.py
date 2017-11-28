@@ -423,11 +423,11 @@ class line_api_wrapper(object):
 
     @staticmethod
     def introduction_template():
-        buttons_template = ButtonsTemplate(title=u'機器人簡介', text='歡迎使用小水母！', 
-                actions=[URITemplateAction(label=u'點此開啟使用說明', uri='https://sites.google.com/view/jellybot'),
-                         URITemplateAction(label=u'點此導向問題回報網址', uri='https://github.com/RaenonX/LineBot/issues'),
-                         URITemplateAction(label=u'群組管理權限申請單', uri='https://goo.gl/forms/91RWtMKZNMvGrpk32')])
-        return TemplateSendMessage(alt_text=u'機器人簡介', template=buttons_template)
+        buttons_template = ButtonsTemplate(title='機器人簡介', text='歡迎使用小水母！', 
+                actions=[URITemplateAction(label='點此開啟使用說明', uri='https://sites.google.com/view/jellybot'),
+                         URITemplateAction(label='點此導向問題回報網址', uri='https://github.com/RaenonX/LineBot/issues'),
+                         URITemplateAction(label='群組管理權限申請單', uri='https://goo.gl/forms/91RWtMKZNMvGrpk32')])
+        return TemplateSendMessage(alt_text='機器人簡介', template=buttons_template)
 
     @staticmethod
     def sticker_png_url(sticker_id):
