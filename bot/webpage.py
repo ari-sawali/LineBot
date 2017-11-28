@@ -13,6 +13,8 @@ class webpage_manager(object):
     LATEX_SPLITTER = '(LaTeX_END)'
 
     def __init__(self, flask_app, mongo_db_uri, max_error_list_output, gmail_api=None):
+        self._system_config = db.system_config(mongo_db_uri)
+
         self._flask_app = flask_app
         self._route_method_name = 'get_webpage'
         self._error_list_route_name = 'get_error_list'
