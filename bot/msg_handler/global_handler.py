@@ -50,6 +50,11 @@ class global_msg_handle(object):
             print 'Define COMMAND_REPLY_ERROR in environment variable to switch report on error occurred.'
             sys.exit(1)
 
+        self._send_error_report_key = os.getenv('COMMAND_SEND_ERROR_REPORT', None)
+        if self._send_error_report_key is None:
+            print 'Define COMMAND_SEND_ERROR_REPORT in environment variable to switch send error mail on error occurred.'
+            sys.exit(1)
+
         self._intercept_display_name_key = os.getenv('COMMAND_INTERCEPT_DISPLAY_NAME', None)
         if self._intercept_display_name_key is None:
             print 'Define COMMAND_INTERCEPT_DISPLAY_NAME in environment variable to switch report on error occurred.'
@@ -189,7 +194,8 @@ class global_msg_handle(object):
                         self._intercept_key: (db.config_data.INTERCEPT, 'MESSAGE INTERCEPTION: {}'),
                         self._intercept_display_name_key: (db.config_data.INTERCEPT_DISPLAY_NAME, 'DISPLAY NAME IN MESSAGE INTERCEPTION: {}'),
                         self._calc_debug_key: (db.config_data.CALCULATOR_DEBUG, 'CALCULATOR DEBUG: {}'),
-                        self._rep_error_key: (db.config_data.REPLY_ERROR, 'REPLY ON ERROR: {}') }
+                        self._rep_error_key: (db.config_data.REPLY_ERROR, 'REPLY ON ERROR: {}'),
+                        self._send_error_report_key: (db.config_data.SEND_ERROR_REPORT, 'SEND ERROR REPORT: {}') }
 
         action = action_dict.get(full_text, None)
         if action is not None:

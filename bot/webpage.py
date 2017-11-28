@@ -48,8 +48,9 @@ class webpage_manager(object):
 
                 error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
                 
-                err_detail += u'\n\nError URL: {}'.format(error_url)
-                report_send_result = self._gmail_api.send_message(' ({})'.format(err_type.encode('utf-8')), err_detail)
+                if self._system_config.get(db.config_data.SEND_ERROR_REPORT):
+                    err_detail += u'\n\nError URL: {}'.format(error_url)
+                    report_send_result = self._gmail_api.send_message(' ({})'.format(err_type.encode('utf-8')), err_detail)
 
                 return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))
         except Exception as e:

@@ -32,19 +32,12 @@ class system_config(db_base):
         self._cache = config_data(data)
 
 class config_data(dict_like_mapping):
-    """
-    {
-        silence: BOOLEAN,
-        intercept: BOOLEAN,
-        calculator_debug: BOOLEAN,
-        reply_error: BOOLEAN
-    }
-    """
     SILENCE = 'mute'
     INTERCEPT = 'itc'
     INTERCEPT_DISPLAY_NAME = 'itc_n'
     CALCULATOR_DEBUG = 'calc_dbg'
     REPLY_ERROR = 'rep_err'
+    SEND_ERROR_REPORT = 'err_rep'
 
     def __init__(self, org_dict):
         if org_dict is None:
@@ -70,6 +63,9 @@ class config_data(dict_like_mapping):
             
         if config_data.INTERCEPT_DISPLAY_NAME not in org_dict:
             org_dict[config_data.INTERCEPT_DISPLAY_NAME] = False
+            
+        if config_data.SEND_ERROR_REPORT not in org_dict:
+            org_dict[config_data.SEND_ERROR_REPORT] = True
 
         return super(config_data, self).__init__(org_dict)
 

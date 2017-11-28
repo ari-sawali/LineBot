@@ -93,6 +93,7 @@ def string_to_int(*args):
 
     try:
         new_args = [int(i) for i in args]
+        print len(new_args)
         if len(new_args) > 1:
             return new_args
         else:
