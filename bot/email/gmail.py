@@ -46,17 +46,20 @@ class gmail_api(object):
             Credentials, the obtained credential.
         """
         import argparse
+
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
         flags.noauth_local_webserver = True
 
-        store = Storage(gmail.CREDENTIAL_FILE)
+        store = Storage(gmail_api.CREDENTIAL_FILE)
         credentials = store.get()
+
         if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets(gmail.CLIENT_SECRET_FILE, gmail.SCOPES)
-            flow.user_agent = gmail.APPLICATION_NAME
+            flow = client.flow_from_clientsecrets(gmail_api.CLIENT_SECRET_FILE, gmail_api.SCOPES)
+            flow.user_agent = gmail_api.APPLICATION_NAME
             if flags:
                 credentials = tools.run_flow(flow, store, flags)
-            print 'Storing credentials to ' + gmail.CREDENTIAL_FILE
+            print 'Storing credentials to ' + gmail_api.CREDENTIAL_FILE
+
         return credentials
     
     def send_message(self, subject, content):
