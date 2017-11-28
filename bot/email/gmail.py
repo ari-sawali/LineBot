@@ -31,7 +31,7 @@ class gmail_api(object):
             sys.exit(1)
 
         self._default_subject_prefix = default_subject_prefix
-        self._credentials = gmail.get_credentials()
+        self._credentials = gmail_api.get_credentials()
         self._http = self._credentials.authorize(httplib2.Http())
         self._service = discovery.build('gmail', 'v1', http=self._http)
 
