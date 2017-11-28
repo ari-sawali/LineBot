@@ -176,6 +176,8 @@ def callback():
         handle_pool.apply_async(handler.handle, args=(body, signature))
     except exceptions.InvalidSignatureError:
         abort(400)
+    except Exception as e:
+        raise e
 
     return 'OK'
 
@@ -322,13 +324,13 @@ def handle_join(event):
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
-                                    bot.line_api_wrapper.wrap_text_message(u'群組資料註冊{}。'.format(u'成功' if activation_token is not None else u'失敗'), webpage_generator),
+                                    bot.line_api_wrapper.wrap_text_message('群組資料註冊{}。'.format('成功' if activation_token is not None else '失敗'), webpage_generator),
                                     group_template])
         else:
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
-                                    bot.line_api_wrapper.wrap_text_message(u'群組資料已存在。', webpage_generator),
+                                    bot.line_api_wrapper.wrap_text_message('群組資料已存在。', webpage_generator),
                                     group_template])
 
 
