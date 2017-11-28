@@ -116,7 +116,7 @@ class gmail_api(object):
                 </body>
             </html>\
             """
-            html = html_template.format(content.replace('\n', '<br>'))
+            html = html_template.format(content.replace(' ', '&nbsp;').replace('\n', '<br>'))
             
             mail_plain = MIMEText(content, 'plain')
             mail_html = MIMEText(html, 'html')

@@ -427,6 +427,15 @@ class line_api_wrapper(object):
     def sticker_png_url(sticker_id):
         return 'https://sdl-stickershop.line.naver.jp/stickershop/v1/sticker/{}/android/sticker.png'.format(sticker_id)
 
+    @staticmethod
+    def sticker_apng_url(sticker_id):
+        return 'https://sdl-stickershop.line.naver.jp/products/0/0/1/{}/android/animation/{}.png'.format(sticker_id)
+
+    @staticmethod
+    def sticker_meta(package_id):
+        return 'http://dl.stickershop.line.naver.jp/products/0/0/1/{}/android/productInfo.meta'
+        return 'http://dl.stickershop.line.naver.jp/products/0/0/12/{}/android/productInfo.meta'
+
 class imgur_api_wrapper(object):
     def __init__(self, imgur_api):
         self._imgur_api = imgur_api
