@@ -23,15 +23,31 @@ class gmail_api(object):
     APPLICATION_NAME = 'Gmail API - for sending error report from JELLYBOT'
 
     def __init__(self, default_subject_prefix):
-        self._sender_email_addr = os.getenv('SENDER_EMAIL_ADDRESS', None)
+        self._sender_email_addr = os.getenv('GMAIL_SENDER_ADDRESS', None)
         if self._sender_email_addr is None:
-            print 'Define SENDER_EMAIL_ADDRESS in environment variable.'
+            print 'Define GMAIL_SENDER_ADDRESS in environment variable.'
             sys.exit(1)
 
-        self._receiver_email_addr = os.getenv('RECEIVER_EMAIL_ADDRESS', None)
+        self._receiver_email_addr = os.getenv('GMAIL_RECEIVER_ADDRESS', None)
         if  self._receiver_email_addr is None:
-            print 'Define RECEIVER_EMAIL_ADDRESS in environment variable.'
+            print 'Define GMAIL_RECEIVER_ADDRESS in environment variable.'
             sys.exit(1)
+
+        _client_json_content = os.getenv('GMAIL_CLIENT_JSON', None)
+        if _client_json_content is None:
+            print 'Define GMAIL_CLIENT_JSON in environment variable.'
+            sys.exit(1)
+        else:
+            with open(gmail_api.CLIENT_SECRET_FILE,'w') as f:
+                f.write(_client_json_content)
+
+        _credential_json_content = os.getenv('GMAIL_CREDENTIAL_JSON', None)
+        if _client_json_content is None:
+            print 'Define GMAIL_CLIENT_JSON in environment variable.'
+            sys.exit(1)
+        else:
+            with open(gmail_api.CREDENTIAL_FILE,'w') as f:
+                f.write(foo)
 
         self._default_subject_prefix = default_subject_prefix
         self._credentials = gmail_api.get_credentials()
