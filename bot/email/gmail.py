@@ -92,6 +92,8 @@ class gmail_api(object):
             Result of sent message in unicode string.
         """
         try:
+            if isinstance(content, unicode):
+                content = str(content)
             mime_message = MIMEText(content)
             mime_message['from'] = self._sender_email_addr
             mime_message['to'] = self._receiver_email_addr

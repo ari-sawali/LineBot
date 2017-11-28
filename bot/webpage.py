@@ -46,8 +46,7 @@ class webpage_manager(object):
                 print err_detail.encode('utf-8')
                 print '===================================='
                 
-                subject = ' ({})'.format(err_type.encode('utf-8'))
-                report_send_result = self._gmail_api.send_message(subject, err_detail)
+                report_send_result = self._gmail_api.send_message(' ({})'.format(err_type.encode('utf-8')), err_detail)
 
                 error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
 
