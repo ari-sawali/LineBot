@@ -312,15 +312,15 @@ def handle_join(event):
     
     if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
         group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
-        group_action_dict = { '點此查看群組資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
+        group_action_dict = { '9': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
 
-        template_alt_text = '7'
-        template_title = '8'
+        template_alt_text = '群組資料查閱快捷樣板'
+        template_title = '相關指令'
 
         if group_data is None:
             activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
             
-            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
+            group_action_dict['10'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
             print group_action_dict
             print template_alt_text
             print template_title
