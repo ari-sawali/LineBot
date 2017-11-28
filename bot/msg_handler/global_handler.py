@@ -113,7 +113,7 @@ class global_msg_handle(object):
 
         if len(rep_link) > 0:
             # Max label text length is 20. Ref: https://developers.line.me/en/docs/messaging-api/reference/#template-action
-            action_dict = { ext.simplified_string(word, 12): word for word in rep_link }
+            action_dict = { ext.simplified_string(word, 17): word for word in rep_link }
             alt_text = u'相關字詞: {}'.format(u'、'.join(word for word in rep_link))
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
