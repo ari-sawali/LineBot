@@ -171,7 +171,10 @@ class group_manager(db_base):
             else:
                 triggered = False
 
-            inc_dict[group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(rcv_type_enum) + '.' + (msg_stats_pair.TRIGGERED if triggered else msg_stats_pair.NOT_TRIGGERED)] = rcv_count 
+            root_field = group_data.MESSAGE_RECORDS + '.' + msg_stats_data.RECEIVE + '.' + str(rcv_type_enum) + '.'
+
+            inc_dict[root_field + (msg_stats_pair.TRIGGERED if triggered else msg_stats_pair.NOT_TRIGGERED)] = rcv_count 
+            inc_dict[root_field + (msg_stats_pair.NOT_TRIGGERED if triggered else msg_stats_pair.TRIGGERED)] = 0 
 
             result = self.update_one({ group_data.GROUP_ID: chat_instance_id },
                                      { '$inc': inc_dict }, False)

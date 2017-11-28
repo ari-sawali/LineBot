@@ -314,12 +314,7 @@ class line_api_wrapper(object):
         return self._line_api.get_message_content(msg_id)
 
     def reply_message(self, reply_token, msgs):
-        try:
-            print msgs
-            self._line_api.reply_message(reply_token, msgs)
-        except Exception as e:
-            print type(e)
-            print traceback.format_exc()
+        self._line_api.reply_message(reply_token, msgs)
 
     def reply_message_text(self, reply_token, msgs):
         if isinstance(msgs, (str, unicode)):
