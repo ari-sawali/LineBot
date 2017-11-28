@@ -195,6 +195,7 @@ class global_msg_handle(object):
         if action is not None:
             new_setting = self._system_config.set(action[0], not self._system_config.get(action[0])).get(action[0])
             self._line_api_wrapper.reply_message_text(event.reply_token, action[1].format('ENABLED' if new_setting else 'DISABLED'))
+            return True
 
         return False
 
