@@ -11,7 +11,6 @@ import ext
 import pymongo
 import tool
 
-from bot.commands import permission
 import bot
 from .base import db_base, dict_like_mapping
 from .misc import PackedStringResult
@@ -558,9 +557,9 @@ class user_data_manager(db_base):
         Raise InsufficientPermissionError if action is not allowed.
         """
         if not bot.line_api_wrapper.is_valid_room_group_id(group_id):
-            return
+            raise ValueError(error.error.main.miscellaneous(u'Illegal group_id.'))
 
-        if setter_uid == target_uid and self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
+        if setter_uid == target_uid or self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             new_user_data = user_data.init_by_field(target_uid, group_id, target_permission_lv)
             self._set_cache(group_id, new_user_data)
             self.insert_one(new_user_data)
@@ -681,7 +680,7 @@ class user_data(dict_like_mapping):
         init_dict = {
             user_data.USER_ID: uid,
             user_data.GROUP: group_id,
-            user_data.PERMISSION_LEVEL: permission(permission_lv)
+            user_data.PERMISSION_LEVEL: bot.permission(permission_lv)
         }
         return user_data(init_dict)
 
@@ -700,7 +699,7 @@ class user_data(dict_like_mapping):
 
     @property
     def permission_level(self):
-        return permission(self[user_data.PERMISSION_LEVEL])
+        return bot.permission(self[user_data.PERMISSION_LEVEL])
 
     @property
     def group(self):

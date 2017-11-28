@@ -217,7 +217,7 @@ def handle_text_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), unicode(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
@@ -253,7 +253,7 @@ def handle_sticker_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), unicode(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
@@ -289,7 +289,7 @@ def handle_image_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), unicode(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
