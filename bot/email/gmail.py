@@ -11,12 +11,14 @@ import googleapiclient
 
 from email.mime.text import MIMEText
 import base64
+import inspect
 
 class gmail_api(object):
     # Credential file need to be regenerated if scopes is modified.
     SCOPES = 'https://www.googleapis.com/auth/gmail.send'  # https://developers.google.com/gmail/api/auth/scopes
-    CLIENT_SECRET_FILE = 'gmail_api_client.json'
-    CREDENTIAL_FILE = 'gmail-api-credential.json'
+    _PATH = os.path.dirname(inspect.getfile(gmail_api)) + '/'
+    CLIENT_SECRET_FILE = gmail_api._PATH + 'gmail_api_client.json'
+    CREDENTIAL_FILE = gmail_api._PATH + 'gmail-api-credential.json'
     APPLICATION_NAME = 'Gmail API - for sending error report from JELLYBOT'
 
     def __init__(self, default_subject_prefix):
