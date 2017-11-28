@@ -78,10 +78,6 @@ class error(object):
             return u'找不到使用者名稱。'
 
         @staticmethod
-        def text_length_too_long(url):
-            return u'因文字內容長度超過LINE Messaging API的最大字數限制(2000字)，故無法顯示。請點下列網址查看完整內容。\n{}'.format(url)
-
-        @staticmethod
         def miscellaneous(content):
             return u'{}\n\n小水母使用說明: {}'.format(content, error.USER_MANUAL_URL)
 
@@ -101,6 +97,10 @@ class error(object):
         @staticmethod
         def illegal_user_id(illegal_uid):
             return error.main.invalid_thing_with_correct_format(u'LINE用戶ID', u'U開頭，並且長度為33字元，後32碼為0~9或a~f.', illegal_uid)
+
+        @staticmethod
+        def text_length_too_long(length, max_length, external_link):
+            return u'因訊息長度({}字)超過LINE API限制({}字)，故無法顯示。請點下方連結以查看訊息。\n{}'.format(length, max_length, external_link)
 
     class sys_command(object):
         def lack_of_parameters(indexes=None):

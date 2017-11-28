@@ -408,8 +408,10 @@ class line_api_wrapper(object):
         """
         MAX_CHARACTER_LENGTH = 2000 # Ref: https://developers.line.me/en/docs/messaging-api/reference/#text
 
-        if len(text) > MAX_CHARACTER_LENGTH:
-            text = error.error.main.text_length_too_long(webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
+        length = len(text)
+
+        if length > MAX_CHARACTER_LENGTH:
+            text = error.error.line_bot_api.text_length_too_long(length, MAX_CHARACTER_LENGTH, webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
 
         return TextSendMessage(text=text)
 
