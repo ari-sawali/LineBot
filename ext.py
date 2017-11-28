@@ -97,12 +97,12 @@ def string_to_int(*args):
             return new_args
         else:
             return new_args[0]
-    except ValueError, TypeError:
+    except (ValueError, TypeError):
         return None
 
 def string_to_float(s):
     try:
         float(s)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
