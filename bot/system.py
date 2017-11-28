@@ -377,7 +377,7 @@ class line_api_wrapper(object):
                     d.append((u'(空)', u'小水母'))
 
             explain_text = u'#{} ~ {}'.format(i + 1, i + MAX_ACTIONS_IN_CAROUSEL)
-            action_list = [MessageTemplateAction(label=simplified_string(repr_text, MAX_LABEL_TEXT_LENGTH), text=action_text) for repr_text, action_text in d]
+            action_list = [MessageTemplateAction(label=ext.simplified_string(repr_text, MAX_LABEL_TEXT_LENGTH), text=action_text) for repr_text, action_text in d]
 
             column_list.append(CarouselColumn(text=explain_text, title=title_unicode, actions=action_list))
 
@@ -422,6 +422,10 @@ class line_api_wrapper(object):
                          URITemplateAction(label=u'點此導向問題回報網址', uri='https://github.com/RaenonX/LineBot/issues'),
                          URITemplateAction(label=u'群組管理權限申請單', uri='https://goo.gl/forms/91RWtMKZNMvGrpk32')])
         return TemplateSendMessage(alt_text=u'機器人簡介', template=buttons_template)
+
+    @staticmethod
+    def sticker_png_url(sticker_id):
+        return 'https://sdl-stickershop.line.naver.jp/stickershop/v1/sticker/{}/android/sticker.png'.format(sticker_id)
 
 class imgur_api_wrapper(object):
     def __init__(self, imgur_api):
@@ -505,31 +509,6 @@ class oxford_api_wrapper(object):
     @enabled.setter
     def enabled(self, value):
         self._enabled = value
-
-def left_alphabet(s):
-    return filter(unicode.isalpha, unicode(s))
-
-def string_can_be_int(*args):
-    try:
-        [int(i) for i in args]
-        return True
-    except ValueError:
-        return False
-
-def string_can_be_float(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-def simplified_string(s, max_length=8):
-    """max_length excludes ..."""
-    s = s.replace('\n', '\\n')
-    if len(s) > (max_length + 3):
-        s = s[:max_length] + '...'
-    return s
-
 
 class UserProfileNotFoundError(Exception):
     def __init__(self, *args):

@@ -8,6 +8,7 @@ class config_category(ext.EnumWithName):
     TIMEOUT = 1, 'Timeout'
     STICKER_RANKING = 2, 'StickerRanking'
     SYSTEM = 3, 'System'
+    ERROR_REPORT = 3, 'ErrorReport'
 
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
@@ -30,6 +31,9 @@ class config_category_system(ext.EnumWithName):
     DUPLICATE_CONTENT_BAN_COUNT = 0, 'DuplicateContentBanCount'
     UNLOCK_PASSWORD_LENGTH = 1, 'UnlockPasswordLength'
     MAX_ERROR_LIST_OUTPUT = 2, 'MaxErrorListOutput'
+
+class config_category_error_report(ext.EnumWithName):
+    DEFAULT_SUBJECT_PREFIX = 0, 'DefaultSubjectPrefix'
 
 class config_manager(object):
     def __init__(self, file_path):

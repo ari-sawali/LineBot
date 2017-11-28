@@ -12,11 +12,12 @@ import db
 class webpage_manager(object):
     LATEX_SPLITTER = '(LaTeX_END)'
 
-    def __init__(self, flask_app, mongo_db_uri, max_error_list_output):
+    def __init__(self, flask_app, mongo_db_uri, max_error_list_output, gmail_api=None):
         self._flask_app = flask_app
         self._route_method_name = 'get_webpage'
         self._error_list_route_name = 'get_error_list'
         self._max_error_list_output = max_error_list_output
+        self._gmail_api = gmail_api
 
         self._system_stats = db.system_statistics(mongo_db_uri)
         self._content_holder = db.webpage_content_holder(mongo_db_uri)
@@ -25,6 +26,8 @@ class webpage_manager(object):
         """Get error webpage url + error list url"""
         self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
         with self._flask_app.app_context():
+            err_type = error_instance.__class__.__name__
+
             err_detail = u'錯誤發生時間: {}\n'.format(datetime.now() + timedelta(hours=8))
             err_detail += u'頻道ID: {}\n\n'.format(occurred_at)
             err_detail += decoded_traceback
@@ -42,9 +45,10 @@ class webpage_manager(object):
             print err_detail.encode('utf-8')
             print '===================================='
 
-            error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, error_instance.__class__.__name__)
+            report_send_result = self._gmail_api.send_message(' ({})'.format(err_type), err_detail)
+            error_url = self.rec_webpage(err_detail, db.webpage_content_type.ERROR, err_type)
 
-            return u'\n詳細錯誤URL: {}\n錯誤清單: {}'.format(error_url, url_for(self._error_list_route_name))
+            return u'\n錯誤報告傳送結果: {}\n詳細錯誤URL: {}\n錯誤清單: {}'.format(report_send_result, error_url, url_for(self._error_list_route_name))
     
     def rec_webpage(self, content, type, short_description=None):
         """Return recorded webpage url."""

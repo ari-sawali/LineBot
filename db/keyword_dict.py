@@ -347,8 +347,6 @@ class group_dict_manager(db_base):
         if not isinstance(id_or_id_list, list):
             id_or_id_list = [id_or_id_list]
 
-        id_or_id_list = [int(id) for id in id_or_id_list]
-
         query_dict = { pair_data.SEQUENCE: { '$in': id_or_id_list } }
         return self._disable(query_dict, disabler, pinned)
 
@@ -411,7 +409,7 @@ class group_dict_manager(db_base):
             raise ValueError('Start index must be integer, long or list. End index must be integer or long.')
 
         if isinstance(start_id_or_id_list, list):
-            filter_dict = { pair_data.SEQUENCE: { '$in': [int(id) for id in start_id_or_id_list] } }
+            filter_dict = { pair_data.SEQUENCE: { '$in': start_id_or_id_list } }
         else:
             if end_id is None:
                 filter_dict = { pair_data.SEQUENCE: int(start_id_or_id_list) }
@@ -541,7 +539,7 @@ class group_dict_manager(db_base):
             return u'(圖片雜湊 {})'.format(kw)
         elif kw_type == word_type.TEXT:
             if simplify:
-                kw = simplified_string(kw, simplify_max_length)
+                kw = ext.simplified_string(kw, simplify_max_length)
             return kw
         else:
             raise ValueError('Undefined keyword type.')
@@ -557,7 +555,7 @@ class group_dict_manager(db_base):
             return u'(URL: {})'.format(rep)
         elif rep_type == word_type.TEXT:
             if simplify:
-                rep = simplified_string(rep, simplify_max_length)
+                rep = ext.simplified_string(rep, simplify_max_length)
             return rep
         else:
             raise ValueError('Undefined reply type.')
@@ -763,16 +761,6 @@ class group_dict_manager(db_base):
             return data.detailed_text(True, line_api_wrapper, kwd_mgr)
 
         return PackedStringResult.init_by_field(data_list, format_string, limit, append_first, no_result, '\n\n')
-
-def sticker_png_url(sticker_id):
-    return 'https://sdl-stickershop.line.naver.jp/stickershop/v1/sticker/{}/android/sticker.png'.format(sticker_id)
-
-def simplified_string(s, max_length=8):
-    """max_length excludes ..."""
-    s = s.replace('\n', '\\n')
-    if len(s) > (max_length + 3):
-        s = s[:max_length] + '...'
-    return s
 
 class pair_data(dict_like_mapping):
     """

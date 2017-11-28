@@ -78,7 +78,7 @@ class text_msg_handler(object):
                 self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
                 return True
             elif user_permission < low_perm:
-                self._line_api_wrapper.reply_message_text(token, error.main.restricted(low_perm))
+                self._line_api_wrapper.reply_message_text(token, error.permission.restricted(low_perm))
                 return True
 
             # handle command
@@ -140,9 +140,9 @@ class text_msg_handler(object):
 
     def _get_query_result(self, params, kwd_instance, exact_same):
         if params[2] is not None:
-            if bot.string_can_be_int(params[1]) and bot.string_can_be_int(params[2]):
-                begin_index = int(params[1])
-                end_index = int(params[2])
+            to_int_result = ext.string_to_int(params[1], params[2])
+            if to_int_result is not None:
+                begin_index, end_index = to_int_result
                 title = u'範圍: 【回覆組ID】介於【{}】和【{}】之間的回覆組。\n'.format(begin_index, end_index)
 
                 if end_index - begin_index < 0:
@@ -167,9 +167,9 @@ class text_msg_handler(object):
                         return error.line_bot_api.illegal_room_group_id(gid)
                 elif action == 'ID':
                     ids = params[2]
-                    id_list = ids.split(self._array_separator)
+                    id_list = ext.string_to_int(ids.split(self._array_separator))
                     title = u'範圍: 【回覆組ID】為【{}】的回覆組。\n'.format(u'、'.join(id_list))
-                    if bot.string_can_be_int(ids.replace(self._array_separator, '')):
+                    if id_list is not None:
                         result_data = kwd_instance.search_pair_by_index(id_list)
                     else:
                         return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列')
@@ -265,13 +265,13 @@ class text_msg_handler(object):
 
         source_type = bot.line_event_source_type.determine(src)
 
-        if kw_type == db.word_type.STICKER and not bot.string_can_be_int(kw):
+        if kw_type == db.word_type.STICKER and ext.string_to_int(kw) is None:
             return error.main.invalid_thing_with_correct_format(u'關鍵字', u'貼圖ID', kw)
         
         if kw_type == db.word_type.PICTURE and not len(kw) == db.pair_data.HASH_LENGTH:
             return error.main.invalid_thing_with_correct_format(u'關鍵字', u'共{}字元的{}雜湊'.format(db.pair_data.HASH_LENGTH, db.pair_data.HASH_TYPE), kw)
 
-        if rep_type == db.word_type.STICKER and not bot.string_can_be_int(rep):
+        if rep_type == db.word_type.STICKER and ext.string_to_int(rep) is None:
             return error.main.invalid_thing_with_correct_format(u'回覆', u'貼圖ID', rep)
 
         if rep_type == db.word_type.PICTURE and not rep.startswith('https://'):
@@ -329,12 +329,10 @@ class text_msg_handler(object):
         
             if action == 'ID':
                 pair_ids = params[2]
+                pair_ids_int = ext.string_to_int(pair_ids.split(self._array_separator))
 
-                if bot.string_can_be_int(pair_ids.replace(self._array_separator, '')):
-                    if self._array_separator in pair_ids:
-                        pair_ids = pair_ids.split(self._array_separator)
-
-                    disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids, del_profile_uid, pinned)
+                if pair_ids_int is not None:
+                    disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids_int, del_profile_uid, pinned)
                 else:
                     return error.main.incorrect_param(u'參數2', u'整數數字，或指定字元分隔的數字陣列')
             else:
@@ -351,7 +349,7 @@ class text_msg_handler(object):
             text += '\n'.join([data.basic_text(True) for data in disable_result_id_list])
             return text
         else:
-            if bot.string_can_be_int(params[1]):
+            if ext.string_to_int(params[1]) is not None:
                 return error.main.miscellaneous(u'偵測到參數1是整數。若欲使用ID作為刪除根據，請參閱小水母使用說明。')
             else:
                 return error.main.pair_not_exist_or_insuffieicnt_permission()
@@ -415,7 +413,7 @@ class text_msg_handler(object):
 
         if params[2] is not None:
             if key_permission_lv < bot.permission.MODERATOR:
-                return error.main.restricted(bot.permission.MODERATOR)
+                return error.permission.restricted(bot.permission.MODERATOR)
             flags = params[1]
             source_gid = params[2]
 
@@ -424,12 +422,13 @@ class text_msg_handler(object):
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', source_gid)
         elif params[1] is not None:
-            if bot.string_can_be_int(params[1].replace(self._array_separator, '')):
-                ids = params[1]
-                result_ids = self._kwd_global.clone_by_id(ids.split(self._array_separator), target_gid, uid, True, key_permission_lv >= low_perm)
+            id_list = ext.string_to_int(params[1].split(self._array_separator))
+
+            if id_list is not None:
+                result_ids = self._kwd_global.clone_by_id(id_list, target_gid, uid, True, key_permission_lv >= low_perm)
             elif hashlib.sha224('clear').hexdigest() == params[1]:
                 if key_permission_lv < bot.permission.ADMIN:
-                    return error.main.restricted(bot.permission.ADMIN)
+                    return error.permission.restricted(bot.permission.ADMIN)
 
                 try:
                     clear_count = self._kwd_global.clear(target_gid, uid)
@@ -462,12 +461,10 @@ class text_msg_handler(object):
         kwd_instance = self._get_kwd_instance(src, group_config_type, params)
 
         action = params[1]
-        id = params[2]
+        id = ext.string_to_int(params[2])
 
-        if not bot.string_can_be_int(id):
-            return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', id)
-        else:
-            id = int(id)
+        if id is None:
+            return error.main.invalid_thing_with_correct_format(u'參數2', u'正整數', params[2])
 
         shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '查看回覆組詳細資訊': text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + 'ID' + text_msg_handler.SPLITTER + str(id) }, u'更動回覆組ID: {}'.format(id), u'相關指令')
         
@@ -503,7 +500,7 @@ class text_msg_handler(object):
                 else:
                     return '#{} 置頂屬性變更失敗。'.format(id)
             else:
-                return error.main.restricted(low_perm)
+                return error.permission.restricted(low_perm)
         else:
             return error.main.lack_of_thing(u'參數')
 
@@ -519,10 +516,9 @@ class text_msg_handler(object):
 
         # validate parameters
         if limit is not None:
-            if not bot.string_can_be_int(limit):
+            limit = ext.string_to_int(limit)
+            if limit is None:
                 return error.main.incorrect_param(u'參數2(數量)', u'整數')
-            else:
-                limit = int(params[2])
         else:
             limit = default
         
@@ -539,13 +535,6 @@ class text_msg_handler(object):
         else:
             return error.main.incorrect_param(u'參數1(種類)', u'USER(使用者排行)、KW(關鍵字排行)或KWRC(呼叫時間排行)')
 
-        # append full url
-        # with self._flask_app.test_request_context():
-        #     text += u'\n\n完整使用者排名: {}\n完整關鍵字排名: {}\n完整最新呼叫表: {}'.format(
-        #         request.url_root + url_for('full_ranking', type='user')[1:],
-        #         request.url_root + url_for('full_ranking', type='used')[1:],
-        #         request.url_root + url_for('full_ranking', type='called')[1:])
-
         return text
 
     def _P(self, src, params, key_permission_lv, group_config_type):
@@ -555,12 +544,10 @@ class text_msg_handler(object):
         target_gid = self._get_remote_gid(params, default_target_gid, False, True)
 
         category = params[1]
-        gid = params[2]
+        limit = ext.string_to_int(params[2])
 
         if category == 'MSG':
-            if gid is not None and bot.string_can_be_int(gid):
-                limit = int(gid)
-            else:
+            if limit is None:
                 limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
         
             tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True, self._group_manager.message_sum())
@@ -670,7 +657,7 @@ class text_msg_handler(object):
                     
                     text = u'成員權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限: {}'.format(setter_uid, setter_name, target_name, target_uid, unicode(permission))
                 except db.InsufficientPermissionError:
-                    text = error.main.restricted()
+                    text = error.permission.restricted()
             else:
                 text = error.main.incorrect_param(u'參數1', u'S(更改權限)')
         elif params[2] is not None:
@@ -693,19 +680,19 @@ class text_msg_handler(object):
                         
                         text = u'成員權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
                     except db.InsufficientPermissionError:
-                        text = error.main.restricted()
+                        text = error.permission.restricted()
                 else:
                     text = error.main.incorrect_param(u'參數2', u'合法使用者ID')
             else:
                 text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
         elif params[1] is not None:
-            cfg_type = params[1]
+            cfg_type = ext.string_to_int(cfg_type)
         
-            if not bot.string_can_be_int(cfg_type):
+            if cfg_type is None:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)
         
             try:
-                cfg_type = db.config_type(int(cfg_type))
+                cfg_type = db.config_type(cfg_type)
             except ValueError:
                 return error.main.miscellaneous(u'群組設定代碼不合法，請確認代碼有效後重試。')
 
@@ -792,24 +779,24 @@ class text_msg_handler(object):
     def _RD(self, src, params, key_permission_lv, group_config_type):
         if params[2] is not None:
             if params[1].endswith('%') and params[1].count('%') == 1:
-                probability = params[1].replace('%', '')
-                scout_count = params[2]
+                probability = ext.string_to_float(params[1].replace('%', ''))
+                scout_count = ext.string_to_int(params[2])
 
-                if not bot.string_can_be_float(probability):
+                if probability is None:
                     text = error.main.incorrect_param(u'參數1(機率)', u'百分比加上符號%')
-                elif not bot.string_can_be_int(scout_count):
+                elif scout_count is None:
                     text = error.main.incorrect_param(u'參數2(抽籤次數)', u'整數')
                 elif int(scout_count) > 999999:
                     text = error.main.invalid_thing_with_correct_format(u'參數2(抽籤次數)', u'小於999999的整數', scout_count)
                 else:
                     text = tool.random_drawer.draw_probability_string(probability, True, scout_count, 3)
             else:
-                start_index = params[1]
-                end_index = params[2]
-                if not bot.string_can_be_int(start_index):
-                    text = error.main.invalid_thing_with_correct_format(u'起始抽籤數字', u'整數', start_index)
-                elif not bot.string_can_be_int(end_index):
-                    text = error.main.invalid_thing_with_correct_format(u'終止抽籤數字', u'整數', start_index)
+                start_index = ext.string_to_int(params[1])
+                end_index = ext.string_to_int(params[2])
+                if start_index is None:
+                    text = error.main.invalid_thing_with_correct_format(u'起始抽籤數字', u'整數', params[1])
+                elif end_index is None:
+                    text = error.main.invalid_thing_with_correct_format(u'終止抽籤數字', u'整數', params[2])
                 else:
                     text = tool.random_drawer.draw_number_string(start_index, end_index)
         elif params[1] is not None:
@@ -901,12 +888,12 @@ class text_msg_handler(object):
 
     def _C(self, src, params, key_permission_lv, group_config_type):
         if params[3] is not None:
-            amount = params[1]
+            amount = ext.string_to_float(params[1])
             source_currency = params[2]
             target_currency = params[3]
 
-            if not bot.string_can_be_float(amount):
-                text = error.main.invalid_thing_with_correct_format(u'轉換值', u'整數或小數', amount)
+            if amount is None:
+                text = error.main.invalid_thing_with_correct_format(u'轉換值', u'整數或小數', params[1])
             elif not tool.curr_exc.oxr.is_legal_symbol_text(source_currency):
                 text = error.main.invalid_thing_with_correct_format(u'原始值貨幣', u'3英文字元的貨幣代號', source_currency)
             elif not tool.curr_exc.oxr.is_legal_symbol_text(target_currency):
@@ -917,8 +904,8 @@ class text_msg_handler(object):
             historical_date = params[1]
             target_symbol = params[2]
 
-            if not bot.string_can_be_int(historical_date) and not len(historical_date) == 8:
-                text = error.main.invalid_thing_with_correct_format(u'日期', u'8位數整數，代表(年年年年月月日日)', historical_date)
+            if ext.string_to_int(historical_date) is None or not len(historical_date) == 8:
+                text = error.main.invalid_thing_with_correct_format(u'日期', u'8位數字，以下列格式輸入: 年年年年月月日日', historical_date)
             elif not tool.curr_exc.oxr.is_legal_symbol_text(target_symbol):
                 text = error.main.invalid_thing_with_correct_format(u'貨幣單位', u'3字元貨幣代號，多貨幣時以空格分隔', target_symbol)
             else:
@@ -929,7 +916,7 @@ class text_msg_handler(object):
             if param == '$':
                 available_currencies_dict = self._oxr_client.get_available_currencies_dict()
                 text = tool.curr_exc.oxr.available_currencies_str(available_currencies_dict)
-            elif bot.string_can_be_int(param) and len(param) == 8:
+            elif ext.string_to_int(param) is not None and len(param) == 8:
                 historical_all_dict = self._oxr_client.get_historical_dict(param)
                 text = tool.curr_exc.oxr.historical_str(historical_all_dict)
             elif tool.curr_exc.oxr.is_legal_symbol_text(param):
@@ -976,35 +963,36 @@ class text_msg_handler(object):
             text = error.main.lack_of_thing(u'參數')
 
     def _STK(self, src, params, key_permission_lv, group_config_type):
-        category = params[1]
-        hour_range = params[2]
-        limit_count = params[3]
-
-        category_action_dict = { 'STK': self._stk_rec.hottest_sticker, 'PKG': self._stk_rec.hottest_package_str }
-
-        if category not in category_action_dict:
-            return error.main.invalid_thing_with_correct_format(u'參數1', u'STK(貼圖排行)或PKG(圖包排行)', category)
-
-        if hour_range is None and limit_count is None:
-            hour_range = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
-            limit_count = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.LIMIT_COUNT)
-
-        if hour_range is not None and hour_range != '' and not bot.string_can_be_int(hour_range):
-            return error.main.invalid_thing_with_correct_format(u'參數1(小時範圍)', u'整數', limit_count)
-
-        if limit_count is not None and limit_count != '' and not bot.string_can_be_int(limit_count):
-            return error.main.invalid_thing_with_correct_format(u'參數2(結果數量)', u'正整數', limit_count)
-
-        hour_range = None if hour_range is None or hour_range == '' else int(hour_range)
-        limit_count = None if limit_count is None or hour_range == '' else int(limit_count)
-
-        result = category_action_dict[category](hour_range, limit_count)
-
-        if isinstance(result, db.PackedResult):
-            full_url = self._webpage_generator.rec_webpage(result.full, db.webpage_content_type.STICKER_RANKING)
-            return result.limited + u'\n\n詳細資訊: ' + full_url
+        sticker_id = params[1]
+        if sticker_id is not None:
+            return 
         else:
-            return result
+            category = params[1]
+            hour_range = ext.string_to_int(params[2])
+            limit_count = ext.string_to_int(params[3])
+
+            category_action_dict = { 'STK': self._stk_rec.hottest_sticker, 'PKG': self._stk_rec.hottest_package_str }
+
+            if category not in category_action_dict:
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'STK(貼圖排行)或PKG(圖包排行)', category)
+
+            if hour_range is None and limit_count is None:
+                hour_range = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
+                limit_count = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.LIMIT_COUNT)
+
+            if hour_range is None and params[2] != '':
+                return error.main.invalid_thing_with_correct_format(u'參數1(小時範圍)', u'正整數', params[2])
+
+            if limit_count is None and params[3] != '':
+                return error.main.invalid_thing_with_correct_format(u'參數2(結果數量)', u'正整數', params[3])
+
+            result = category_action_dict[category](hour_range, limit_count)
+
+            if isinstance(result, db.PackedResult):
+                full_url = self._webpage_generator.rec_webpage(result.full, db.webpage_content_type.STICKER_RANKING)
+                return result.limited + u'\n\n詳細資訊: ' + full_url
+            else:
+                return result
 
     def split_verify(self, cmd, splitter, param_text):
         if not self._command_manager.is_command_exist(cmd):
@@ -1096,7 +1084,7 @@ class game_msg_handler(object):
             except bot.UserProfileNotFoundError:
                 return error.line_bot_api.unable_to_receive_user_id()
 
-            if not bot.string_can_be_int(scissor, rock, paper):
+            if ext.string_to_int(scissor, rock, paper) is None:
                 return error.main.miscellaneous(u'初次建立遊戲時，各拳代表必須是貼圖ID。')
 
             text = self._rps_holder.create_game(cid, uid, creator_name, rock, paper, scissor)

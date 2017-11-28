@@ -33,11 +33,6 @@ class error(object):
             return u'無結果。'
 
         @staticmethod
-        def restricted(permission=None):
-            return u'已限制的功能。{}'.format(
-                u'\n需求權限: {}+\n\n權限相關說明請參閱使用說明書( {} )'.format(permission, error.USER_MANUAL_URL) if permission is not None else u'')
-
-        @staticmethod
         def incorrect_channel(available_in_1v1=True, available_in_room=False, available_in_group=False):
             return u'無法於此類型的頻道使用。請至下列頻道:\n{} {} {}\n詳細使用說明請參閱使用說明書( {} )'.format(
                 u'[ 私訊 ]' if available_in_1v1 else u'[ - ]',
@@ -82,8 +77,14 @@ class error(object):
             return u'{}\n\n小水母使用說明: {}'.format(content, error.USER_MANUAL_URL)
 
     class permission(object):
+        @staticmethod
         def user_is_resticted():
             return u'您遭到群組管理員設為「限制用戶」，所有系統功能將無法在這個群組觸發。若有任何問題，請洽詢管理員。'
+
+        @staticmethod
+        def restricted(permission=None):
+            return u'已限制的功能。{}'.format(
+                u'\n需求權限: {}+\n\n權限相關說明請參閱使用說明書( {} )'.format(permission, error.USER_MANUAL_URL) if permission is not None else u'')
 
     class line_bot_api(object):
         @staticmethod

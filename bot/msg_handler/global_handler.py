@@ -5,7 +5,7 @@ from linebot.models import (
 )
 
 from .text_msg import text_msg_handler, game_msg_handler, split
-import db, bot, tool, error
+import db, bot, ext, tool, error
 
 class global_msg_handle(object):
     SPLITTER = '\n'
@@ -93,7 +93,7 @@ class global_msg_handle(object):
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), recv_msg_type, db.msg_type.TEXT)
         elif rep_type == db.word_type.STICKER:
-            rep_list.append(bot.line_api_wrapper.wrap_image_message(db.sticker_png_url(rep_content)))
+            rep_list.append(bot.line_api_wrapper.wrap_image_message((bot.line_api_wrapper.sticker_png_url(rep_content))))
 
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), recv_msg_type, db.msg_type.STICKER)
         elif rep_type == db.word_type.PICTURE:
@@ -108,7 +108,7 @@ class global_msg_handle(object):
 
         if len(rep_link) > 0:
             # Max label text length is 20. Ref: https://developers.line.me/en/docs/messaging-api/reference/#template-action
-            action_dict = { db.simplified_string(word, 12): word for word in rep_link }
+            action_dict = { ext.simplified_string(word, 12): word for word in rep_link }
             alt_text = u'相關字詞: {}'.format(u'、'.join(word for word in rep_link))
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))

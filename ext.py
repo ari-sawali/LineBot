@@ -77,3 +77,32 @@ def simplify_num(value):
     
     simp = value / float(10 ** simp_pow)
     return u'{:.2f} {}'.format(simp, simp_text)
+
+def simplified_string(s, max_length=8):
+    """max_length excludes ..."""
+    s = s.replace('\n', '\\n')
+    if len(s) > (max_length + 3):
+        s = s[:max_length] + '...'
+    return s
+
+def left_alphabet(s):
+    return filter(unicode.isalpha, unicode(s))
+
+def string_to_int(*args):
+    """Return None if string cannot convert to int"""
+
+    try:
+        new_args = [int(i) for i in args]
+        if len(new_args) > 1:
+            return new_args
+        else:
+            return new_args[0]
+    except ValueError:
+        return None
+
+def string_to_float(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False

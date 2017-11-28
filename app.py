@@ -2,7 +2,6 @@
 
 # IMPORTANT: create avtivity point of group(calculate all stats of group)
 # IMPORTANT: cache keyword_dict
-# IMPORTANT: use mail api to send error report
 # IMPORTANT: set expire time to pair
 # TODO: keyword pair global, local ranking
 # TODO: hide keyword pair from indexing(Q I)
@@ -88,9 +87,12 @@ cmd_mgr = bot.commands_manager(bot.cmd_dict)
 # configurations initialization
 config_mgr = bot.config_manager('SystemConfig.ini')
 sys_config = db.system_config(MONGO_DB_URI)
+
+# gmail api
+gmail_api = bot.email.gmail_api(config_mgr.get(bot.config_category.ERROR_REPORT, bot.config_category_error_report.DEFAULT_SUBJECT_PREFIX))
     
 # Webpage auto generator
-webpage_generator = bot.webpage_manager(app, MONGO_DB_URI, config_mgr.getint(bot.config_category.SYSTEM, bot.config_category_system.MAX_ERROR_LIST_OUTPUT))
+webpage_generator = bot.webpage_manager(app, MONGO_DB_URI, config_mgr.getint(bot.config_category.SYSTEM, bot.config_category_system.MAX_ERROR_LIST_OUTPUT), gmail_api)
 
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)
@@ -119,7 +121,7 @@ if imgur_client_id is None:
 if imgur_client_secret is None:
     print('Specify IMGUR_CLIENT_SECRET environment variable.')
     sys.exit(1)
-imgur_api_wrapper = bot.system.imgur_api_wrapper(ImgurClient(imgur_client_id, imgur_client_secret))
+imgur_api_wrapper = bot.imgur_api_wrapper(ImgurClient(imgur_client_id, imgur_client_secret))
 
 # currency exchange api
 oxr_app_id = os.getenv('OXR_APP_ID', None)
@@ -217,7 +219,7 @@ def handle_text_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), unicode(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
@@ -253,7 +255,7 @@ def handle_sticker_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), unicode(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
@@ -289,7 +291,7 @@ def handle_image_message(event):
         except UnicodeEncodeError:
             tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
         except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), unicode(event).decode("utf-8"))
+            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
 
         error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 

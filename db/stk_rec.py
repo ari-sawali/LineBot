@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 
 from .base import db_base, dict_like_mapping
 from .misc import PackedResult
-from .keyword_dict import sticker_png_url
-import error
+import error, bot
 
 DB_NAME = 'rec'
 
@@ -99,7 +98,7 @@ class sticker_recorder(db_base):
             limited_text = u'第{}名 - 貼圖ID {} ({})'.format(index, stk_id, data[COUNT])
 
             limited.append(limited_text)
-            full.append((limited_text, package_id_to_url(data['_id'][sticker_record_data.PACKAGE_ID]), sticker_png_url(stk_id)))
+            full.append((limited_text, package_id_to_url(data['_id'][sticker_record_data.PACKAGE_ID]), bot.line_api_wrapper.sticker_png_url(stk_id)))
 
         return PackedResult(u'\n'.join(limited), full)
 
