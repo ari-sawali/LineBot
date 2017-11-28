@@ -306,7 +306,7 @@ class line_api_wrapper(object):
             return self._line_api.get_profile(uid)
         except exceptions.LineBotApiError as ex:
             if ex.status_code == 404:
-                raise UserProfileNotFoundError()
+                return None
             else:
                 raise ex
 

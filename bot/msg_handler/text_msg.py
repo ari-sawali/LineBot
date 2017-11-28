@@ -1098,7 +1098,7 @@ class game_msg_handler(object):
 
             if action == 'PLAY':
                 try:
-                    player_name = self._line_api_wrapper.profile(uid).display_name
+                    player_name = self._line_api_wrapper.profile_name(uid)
                 except bot.UserProfileNotFoundError:
                     return error.line_bot_api.unable_to_receive_user_id()
 
