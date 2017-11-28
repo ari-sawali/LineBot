@@ -92,13 +92,14 @@ class gmail_api(object):
             Result of sent message in unicode string.
         """
         try:
-            print type(content)
             if isinstance(content, unicode):
                 content = str(content.encode('utf-8'))
             mime_message = MIMEText(content)
             mime_message['from'] = self._sender_email_addr
             mime_message['to'] = self._receiver_email_addr
             mime_message['subject'] = self._default_subject_prefix + subject
+
+            mail_message = {'raw': base64.urlsafe_b64encode(mime_message.as_string())}
 
             message = (self._service.users().messages().send(userId='me', body=mime_message)
                        .execute())
