@@ -9,6 +9,7 @@ from oauth2client.file import Storage
 
 import googleapiclient
 
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import base64
 
@@ -94,15 +95,38 @@ class gmail_api(object):
         try:
             if isinstance(content, unicode):
                 content = str(content.encode('utf-8'))
-            mime_message = MIMEText(content)
-            mime_message['from'] = self._sender_email_addr
-            mime_message['to'] = self._receiver_email_addr
-            mime_message['subject'] = self._default_subject_prefix + subject
 
-            mail_message = {'raw': base64.urlsafe_b64encode(mime_message.as_string())}
+            mime_multi = MIMEMultipart('alternative')
+            mime_multi['from'] = self._sender_email_addr
+            mime_multi['to'] = self._receiver_email_addr
+            mime_multi['subject'] = self._default_subject_prefix + subject
 
-            message = (self._service.users().messages().send(userId='me', body=mail_message)
-                       .execute())
+            html_template = """\
+            <html>
+                <head>
+                    <style>
+                    body {
+                        font-family: monospace;
+                        word-wrap: break-word;
+                    }
+                    </style>
+                </head>
+                <body>
+                    <p>{}</p>
+                </body>
+            </html>\
+            """
+            html = html_template.format(content.replace('\n', '<br>'))
+            
+            mail_plain = MIMEText(content, 'plain')
+            mail_html = MIMEText(html, 'html')
+
+            mime_multi.attach(mail_plain)
+            mime_multi.attach(mail_html)
+
+            mail_message = {'raw': base64.urlsafe_b64encode(mime_multi.as_string())}
+
+            message = (self._service.users().messages().send(userId='me', body=mail_message).execute())
             result = u'成功' if 'SENT' in message['labelIds'] else u'失敗'
             return u'錯誤訊息寄送{}。信件ID: {}'.format(result, message['id'])
         except googleapiclient.errors.HttpError as error:
