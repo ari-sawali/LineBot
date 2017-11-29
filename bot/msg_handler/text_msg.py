@@ -30,7 +30,7 @@ class special_text_handler(object):
 
         spec_func = self._special_keyword.get(msg_text, None)
         
-        print msg_text
+        print msg_text.encode('utf-8')
         print self._special_keyword
         print spec_func
 
