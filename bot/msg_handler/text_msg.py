@@ -19,8 +19,8 @@ class special_text_handler(object):
         self._weather_reporter = weather_reporter
 
         self._special_keyword = {
-            '天氣': self._handle_text_spec_weather_simple,
-            '詳細天氣': self._handle_text_spec_weather_detail
+            u'天氣': self._handle_text_spec_weather_simple,
+            u'詳細天氣': self._handle_text_spec_weather_detail
         }
 
     def handle_text(self, event):
