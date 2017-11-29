@@ -273,9 +273,12 @@ class global_msg_handle(object):
         token = event.reply_token
         text = event.message.text
 
-        self._system_stats.extend_function_used(db.extend_function_category.SPECIAL_TEXT_KEYWORD)
+        replied = self._spec_txt_handle.handle_text(event)
 
-        return self._spec_txt_handle.handle_text(event)
+        if replied:
+            self._system_stats.extend_function_used(db.extend_function_category.SPECIAL_TEXT_KEYWORD)
+
+        return replied
 
     ############################
     ### HANDLE TEXT - PUBLIC ###

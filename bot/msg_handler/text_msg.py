@@ -29,6 +29,11 @@ class special_text_handler(object):
         msg_text = event.message.text
 
         spec_func = self._special_keyword.get(msg_text, None)
+
+        
+        print self._special_keyword
+        print spec_func
+
         if spec_func is not None:
             rep_text = spec_func()
             self._line_api_wrapper.reply_message_text(token, spen_func())
