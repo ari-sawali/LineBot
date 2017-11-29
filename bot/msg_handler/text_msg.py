@@ -30,10 +30,6 @@ class special_text_handler(object):
 
         spec_func = self._special_keyword.get(msg_text, None)
         
-        print msg_text.encode('utf-8')
-        print self._special_keyword
-        print spec_func
-
         if spec_func is not None:
             rep_text = spec_func()
             self._line_api_wrapper.reply_message_text(token, spen_func())

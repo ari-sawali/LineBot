@@ -102,7 +102,7 @@ aqicn_key = os.getenv('AQICN_KEY', None)
 if aqicn_key is None:
     print 'Define AQICN_KEY in environment variable.'
     sys.exit(1)
-weather_reporter = tool.weather.weather_reporter(owm_key, aqicn_key)
+weather_reporter = tool.weather.weather_reporter(tool.weather.owm(owm_key), tool.weather.aqicn(aqicn_key))
 
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)
