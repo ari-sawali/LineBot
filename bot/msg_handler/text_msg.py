@@ -563,7 +563,7 @@ class text_msg_handler(object):
             text += kwd_instance.get_statistics_string()
         elif category == 'SYS':
             text = u'【系統統計資料】\n'
-            text += u'開機時間: {} (UTC+8)\n'.format(self._system_data.boot_up)
+            text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
             text += self._system_stats.get_statistics()
         elif category == 'IMG':
             import socket
