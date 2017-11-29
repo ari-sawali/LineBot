@@ -27,7 +27,6 @@ class webpage_manager(object):
     def rec_error(self, error_instance, decoded_traceback, occurred_at, simplified=None):
         """Get error webpage url + error list url"""
         try:
-            self._system_stats.webpage_viewed(db.webpage_content_type.ERROR)
             with self._flask_app.app_context():
                 err_type = error_instance.__class__.__name__
 
@@ -64,7 +63,6 @@ class webpage_manager(object):
     
     def rec_webpage(self, content, type, short_description=None):
         """Return recorded webpage url."""
-        self._system_stats.webpage_viewed(type)
         with self._flask_app.app_context():
             webpage_id = self._content_holder.rec_data(content, type, short_description)
             return url_for(self._route_method_name, seq_id=webpage_id)

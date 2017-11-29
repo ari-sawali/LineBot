@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: create avtivity point of group(calculate all stats of group)
+# IMPORTANT: create activity point of group(calculate all stats of group)
 # IMPORTANT: cache keyword_dict
 # IMPORTANT: set expire time to pair
 # TODO: hide keyword pair from indexing(Q I)
@@ -183,11 +183,13 @@ def callback():
 
 @app.route("/error", methods=['GET'])
 def get_error_list():
+    db.system_statistics(MONGO_DB_URI).webpage_viewed(db.webpage_content_type.ERROR)
     return webpage_generator.html_render_error_list(sys_data.boot_up, webpage_generator.get_error_dict())
 
 @app.route("/webpage/<seq_id>", methods=['GET'])
 def get_webpage(seq_id):
     webpage_data = webpage_generator.get_webpage_data(seq_id)
+    db.system_statistics(MONGO_DB_URI).webpage_viewed(webpage_data.content_type)
     return bot.webpage_manager.render_webpage(webpage_data)
 
 @handler.add(MessageEvent, message=TextMessage)
