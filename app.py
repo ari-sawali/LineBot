@@ -344,7 +344,13 @@ def handle_postback(event):
 # Not Using
 @handler.add(MessageEvent, message=LocationMessage)
 def handle_location_message(event):
+    print event
     text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.LOCATION)
+    return 
+    event.message.latitude
+    event.message.longitude
+    event.message.title
+    event.message.address
 
 # Not Using
 @handler.add(MessageEvent, message=VideoMessage)
