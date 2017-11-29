@@ -12,6 +12,8 @@ class extend_function_category(ext.EnumWithName):
     GET_STICKER_ID = 2, '獲取貼圖ID'
     BASIC_CALCUALTE = 3, '基本計算功能'
     AUTO_REPLY = 4, '自動回覆'
+    SPECIAL_TEXT_KEYWORD = 5, '特殊關鍵字'
+    REQUEST_WEATHER_REPORT = 6, '查詢氣象'
 
 class system_statistics(db_base):
     COLLECTION_NAME = 'statistics'

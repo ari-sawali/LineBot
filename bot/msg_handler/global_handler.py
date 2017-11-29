@@ -28,6 +28,8 @@ class global_msg_handle(object):
         self._get_kwd_instance = self._txt_handle._get_kwd_instance 
         self._stk_rec = self._txt_handle._stk_rec
         self._loop_preventer = self._txt_handle._loop_prev
+
+        self._weather_reporter = self._spec_txt_handle._weather_reporter
         
         self._rps_data = self._game_handle._rps_holder
 
@@ -170,6 +172,8 @@ class global_msg_handle(object):
                 print 'Message \'{}\''.format(event.message.text.encode('utf-8'))
             elif isinstance(event.message, StickerMessage):
                 print 'Sticker ID: {} Package ID: {}'.format(event.message.sticker_id, event.message.package_id)
+            elif isinstance(event.message, LocationMessage):
+                print 'Latitude: {} Longitude: {}'.format(event.message.latitude, event.message.longitude)
             else:
                 print '(not implemented intercept output.)'
                 print event.message
@@ -268,6 +272,8 @@ class global_msg_handle(object):
     def _handle_text_spec_text(self, event):
         token = event.reply_token
         text = event.message.text
+
+        self._system_stats.extend_function_used(db.extend_function_category.SPECIAL_TEXT_KEYWORD)
 
         return self._spec_txt_handle.handle_text(event)
 
@@ -636,3 +642,89 @@ class global_msg_handle(object):
             return
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
+
+    #################################
+    ### HANDLE LOCATION - PRIVATE ###
+    #################################
+
+    def _handle_location_weather(self, event):
+        src = event.source
+        token = event.reply_token
+
+        latitude = event.message.latitude
+        longitude = event.message.longitude
+
+        reply_text = self._weather_reporter.get_data_by_coord(tool.weather.Coordinate(latitude, longitude))
+        if reply_text is not None:
+            self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
+            self._line_api_wrapper.reply_message_text(token, reply_text)
+            return True
+
+        return False
+
+    ################################
+    ### HANDLE LOCATION - PUBLIC ###
+    ################################
+
+    def handle_location(self, event):
+        src = event.source
+        token = event.reply_token
+        cid = bot.line_api_wrapper.source_channel_id(src)
+        uid = bot.line_api_wrapper.source_user_id(src)
+
+        self._print_intercepted(event)
+
+        ####################################################
+        ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
+        ####################################################
+        
+        terminate = self._terminate()
+        
+        if terminate:
+            print 'terminate - system config set to silence'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.LOCATION)
+            return
+
+        ############################################
+        ######## ASSIGN NECESSARY VARIABLES ########
+        ############################################
+
+        group_config = self._get_group_config(cid)
+        user_permission = self._get_user_permission(src)
+
+        latitude = event.message.latitude
+        longitude = event.message.longitude
+
+        #######################################################
+        ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
+        #######################################################
+
+        terminate = group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED
+
+        if terminate:
+            print 'terminate - group set to silence or user is restricted'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.LOCATION)
+            return
+
+        #####################################
+        ### TERMINATE CHECK - LOOP TO BAN ###
+        #####################################
+
+        terminate = self._handle_auto_ban(event, (latitude, longitude), db.msg_type.LOCATION)
+
+        if terminate:
+            print 'terminate - user auto ban temporarily'
+            return
+
+        ########################################
+        ### TERMINATE CHECK - REPORT WEATHER ###
+        ########################################
+
+        terminate = self._handle_location_weather(even)
+
+        if terminate:
+            print 'terminate - weather of location reported'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.LOCATION)
+            return
+
+        self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.LOCATION)

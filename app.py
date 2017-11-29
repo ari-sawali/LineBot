@@ -173,6 +173,10 @@ def make_tmp_dir():
         else:
             raise
 
+#########################
+##### VIRTUAL ROUTE #####
+#########################
+
 @app.route("/callback", methods=['POST'])
 def callback():
     # get X-Line-Signature header value
@@ -204,114 +208,40 @@ def get_webpage(seq_id):
     db.system_statistics(MONGO_DB_URI).webpage_viewed(webpage_data.content_type)
     return bot.webpage_manager.render_webpage(webpage_data)
 
+#######################################
+##### LINE BOT API EVENT HANDLING #####
+#######################################
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    token = event.reply_token
-    src = event.source
-
     try:
         global_handler.handle_text(event)
     except Exception as ex:
-        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
-        if isinstance(ex, LineBotApiError):
-            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
-            if ex.status_code == 429:
-                return
-        else:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            try:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message)
-            except UnicodeEncodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.encode("utf-8"))
-            except UnicodeDecodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
-        
-        tb = traceback.format_exc()
-
-        try:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb, str(event))
-        except UnicodeEncodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.encode('utf-8'), str(event).encode("utf-8"))
-        except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(tb.decode('utf-8'), str(event).decode("utf-8"))
-
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
-
-        if sys_config.get(db.config_data.REPLY_ERROR):
-            line_api.reply_message_text(token, error_msg)
+        handle_error(event.source, event.reply_token, ex)
 
 
 @handler.add(MessageEvent, message=StickerMessage)
 def handle_sticker_message(event):
-    token = event.reply_token
-    src = event.source
-
     try:
         global_handler.handle_sticker(event)
     except Exception as ex:
-        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
-        if isinstance(ex, LineBotApiError):
-            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
-            if ex.status_code == 429:
-                return
-        else:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            try:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message)
-            except UnicodeEncodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.encode("utf-8"))
-            except UnicodeDecodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
-        
-        try:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
-        except UnicodeEncodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
-        except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
-
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
-
-        if sys_config.get(db.config_data.REPLY_ERROR):
-            line_api.reply_message_text(token, error_msg)
+        handle_error(event.source, event.reply_token, ex)
 
 
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
-    src = event.source
-    token = event.reply_token
-
     try:
         global_handler.handle_image(event)
     except Exception as ex:
-        error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
-        if isinstance(ex, LineBotApiError):
-            error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(ex.status_code)
-            error_msg += u'錯誤內容: {}\n'.format(ex.error.as_json_string()) 
-            if ex.status_code == 429:
-                return
-        else:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            try:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message)
-            except UnicodeEncodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.encode("utf-8"))
-            except UnicodeDecodeError:
-                error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, ex.message.decode("utf-8"))
-        
-        try:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
-        except UnicodeEncodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
-        except UnicodeDecodeError:
-            tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+        handle_error(event.source, event.reply_token, ex)
 
-        error_msg += webpage_generator.rec_error(ex, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
-        if sys_config.get(db.config_data.REPLY_ERROR):
-            line_api.reply_message_text(token, error_msg)
+@handler.add(MessageEvent, message=LocationMessage)
+def handle_location_message(event):
+    try:
+        global_handler.handle_location(event)
+    except Exception as ex:
+        handle_error(event.source, event.reply_token, ex)
 
 
 @handler.add(FollowEvent)
@@ -348,20 +278,39 @@ def handle_join(event):
                                     group_template])
 
 
+def handle_error(src, token, exception_instance):
+    error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
+    if isinstance(exception_instance, LineBotApiError):
+        error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(exception_instance.status_code)
+        error_msg += u'錯誤內容: {}\n'.format(exception_instance.error.as_json_string()) 
+        if ex.status_code == 429:
+            return
+    else:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        try:
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exception_instance.message)
+        except UnicodeEncodeError:
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exception_instance.message.encode("utf-8"))
+        except UnicodeDecodeError:
+            error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exception_instance.message.decode("utf-8"))
+    
+    try:
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
+    except UnicodeEncodeError:
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
+    except UnicodeDecodeError:
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+
+    error_msg += webpage_generator.rec_error(exception_instance, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
+
+    if sys_config.get(db.config_data.REPLY_ERROR):
+        line_api.reply_message_text(token, error_msg)
+
+
 # Not Using
 @handler.add(PostbackEvent)
 def handle_postback(event):
     return
-
-# Not Using
-@handler.add(MessageEvent, message=LocationMessage)
-def handle_location_message(event):
-    text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.LOCATION)
-    return 
-    event.message.latitude
-    event.message.longitude
-    event.message.title
-    event.message.address
 
 # Not Using
 @handler.add(MessageEvent, message=VideoMessage)
