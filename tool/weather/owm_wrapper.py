@@ -63,7 +63,7 @@ class owm(object):
         hours_within -> Max=120 (5 days)\
         """
         try:
-            f = self._owm_client.three_hours_forecast_at_coords(coord.lat, coord.lon).get_forecast()
+            f = self._owm_client.three_hours_forecast_at_coords(coord.lat, coord.lng).get_forecast()
             f_w = f.get_weathers()
 
             o = self._owm_client.weather_at_coords(idcoord.lat, coord.lon)
