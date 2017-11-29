@@ -36,7 +36,10 @@ class AqiData:
     @staticmethod
     def aqi_level(aqi_value):
         if aqi_value < 0:
-            raise ValueError('AQI value must not be minus. {}'.format(aqi_value))
+            if aqi_value == AqiData.UNKNOWN_INT:
+                return AqiData.UNKNOWN
+            else:
+                raise ValueError('AQI value must not be minus. {}'.format(aqi_value))
         elif aqi_value < 50:
             return u'好'
         elif aqi_value < 100:
