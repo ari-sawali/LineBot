@@ -83,7 +83,7 @@ class owm(object):
         return u'http://openweathermap.org/img/w/{}.png'.format(icon_id)
 
 class OwmResult:
-    def __init__(self, current_weather, forecast_weather_list, uv):
+    def __init__(self, location, current_weather, forecast_weather_list, uv):
         self._location = location
         self._current = current_weather
         self._weather_list = forecast_weather_list
