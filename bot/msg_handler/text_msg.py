@@ -423,7 +423,7 @@ class text_msg_handler(object):
             else:
                 return error.main.invalid_thing_with_correct_format(u'參數2', u'合法的群組/房間ID 或 "PUBLIC"(公用資料庫)', source_gid)
         elif params[1] is not None:
-            id_list = ext.string_to_int(params[1].split(self._array_separator))
+            id_list = ext.string_to_int(*(params[1].split(self._array_separator)))
 
             if id_list is not None:
                 result_ids = self._kwd_global.clone_by_id(id_list, target_gid, uid, True, key_permission_lv >= low_perm)
