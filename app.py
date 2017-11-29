@@ -217,7 +217,7 @@ def handle_text_message(event):
     try:
         global_handler.handle_text(event)
     except Exception as ex:
-        handle_error(event.source, event.reply_token, ex)
+        handle_error(event, ex)
 
 
 @handler.add(MessageEvent, message=StickerMessage)
@@ -225,7 +225,7 @@ def handle_sticker_message(event):
     try:
         global_handler.handle_sticker(event)
     except Exception as ex:
-        handle_error(event.source, event.reply_token, ex)
+        handle_error(event, ex)
 
 
 @handler.add(MessageEvent, message=ImageMessage)
@@ -233,7 +233,7 @@ def handle_image_message(event):
     try:
         global_handler.handle_image(event)
     except Exception as ex:
-        handle_error(event.source, event.reply_token, ex)
+        handle_error(event, ex)
 
 
 @handler.add(MessageEvent, message=LocationMessage)
@@ -241,7 +241,7 @@ def handle_location_message(event):
     try:
         global_handler.handle_location(event)
     except Exception as ex:
-        handle_error(event.source, event.reply_token, ex)
+        handle_error(event, ex)
 
 
 @handler.add(FollowEvent)
@@ -278,7 +278,10 @@ def handle_join(event):
                                     group_template])
 
 
-def handle_error(src, token, exception_instance):
+def handle_error(event, exception_instance):
+    src = event.source
+    token = event.reply_token
+
     error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
     if isinstance(exception_instance, LineBotApiError):
         error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(exception_instance.status_code)
