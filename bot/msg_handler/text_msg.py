@@ -38,7 +38,7 @@ class special_text_handler(object):
         return False
 
     def _handle_text_spec_weather_simple(self):
-        return self.__handle_text_spec_weather(True)
+        return self.__handle_text_spec_weather(False)
 
     def _handle_text_spec_weather_detail(self):
         return self.__handle_text_spec_weather(True)
@@ -48,7 +48,7 @@ class special_text_handler(object):
 
         for id in tool.weather.DEFAULT_IDS:
             # ERRRRRRRRORRRRRR
-            ret.append(self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.SIMPLE if detailed else tool.weather.output_config.DETAIL, 12, 24))
+            ret.append(self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.DETAIL if detailed else tool.weather.output_config.SIMPLE, 12, 24))
 
         return u'\n==========\n'.join(ret)
 
