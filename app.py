@@ -93,6 +93,17 @@ gmail_api = bot.email.gmail_api(config_mgr.get(bot.config_category.ERROR_REPORT,
 # Webpage auto generator
 webpage_generator = bot.webpage_manager(app, MONGO_DB_URI, config_mgr.getint(bot.config_category.SYSTEM, bot.config_category_system.MAX_ERROR_LIST_OUTPUT), gmail_api)
 
+# Open Weather Map API initialization
+owm_key = os.getenv('OWM_KEY', None)
+if owm_key is None:
+    print 'Define OWM_KEY in environment variable.'
+    sys.exit(1)
+aqicn_key = os.getenv('AQICN_KEY', None)
+if aqicn_key is None:
+    print 'Define AQICN_KEY in environment variable.'
+    sys.exit(1)
+weather_reporter = tool.weather.weather_reporter(owm_key, aqicn_key)
+
 # System initialization
 ADMIN_UID = os.getenv('ADMIN_UID', None)
 if ADMIN_UID is None:
@@ -141,10 +152,11 @@ str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, b
 # Message handler initialization
 text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, 
                                                oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc)
+spec_text_handler = bot.msg_handler.special_text_handler(line_api, weather_reporter)
 game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api, cmd_mgr)
 img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path)
 
-global_handler = bot.msg_handler.global_msg_handle(line_api, sys_config, MONGO_DB_URI, text_handler, game_handler, img_handler)
+global_handler = bot.msg_handler.global_msg_handle(line_api, sys_config, MONGO_DB_URI, text_handler, spec_text_handler, game_handler, img_handler)
 
 # function for create tmp dir for download content
 def make_tmp_dir():
@@ -344,7 +356,6 @@ def handle_postback(event):
 # Not Using
 @handler.add(MessageEvent, message=LocationMessage)
 def handle_location_message(event):
-    print event
     text_handler._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(event.source), db.msg_type.LOCATION)
     return 
     event.message.latitude

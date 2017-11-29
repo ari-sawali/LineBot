@@ -13,11 +13,48 @@ import tool
 from error import error
 import bot, db, ext
 
+class special_text_handler(object):
+    def __init__(self, line_api_wrapper, weather_reporter):
+        self._line_api_wrapper = line_api_wrapper
+        self._weather_reporter = weather_reporter
+
+        self._special_keyword = {
+            '天氣': self._handle_text_spec_weather_simple,
+            '詳細天氣': self._handle_text_spec_weather_detail
+        }
+
+    def handle_text(self, event):
+        """Return replied or not."""
+        token = event.reply_token
+        msg_text = event.message.text
+
+        spec_func = self._special_keyword.get(msg_text, None)
+        if spec_func is not None:
+            rep_text = spec_func()
+            self._line_api_wrapper.reply_message_text(token, spen_func())
+            return True
+
+        return False
+
+    def _handle_text_spec_weather_simple(self):
+        return self.__handle_text_spec_weather(True)
+
+    def _handle_text_spec_weather_detail(self):
+        return self.__handle_text_spec_weather(True)
+
+    def __handle_text_spec_weather(self, detailed):
+        ret = []
+
+        for id in tool.weather.DEFAULT_IDS:
+            ret.append(self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.SIMPLE if detailed else tool.weather.output_config.DETAIL, 12, 24))
+
+        return u'\n==========\n'.join(ret)
+
 class text_msg_handler(object):
     HEAD = 'JC'
     SPLITTER = '\n'
 
-    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator):
+    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter):
         self._mongo_uri = mongo_db_uri
         self._flask_app = flask_app
         self._config_manager = config_manager
@@ -40,6 +77,7 @@ class text_msg_handler(object):
         self._imgur_api_wrapper = imgur_api_wrapper
         self._oxr_client = oxr_client
         self._string_calculator = string_calculator
+        self._weather_reporter = weather_reporter
         
         self._pymongo_client = None
 
@@ -1147,4 +1185,3 @@ def split(text, splitter, size):
         list.append(None)
     
     return list
-

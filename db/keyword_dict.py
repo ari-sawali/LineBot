@@ -539,7 +539,7 @@ class group_dict_manager(db_base):
             return u'(圖片雜湊 {})'.format(kw)
         elif kw_type == word_type.TEXT:
             if simplify:
-                kw = ext.simplified_string(kw, simplify_max_length)
+                kw = ext.simplify_string(kw, simplify_max_length)
             return kw
         else:
             raise ValueError('Undefined keyword type.')
@@ -555,7 +555,7 @@ class group_dict_manager(db_base):
             return u'(URL: {})'.format(rep)
         elif rep_type == word_type.TEXT:
             if simplify:
-                rep = ext.simplified_string(rep, simplify_max_length)
+                rep = ext.simplify_string(rep, simplify_max_length)
             return rep
         else:
             raise ValueError('Undefined reply type.')

@@ -8,3 +8,5 @@ enum34
 sympy
 pymongo
 google-api-python-client
+pyowm
+aqicn

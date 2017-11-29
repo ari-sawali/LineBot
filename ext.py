@@ -5,7 +5,7 @@ from enum import IntEnum
 from datetime import datetime
 import time
 import bson
-from math import log10
+from math import log10, floor
 
 class EnumWithName(IntEnum):
     def __new__(cls, value, name):
@@ -62,7 +62,7 @@ def object_to_json(o, level=0, indent=4, space=" ", newline="\n"):
         raise TypeError("Unknown type '%s' for json serialization" % str(type(o)))
     return ret
 
-levels = [(0, ''), (3, 'K'), (6, 'M'), (9, 'G'), (12, 'T'), (15, 'P'), (18, 'E'), (21, 'Z'), (24, 'Y')]
+levels = ' KMGTPEZY'
 
 def simplify_num(value):
     if value < 1000:
@@ -71,14 +71,14 @@ def simplify_num(value):
     lads = int(log10(value) / 3)
 
     if lads >= len(levels):
-        simp_pow, simp_text = levels[-1]
+        simp_text = levels[-1]
     else:
-        simp_pow, simp_text = levels[lads]
+        simp_text = levels[lads]
     
-    simp = value / float(10 ** simp_pow)
+    simp = value / float(10 ** (lads * 3))
     return u'{:.2f} {}'.format(simp, simp_text)
 
-def simplified_string(s, max_length=8):
+def simplify_string(s, max_length=8):
     """\
     max_length excludes ...\
     Return unicode.
@@ -112,3 +112,12 @@ def string_to_float(s):
         return float(s)
     except (ValueError, TypeError):
         return None
+
+dir_symbol_dict = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+
+def dir_symbol(deg):
+    CIRCLE_DEG = 360.0
+
+    part_alloc_deg = (CIRCLE_DEG / len(dir_symbol_dict))
+
+    return dir_symbol_dict[int(floor(((float(deg) + (part_alloc_deg / 2)) % CIRCLE_DEG) / part_alloc_deg))]

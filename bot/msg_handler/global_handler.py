@@ -10,12 +10,13 @@ import db, bot, ext, tool, error
 class global_msg_handle(object):
     SPLITTER = '\n'
 
-    def __init__(self, line_api_wrapper, system_config, mongo_db_uri, txt_handle, game_handle, img_handle):
+    def __init__(self, line_api_wrapper, system_config, mongo_db_uri, txt_handle, special_keyword_handler, game_handle, img_handle):
         self._mongo_uri = mongo_db_uri
         self._line_api_wrapper = line_api_wrapper
         self._system_config = system_config
 
         self._txt_handle = txt_handle
+        self._spec_txt_handle = special_keyword_handler
         self._game_handle = game_handle
         self._img_handle = img_handle
 
@@ -113,7 +114,7 @@ class global_msg_handle(object):
 
         if len(rep_link) > 0:
             # Max label text length is 20. Ref: https://developers.line.me/en/docs/messaging-api/reference/#template-action
-            action_dict = { ext.simplified_string(word, 17): word for word in rep_link }
+            action_dict = { ext.simplify_string(word, 17): word for word in rep_link }
             alt_text = u'相關字詞: {}'.format(u'、'.join(word for word in rep_link))
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, alt_text, u'相關回覆組'))
@@ -264,6 +265,12 @@ class global_msg_handle(object):
 
         return False
 
+    def _handle_text_spec_text(self, event):
+        token = event.reply_token
+        text = event.message.text
+
+        return self._spec_txt_handle.handle_text(event)
+
     ############################
     ### HANDLE TEXT - PUBLIC ###
     ############################
@@ -282,10 +289,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - MAIN SYSTEM CONFIG CHANGING KEY ###
         #########################################################
 
-        terminate_0 = self._handle_text_sys_config(event)
+        terminate = self._handle_text_sys_config(event)
 
-        if terminate_0:
-            print 'terminate 0'
+        if terminate:
+            print 'terminate - changing system config'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -293,9 +300,9 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
         ####################################################
 
-        terminate_1 = self._terminate()
-        if terminate_1 and not full_text.startswith(text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'GA'):
-            print 'terminate 1'
+        terminate = self._terminate()
+        if terminate:
+            print 'terminate - system config set to silence'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
 
@@ -310,10 +317,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event, full_text, db.msg_type.TEXT)
+        terminate = self._handle_auto_ban(event, full_text, db.msg_type.TEXT)
 
-        if terminate_2:
-            print 'terminate 2'
+        if terminate:
+            print 'terminate - user auto ban temporarily'
             return
 
         ##############################################
@@ -328,10 +335,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate_3 = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
 
-        if terminate_3:
-            print 'terminate 3'
+        if terminate:
+            print 'terminate - group set to silence or user is restricted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
             return
 
@@ -339,10 +346,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - TEXT CALCULATOR ###
         #########################################
 
-        terminate_4 = self._handle_text_str_calc(event)
+        terminate = self._handle_text_str_calc(event)
 
-        if terminate_4:
-            print 'terminate 4'
+        if terminate:
+            print 'terminate - text calculator used'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -350,10 +357,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GAME (RPS) ###
         ####################################
         
-        terminate_5 = self._handle_text_rps(event)
+        terminate = self._handle_text_rps(event)
 
-        if terminate_5:
-            print 'terminate 5'
+        if terminate:
+            print 'terminate - game (Rock-Paper-Scissor) action submitted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -361,10 +368,21 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SYSTEM COMMAND ###
         ########################################
 
-        terminate_6 = self._handle_text_sys_command(event, user_permission, group_config)
+        terminate = self._handle_text_sys_command(event, user_permission, group_config)
 
-        if terminate_6 or group_config <= db.config_type.SYS_ONLY:
-            print 'terminate 6'
+        if terminate or group_config <= db.config_type.SYS_ONLY:
+            print 'terminate - system command'
+            self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
+            return
+
+        #########################################
+        ### TERMINATE CHECK - SPECIAL KEYWORD ###
+        #########################################
+        
+        terminate = self._handle_text_spec_text(event)
+             
+        if terminate:
+            print 'terminate - special keyword'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
 
@@ -372,10 +390,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_7 = self._handle_text_auto_reply(event, group_config)
+        terminate = self._handle_text_auto_reply(event, group_config)
              
-        if terminate_7:
-            print 'terminate 7'
+        if terminate:
+            print 'terminate - auto reply system'
             return
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT)
@@ -441,10 +459,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
         ####################################################
         
-        terminate_0 = self._terminate()
+        terminate = self._terminate()
         
-        if terminate_0:
-            print 'terminate 0'
+        if terminate:
+            print 'terminate - system config set to silence'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
 
@@ -462,10 +480,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate_1 = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
 
-        if terminate_1:
-            print 'terminate 1'
+        if terminate:
+            print 'terminate - group set to silence or user is restricted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER)
             return
 
@@ -473,20 +491,20 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event, sticker_id, db.msg_type.STICKER)
+        terminate = self._handle_auto_ban(event, sticker_id, db.msg_type.STICKER)
 
-        if terminate_2:
-            print 'terminate 2'
+        if terminate:
+            print 'terminate - user auto ban temporarily'
             return
 
         ####################################
         ### TERMINATE CHECK - GAME (RPS) ###
         ####################################
 
-        terminate_3 = self._handle_sticker_rps(event, sticker_id)
+        terminate = self._handle_sticker_rps(event, sticker_id)
 
-        if terminate_3 or group_config <= db.config_type.SYS_ONLY:
-            print 'terminate 3'
+        if terminate or group_config <= db.config_type.SYS_ONLY:
+            print 'terminate - game (Rock-Paper-Scissor) action submitted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
 
@@ -494,10 +512,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - STICKER DATA ###
         ######################################
 
-        terminate_4 = self._handle_sticker_data(event)
+        terminate = self._handle_sticker_data(event)
 
-        if terminate_4:
-            print 'terminate 4'
+        if terminate:
+            print 'terminate - sticker data requested'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
 
@@ -505,10 +523,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
 
-        terminate_5 = self._handle_sticker_auto_reply(event, group_config)
+        terminate = self._handle_sticker_auto_reply(event, group_config)
 
-        if terminate_5:
-            print 'terminate 5'
+        if terminate:
+            print 'terminate - auto reply system'
             return
 
         self._group_manager.log_message_activity(cid, db.msg_type.STICKER)
@@ -557,10 +575,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - SILENCE CONFIG FROM SYSTEM ###
         ####################################################
         
-        terminate_0 = self._terminate()
+        terminate = self._terminate()
         
-        if terminate_0:
-            print 'terminate 0'
+        if terminate:
+            print 'terminate - system config set to silence'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
 
@@ -579,10 +597,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate_1 = group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED
 
-        if terminate_1:
-            print 'terminate 1'
+        if terminate:
+            print 'terminate - group set to silence or user is restricted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)
             return
 
@@ -590,20 +608,20 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - LOOP TO BAN ###
         #####################################
 
-        terminate_2 = self._handle_auto_ban(event, image_sha, db.msg_type.PICTURE)
+        terminate = self._handle_auto_ban(event, image_sha, db.msg_type.PICTURE)
 
-        if terminate_2:
-            print 'terminate 2'
+        if terminate:
+            print 'terminate - user auto ban temporarily'
             return
 
         ######################################
         ### TERMINATE CHECK - UPLOAD IMAGE ###
         ######################################
         
-        terminate_3 = self._handle_image_upload(event, image_sha)
+        terminate = self._handle_image_upload(event, image_sha)
         
-        if terminate_3:
-            print 'terminate 3'
+        if terminate:
+            print 'terminate - image uploading'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE, db.msg_type.TEXT, 1, 4)
             return
 
@@ -611,10 +629,10 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - AUTO REPLY ###
         ####################################
         
-        terminate_4 = self._handle_image_auto_reply(event, image_sha, group_config)
+        terminate = self._handle_image_auto_reply(event, image_sha, group_config)
              
-        if terminate_4:
-            print 'terminate 4'
+        if terminate:
+            print 'terminate - auto reply system'
             return
 
         self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.PICTURE)

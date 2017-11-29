@@ -29,6 +29,7 @@
     <Content Include="templates\LaTeX.html" />
     <Content Include="templates\StickerRanking.html" />
     <Content Include="templates\WebPage.html" />
+    <Content Include="tool\weather\owm_code.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="app.py" />
@@ -117,6 +118,10 @@
     <Compile Include="tool\txt_calc.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="tool\weather\aqicn_wrapper.py" />
+    <Compile Include="tool\weather\main.py" />
+    <Compile Include="tool\weather\owm_wrapper.py" />
+    <Compile Include="tool\weather\__init__.py" />
     <Compile Include="tool\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -137,6 +142,7 @@
     <Folder Include="templates\" />
     <Folder Include="static\" />
     <Folder Include="tool\" />
+    <Folder Include="tool\weather\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

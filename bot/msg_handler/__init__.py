@@ -1,5 +1,5 @@
 from .text_msg import (
-    text_msg_handler, game_msg_handler, split
+    special_text_handler, text_msg_handler, game_msg_handler, split
 )
 
 from .img_msg import (

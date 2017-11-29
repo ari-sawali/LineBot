@@ -10,4 +10,4 @@ from .txt_calc import (
     text_calculator, calc_type, calc_result_data
 )
 
-import curr_exc
+import curr_exc, weather
