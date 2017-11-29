@@ -723,7 +723,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - REPORT WEATHER ###
         ########################################
 
-        terminate = self._handle_location_weather(even)
+        terminate = self._handle_location_weather(event)
 
         if terminate:
             print 'terminate - weather of location reported'
