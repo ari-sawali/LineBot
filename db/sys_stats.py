@@ -64,7 +64,7 @@ class system_statistics(db_base):
 
         proc_data = { cat: { c: StatisticsData({ day_in: data.get(c, 0) for day_in, data in aggr_data.iteritems() }) for c in cat_keys } for cat, cat_keys in keys.iteritems() }
 
-        return u'\n\n'.join([u'-以下統計資料每日AM 8重計-\n-次數格式為[{}]-'.format(u'、'.join([u'{}日前'.format(day_num) for day_num in StatisticsData.DAYS_IN]))] + 
+        return u'\n\n'.join([u'-以下統計資料每日AM 8重計-\n-次數格式為[{}]-'.format(u'、'.join([u'{}日內'.format(day_num) for day_num in StatisticsData.DAYS_IN]))] + 
                             [u'【{}】'.format(system_data.translate_category(cat)) + u'\n' + u'\n'.join([c + u': ' + StatisticsData({ day_in: data.get(cat + SEPARATOR + c, 0) for day_in, data in aggr_data.iteritems() }).get_string() for c in cat_keys]) for cat, cat_keys in keys.iteritems()])
 
     def all_data(self):

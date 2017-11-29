@@ -54,7 +54,7 @@ class text_msg_handler(object):
     HEAD = 'JC'
     SPLITTER = '\n'
 
-    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter):
+    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator):
         self._mongo_uri = mongo_db_uri
         self._flask_app = flask_app
         self._config_manager = config_manager
@@ -77,7 +77,6 @@ class text_msg_handler(object):
         self._imgur_api_wrapper = imgur_api_wrapper
         self._oxr_client = oxr_client
         self._string_calculator = string_calculator
-        self._weather_reporter = weather_reporter
         
         self._pymongo_client = None
 
