@@ -188,8 +188,8 @@ def callback():
 
     # handle webhook body
     try:
-        # handler.handle(body, signature)
-        handle_pool.apply_async(handler.handle, args=(body, signature))
+        handler.handle(body, signature)
+        # handle_pool.apply_async(handler.handle, args=(body, signature))
     except exceptions.InvalidSignatureError:
         abort(400)
     except Exception as e:
