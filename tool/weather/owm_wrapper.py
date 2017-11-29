@@ -49,11 +49,10 @@ class owm(object):
 
             l = f.get_location()
 
-            w_list = [weather(c_w)]
-            w_list.extend([weather(w) for w in f_w[:hours_within / 3:interval / 3]])
+            forecast_weather_list = [weather(w) for w in f_w[:hours_within / 3:interval / 3]]
             uv = self._owm_client.uvindex_around_coords(l.get_lat(), l.get_lon())
 
-            return OwmResult(l, w_list, uv)
+            return OwmResult(l, weather(c_w), forecast_weather_list, uv)
         except NotFoundError:
             return None
 
@@ -72,10 +71,10 @@ class owm(object):
 
             l = f.get_location()
 
-            w_list = [weather(c_w)]
-            w_list.extend([weather(w) for w in f_w[:hours_within / 3:interval / 3]])
+            forecast_weather_list = [weather(w) for w in f_w[:hours_within / 3:interval / 3]]
+            uv = self._owm_client.uvindex_around_coords(l.get_lat(), l.get_lon())
             
-            return OwmResult(l, w_list, uv)
+            return OwmResult(l, weather(c_w), forecast_weather_list, uv)
         except NotFoundError:
             return None
 
@@ -84,16 +83,24 @@ class owm(object):
         return u'http://openweathermap.org/img/w/{}.png'.format(icon_id)
 
 class OwmResult:
-    def __init__(self, location, weather_list, uv):
+    def __init__(self, current_weather, forecast_weather_list, uv):
         self._location = location
-        self._weather_list = weather_list
+        self._current = current_weather
+        self._weather_list = forecast_weather_list
         self._uv = uv_index(uv)
 
     def get_uv_string(self):
         return self._uv.to_string()
 
     def get_weather_string(self, o_config):
-        return u'\n\n'.join([w.to_string(o_config) for w in self._weather_list])
+        ret = []
+
+        ret.append(u'【目前天氣】')
+        ret.append(self._current.to_string(o_config))
+        ret.append(u'【未來天氣】')
+        ret.append(u'\n\n'.join([w.to_string(o_config) for w in self._weather_list]))
+
+        return u'\n'.join(ret)
 
     def get_location_string(self, o_config):
         ret = u'{}, {}'.format(self._location.get_name(), self._location.get_country())
