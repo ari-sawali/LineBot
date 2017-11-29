@@ -29,8 +29,8 @@ class special_text_handler(object):
         msg_text = event.message.text
 
         spec_func = self._special_keyword.get(msg_text, None)
-
         
+        print msg_text
         print self._special_keyword
         print spec_func
 
@@ -51,6 +51,7 @@ class special_text_handler(object):
         ret = []
 
         for id in tool.weather.DEFAULT_IDS:
+            # ERRRRRRRRORRRRRR
             ret.append(self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.SIMPLE if detailed else tool.weather.output_config.DETAIL, 12, 24))
 
         return u'\n==========\n'.join(ret)
