@@ -66,7 +66,7 @@ class owm(object):
             f = self._owm_client.three_hours_forecast_at_coords(coord.lat, coord.lng).get_forecast()
             f_w = f.get_weathers()
 
-            o = self._owm_client.weather_at_coords(idcoord.lat, coord.lon)
+            o = self._owm_client.weather_at_coords(idcoord.lat, coord.lng)
             c_w = o.get_weather()
 
             l = f.get_location()
