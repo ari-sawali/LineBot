@@ -75,7 +75,7 @@ class line_sticker_downloader(object):
         """
         stk_ids = sticker_metadata.stickers
         pack_id = sticker_metadata.pack_id
-        pack_name = str(pack_id) + self._download_sound_code if download_sound_if_available else ''
+        pack_name = str(pack_id) + (self._download_sound_code if download_sound_if_available else '')
         comp_file_path = os.path.join(self._file_proc_path, pack_name + '.zip')
 
         if os.path.isfile(comp_file_path):
