@@ -75,7 +75,7 @@ class weather_report_config_data(dict_like_mapping):
 
     @property
     def config(self):
-        return self[weather_report_config_data.CONFIG]
+        return [weather_report_child_config(c) for c in self[weather_report_config_data.CONFIG]]
 
 class weather_report_child_config(dict_like_mapping):
     """\
