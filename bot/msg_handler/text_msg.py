@@ -368,8 +368,7 @@ class text_msg_handler(object):
             action = params[1]
         
             if action == 'ID':
-                pair_ids = params[2]
-                pair_ids_int = ext.string_to_int(pair_ids.split(self._array_separator))
+                pair_ids_int = ext.string_to_int(params[2].split(self._array_separator))
 
                 if pair_ids_int is not None:
                     disable_result_id_list = kwd_instance.disable_keyword_by_id(pair_ids_int, del_profile_uid, pinned)
