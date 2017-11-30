@@ -54,6 +54,7 @@ class AqiData:
             return u'有害'
 
     def __init__(self, data_dict):
+        print data_dict
         if isinstance(data_dict, AqicnApiError):
             self._ok = False
             self._data = { 'Message': data_dict.message }
