@@ -32,7 +32,7 @@ class special_text_handler(object):
         
         if spec_func is not None:
             rep_text = spec_func()
-            self._line_api_wrapper.reply_message_text(token, spec_func())
+            self._line_api_wrapper.reply_message_text(token, rep_text)
             return True
 
         return False

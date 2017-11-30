@@ -50,7 +50,6 @@ class owm(object):
             l = f.get_location()
 
             forecast_weather_list = [weather(w) for w in f_w[:hours_within / 3:interval / 3]]
-            print 'tt'
             uv = self._owm_client.uvindex_around_coords(l.get_lat(), l.get_lon())
 
             return OwmResult(l, weather(c_w), forecast_weather_list, uv)
