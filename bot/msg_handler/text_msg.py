@@ -1093,7 +1093,7 @@ class text_msg_handler(object):
             dl_result = self._sticker_dl.download_stickers(sticker_meta, dl_sound)
             url = u''
 
-            with self._flask_app.app_context():
+            with self._flask_app.test_request_context():
                 url = request.host_url
 
             ret = u"""\
