@@ -455,7 +455,7 @@ class sticker_data(object):
         return '圖包ID: {} | 貼圖ID: {}'.format(self._pkg_id, self._stk_id)
 
     def __unicode__(self):
-        return unicode(str(self._name).decode('utf-8'))
+        return unicode(str(self).decode('utf-8'))
 
 class imgur_api_wrapper(object):
     def __init__(self, imgur_api):
