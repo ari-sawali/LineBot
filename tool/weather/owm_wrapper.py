@@ -189,7 +189,11 @@ class weather(object):
                     wind_deg = u'{:.2f}'.format(wind_deg)
 
                 try:
-                    wind_summary = u'風速 {} m/s ({}級) {}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
+                    wind_summary = u''
+                    if all(k != weather.UNKNOWN for k in (wind_spd, wind_lv)):
+                        wind_summary += u'風速 {} m/s ({}級)'.format(wind_spd, wind_lv)
+                    if all(k != weather.UNKNOWN for k in (wind_deg, wind_dir)):
+                        wind_summary += u' {}° ({})'.format(wind_deg, wind_dir)
                 except ValueError:
                     wind_summary = u'風力相關: {}'.format(wind)
 
