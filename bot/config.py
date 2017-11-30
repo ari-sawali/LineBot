@@ -9,6 +9,7 @@ class config_category(ext.EnumWithName):
     STICKER_RANKING = 2, 'StickerRanking'
     SYSTEM = 3, 'System'
     ERROR_REPORT = 4, 'ErrorReport'
+    WEATHER_REPORT = 5, 'WeatherReport'
 
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
@@ -34,6 +35,11 @@ class config_category_system(ext.EnumWithName):
 
 class config_category_error_report(ext.EnumWithName):
     DEFAULT_SUBJECT_PREFIX = 0, 'DefaultSubjectPrefix'
+
+class config_category_weather_report(ext.EnumWithName):
+    DEFAULT_INTERVAL_HR = 0, 'DefaultIntervalHR'
+    DEFAULT_DATA_RANGE_HR = 1, 'DefaultDataRangeHR'
+    MAX_BATCH_SEARCH_COUNT = 2, 'MaxBatchSearchCount'
 
 class config_manager(object):
     def __init__(self, file_path):

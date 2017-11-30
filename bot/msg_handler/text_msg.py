@@ -1012,6 +1012,11 @@ class text_msg_handler(object):
     def _W(self, src, params, key_permission_lv, group_config_type):
         if params[1] is None:
             return error.main.lack_of_thing(u'參數')
+        
+        mode_dict = { 'S': tool.weather.output_config.SIMPLE, 'D': tool.weather.output_config.DETAIL }
+
+        default_interval = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_INTERVAL_HR)
+        default_data_range= self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_DATA_RANGE_HR)
 
         action = params[1]
         if any(action == k for k in 'AD'):
@@ -1022,16 +1027,15 @@ class text_msg_handler(object):
                 if city_id is None:
                     return error.main.incorrect_param('參數2', '整數')
 
-                mode_dict = { 'S': tool.weather.output_config.SIMPLE, 'D': tool.weather.output_config.DETAIL }
                 mode = mode_dict.get(params[3], tool.weather.output_config.SIMPLE)
 
                 interval = ext.string_to_int(params[4])
                 if interval is None:
-                    interval = 12
+                    interval = default_interval
 
                 data_range = ext.string_to_int(params[5])
                 if data_range is None:
-                    data_range = 72
+                    data_range = default_data_range
 
                 return self._weather_config.add_config(uid, city_id, mode, interval, data_range)
             elif action == 'D':
@@ -1048,10 +1052,20 @@ class text_msg_handler(object):
             if isinstance(ids, int):
                 ids = [ids]
 
-            if len(ids) > 10:
+            if len(ids) > self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.MAX_BATCH_SEARCH_COUNT):
                 return error.main.invalid_thing_with_correct_format(u'批次查詢量', u'最多一次10筆', ids)
+
+            mode = mode_dict.get(params[2], tool.weather.output_config.SIMPLE)
+
+            interval = ext.string_to_int(params[3])
+            if interval is None:
+                interval = default_interval
+
+            data_range = ext.string_to_int(params[4])
+            if data_range is None:
+                data_range = default_data_range
             
-            return u'\n==========\n'.join([self._weather_reporter.get_data_by_owm_id(id) for id in ids])
+            return u'\n==========\n'.join([self._weather_reporter.get_data_by_owm_id(id, mode, interval, data_range) for id in ids])
         else:
             search_result = self._weather_id_reg.ids_for(action, None, 'like')[:15]
             search_desc = u'搜尋字詞: {}'.format(action)
