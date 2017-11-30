@@ -92,7 +92,7 @@ class line_sticker_downloader(object):
             for path in path_list:
                 zipf.write(path, os.path.basename(path))
 
-        shutil.rmtree(os.path.join(self._file_proc_path, pack_name) + "\\")
+        shutil.rmtree(os.path.join(self._file_proc_path, pack_name))
 
         time_consumed_comp = time.time() - _start
 
