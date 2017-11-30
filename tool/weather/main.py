@@ -28,7 +28,7 @@ class weather_reporter(object):
         weather_data = self._owm.get_weathers_by_coord(coord, o_config, interval, hours_within)
         return self._proc_weather_data(owm_city_id, weather_data, o_config)
 
-    def _proc_weather_data(self, weather_data, o_config):
+    def _proc_weather_data(self, owm_city_id, weather_data, o_config):
         if weather_data is not None:
             ret = []
             coord = weather_data.get_location_coordinate()
