@@ -874,14 +874,14 @@ class text_msg_handler(object):
             last_item_cat = category_dict.get(category)
 
             if last_item_cat is None:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最後貼圖)、P(最後圖片)、U(最後UID)或R(最後回覆組)', category)
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'S(最近貼圖)、P(最近圖片)、U(最近UID)或R(最近回覆組)', category)
 
             last_array = self._system_data.get(last_item_cat, target_gid)
 
             rep_list = []
 
             if last_array is not None and len(last_array) > 0:
-                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (右邊較新，重複不紀錄)\n{}。'.format(unicode(last_item_cat), u'、'.join([str(item) for item in last_array])), self._webpage_generator))
+                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (右邊較新)\n{}。'.format(unicode(last_item_cat), u'、'.join([unicode(item) for item in last_array])), self._webpage_generator))
             else:
                 return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
 
@@ -891,6 +891,8 @@ class text_msg_handler(object):
                     item = str(item)
                     action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
                     action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
+                    if type_cat == bot.system_data_category.LAST_STICKER:
+                        action_dict['貼圖包下載 - {}'.format(item.package_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + str(item)
             elif last_item_cat == bot.system_data_category.LAST_PAIR_ID:
                 action_dict = {}
                 for item in last_array:
@@ -1103,7 +1105,7 @@ class text_msg_handler(object):
             ret.append(u'檔案下載連結: (如下)')
             ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
             ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
-            ret.append(u'內含貼圖ID編號: {}'.format(u'、'.join(dl_result.sticker_ids)))
+            ret.append(u'內含貼圖ID編號: {}'.format(u'、'.join([unicode(id) for id in dl_result.sticker_ids])))
 
             return [bot.line_api_wrapper.wrap_text_message(u'\n'.join(ret), self._webpage_generator), 
                     bot.line_api_wrapper.wrap_text_message(url + dl_result.compressed_file_path, self._webpage_generator)]

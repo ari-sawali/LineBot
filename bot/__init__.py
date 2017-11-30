@@ -1,7 +1,7 @@
 import msg_handler, email
 
 from .system import (
-    line_api_wrapper, imgur_api_wrapper, line_event_source_type, oxford_api_wrapper, system_data, system_data_category, infinite_loop_preventer, UserProfileNotFoundError
+    line_api_wrapper, imgur_api_wrapper, line_event_source_type, oxford_api_wrapper, system_data, system_data_category, infinite_loop_preventer, UserProfileNotFoundError, sticker_data
 )
 
 from .webpage import (

@@ -434,7 +434,14 @@ class global_msg_handle(object):
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
 
-            self._line_api_wrapper.reply_message_text(event.reply_token, u'貼圖圖包ID: {}\n貼圖圖片ID: {}'.format(package_id, sticker_id))
+            action_dict = { '貼圖包下載 - {}'.format(package_id): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + str(package_id) }
+            
+            reply_data = [
+                bot.line_api_wrapper.wrap_text_message(u'貼圖圖包ID: {}\n貼圖圖片ID: {}'.format(package_id, sticker_id), self._webpage_generator),
+                bot.line_api_wrapper.wrap_template_with_action(action_dict, u'貼圖圖包下載樣板', '圖包下載')
+            ]
+
+            self._line_api_wrapper.reply_message(event.reply_token, reply_data)
             return True
         
         return False
@@ -483,7 +490,7 @@ class global_msg_handle(object):
         user_permission = self._get_user_permission(src)
 
         self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
-        self._system_data.set(bot.system_data_category.LAST_STICKER, cid, sticker_id)
+        self._system_data.set(bot.system_data_category.LAST_STICKER, cid, bot.sticker_data(package_id, sticker_id))
 
         #######################################################
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###

@@ -24,13 +24,13 @@ import ext
 from .config import config_manager
 
 class system_data_category(ext.EnumWithName):
-    LAST_STICKER = 0, '末三張貼圖ID'
-    LAST_PIC_SHA = 1, '末三張圖片雜湊(SHA224)'
-    LAST_PAIR_ID = 2, '末三組回覆組ID'
-    LAST_UID = 3, '末三則訊息傳送者(不含小水母)UID'
+    LAST_STICKER = 0, '最近貼圖ID'
+    LAST_PIC_SHA = 1, '最近圖片雜湊(SHA224)'
+    LAST_PAIR_ID = 2, '最近回覆組ID'
+    LAST_UID = 3, '最近訊息傳送者(不含小水母)UID'
 
 class system_data(object):
-    MAX_LENGTH_OF_DEQUE = 3
+    MAX_LENGTH_OF_DEQUE = 5
 
     def __init__(self):
         self._boot_up = datetime.now() + timedelta(hours=8)
@@ -52,9 +52,6 @@ class system_data(object):
 
         if cid not in d:
             d[cid] = deque(maxlen=system_data.MAX_LENGTH_OF_DEQUE)
-
-        if content in d[cid]:
-            return
 
         d[cid].append(content)
         self._field_dict[category_enum] = d
@@ -440,6 +437,25 @@ class line_api_wrapper(object):
     def sticker_meta(package_id):
         return 'http://dl.stickershop.line.naver.jp/products/0/0/1/{}/android/productInfo.meta'
         return 'http://dl.stickershop.line.naver.jp/products/0/0/12/{}/android/productInfo.meta'
+
+class sticker_data(object):
+    def __init__(self, pkg_id, stk_id):
+        self._pkg_id = pkg_id
+        self._stk_id = stk_id
+
+    @property
+    def package_id(self):
+        return self._pkg_id
+
+    @property
+    def sticker_id(self):
+        return self._stk_id
+
+    def __str__(self):
+        return '圖包ID: {} | 貼圖ID: {}'.format(self._pkg_id, self._stk_id)
+
+    def __unicode__(self):
+        return unicode(self._name.decode('utf-8'))
 
 class imgur_api_wrapper(object):
     def __init__(self, imgur_api):
