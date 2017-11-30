@@ -1027,11 +1027,11 @@ class text_msg_handler(object):
 
                 interval = ext.string_to_int(params[4])
                 if interval is None:
-                    return error.main.incorrect_param('參數4', '整數')
+                    interval = 12
 
                 data_range = ext.string_to_int(params[5])
                 if data_range is None:
-                    return error.main.incorrect_param('參數5', '整數')
+                    data_range = 72
 
                 return self._weather_config.add_config(uid, city_id, mode, interval, data_range)
             elif action == 'D':
