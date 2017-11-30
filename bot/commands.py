@@ -88,6 +88,7 @@ cmd_dict = { 'S': command_object(4, 4, cmd_category.MAIN, False, False, permissi
              'FX': command_object(1, 2, cmd_category.EXTEND, False, False),
              'N': command_object(1, 1, cmd_category.EXTEND, False, False),
              'W': command_object(1, 5, cmd_category.EXTEND, False, False),
+             'DL': command_object(1, 1, cmd_category.EXTEND, False, False),
              'STK': command_object(1, 3, cmd_category.EXTEND, False, False),
              'RPS': command_object(0, 4, cmd_category.GAME, False, False) }
 

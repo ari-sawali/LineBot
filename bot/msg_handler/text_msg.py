@@ -56,7 +56,7 @@ class text_msg_handler(object):
     HEAD = 'JC'
     SPLITTER = '\n'
 
-    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter):
+    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter, file_tmp_path):
         self._mongo_uri = mongo_db_uri
         self._flask_app = flask_app
         self._config_manager = config_manager
@@ -82,6 +82,7 @@ class text_msg_handler(object):
         self._weather_reporter = weather_reporter
         self._weather_config = db.weather_report_config(mongo_db_uri)
         self._weather_id_reg = tool.weather.weather_reporter.CITY_ID_REGISTRY
+        self._sticker_dl = tool.line_sticker_downloader(file_tmp_path)
         
         self._pymongo_client = None
 
@@ -1073,6 +1074,41 @@ class text_msg_handler(object):
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
                 return u'{}\n{}'.format(search_desc, error.main.no_result())
+             
+    def _DL(self, src, params, key_permission_lv, group_config_type):
+        if params[1] is not None:
+            DL_SOUND_CODE = 'S'
+
+            dl_sound = params[1].endswith(DL_SOUND_CODE)
+            package_id = ext.string_to_int(params[1].replace(DL_SOUND_CODE, ''))
+
+            if package_id is None:
+                return error.main.invalid_thing_with_correct_format(u'參數1', u'整數，代表圖包ID', params[1])
+
+            try:
+                sticker_meta = self._sticker_dl.get_pack_meta(package_id)
+            except tool.MetaNotFoundException:
+                return error.main.miscellaneous(u'查無貼圖資料。(圖包ID: {})'.format(package_id))
+
+            dl_result = self._sticker_dl.download_stickers(sticker_meta, dl_sound)
+
+            ret = u"""\
+            貼圖圖包下載完成，請盡快下載。
+            檔案將於小水母休眠後刪除。
+            
+            檔案下載連結:
+            {}
+            下載耗時 {:.2f} 秒
+            壓縮耗時 {:.2f} 秒
+            內含貼圖ID編號: {}
+            \
+            """
+            
+            return ret.format(
+                request.host_url + dl_result.compressed_file_path, dl_result.downloading_consumed_time, 
+                dl_result.compression_consumed_time, u'、'.format(dl_result.sticker_ids))
+        else:
+            return error.main.lack_of_thing(u'參數')
 
     def _STK(self, src, params, key_permission_lv, group_config_type):
         sticker_id = params[1]
