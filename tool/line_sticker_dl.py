@@ -73,12 +73,14 @@ class line_sticker_downloader(object):
             raise `MetaNotFoundException` if status code of getting pack meta is not 200.
         """
         stk_ids = sticker_metadata.stickers
+        print stk_ids
         pack_id = sticker_metadata.pack_id
         pack_name = str(pack_id)
 
         content_type_to_download = sticker_content_type.ANIMATED if sticker_metadata.is_animated_sticker else sticker_content_type.STATIC
 
         _start = time.time()
+        print stk_ids
         path_list = self._get_content(content_type_to_download, pack_id, stk_ids)
         
         if download_sound_if_available and sticker_metadata.is_animated_sticker:
@@ -96,6 +98,7 @@ class line_sticker_downloader(object):
 
         time_consumed_comp = time.time() - _start
 
+        print stk_ids
         return line_sticker_download_result(comp_file_path, stk_ids, time_consumed_dl, time_consumed_comp)
     
     def get_pack_meta(self, pack_id):
