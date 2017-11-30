@@ -186,7 +186,10 @@ class weather(object):
                 else:
                     wind_dir = ext.dir_symbol(wind_deg)
 
-                wind_summary = u'風速 {:.2f} m/s ({}級) {:.2f}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
+                try:
+                    wind_summary = u'風速 {:.2f} m/s ({}級) {:.2f}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
+                except ValueError:
+                    wind_summary = u'風力相關: {}'.format(wind)
 
             if all(item is not None for item in (temp, wind, humid)) and all(item != weather.UNKNOWN for item in (temp_cur, wind_spd, humid)):
                 app_temp = weather.apparent_temperature(temp_cur, wind_spd, humid)

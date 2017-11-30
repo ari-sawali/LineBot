@@ -24,7 +24,7 @@ class weather_report_config(db_base):
             return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_id)
 
         self.update_one({ weather_report_config_data.USER_ID: uid }, { '$push': { weather_report_config_data.CONFIG: weather_report_child_config.init_by_field(city_id, mode, interval, data_range) } }, True)
-        return u'已新增預設城市。\n城市ID: {}\n模式: {}\n查看{}小時內每{}小時的資料。'.format(city_id, unicode(mode), data_range, interval)
+        return u'已新增常用城市。\n城市ID: {}\n模式: {}\n查看{}小時內每{}小時的資料。'.format(city_id, unicode(mode), data_range, interval)
 
     def del_config(self, uid, city_id):
         """Return result in string"""
@@ -34,7 +34,7 @@ class weather_report_config(db_base):
             return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_id)
 
         self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pull': { weather_report_config_data.CONFIG: { weather_report_child_config.CITY_ID: city_id } } }, True)
-        return u'已刪除預設城市。\n城市ID: {}'.format(city_id)
+        return u'已刪除常用城市。\n城市ID: {}'.format(city_id)
 
     def get_config(self, uid):
         """None if no config exists."""
