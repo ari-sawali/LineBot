@@ -881,18 +881,18 @@ class text_msg_handler(object):
             rep_list = []
 
             if last_array is not None and len(last_array) > 0:
-                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (越下面越新)\n{}。'.format(unicode(last_item_cat), u'\n'.join([unicode(item) for item in last_array])), self._webpage_generator))
+                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (越下面越新)\n{}'.format(unicode(last_item_cat), u'\n'.join([unicode(item) for item in last_array])), self._webpage_generator))
             else:
                 return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
 
-            if any(last_item_cat == type_cat for type_cat in (bot.system_data_category.LAST_STICKER, bot.system_data_category.LAST_PIC_SHA)):
+            if last_item_cat == bot.system_data_category.LAST_STICKER:
                 action_dict = {}
                 for item in last_array:
-                    item = str(item)
-                    action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
-                    action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
-                    if last_item_cat == bot.system_data_category.LAST_STICKER:
-                        action_dict['貼圖包下載 - {}'.format(item.package_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + str(item)
+                    stk_id = str(item.sticker_id)
+                    pkg_id = str(item.package_id)
+                    action_dict['簡潔 - {}'.format(stk_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + stk_id
+                    action_dict['詳細 - {}'.format(stk_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + stk_id
+                    action_dict['貼圖包下載 - {}'.format(pkg_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + pkg_id
             elif last_item_cat == bot.system_data_category.LAST_PAIR_ID:
                 action_dict = {}
                 for item in last_array:
@@ -903,6 +903,12 @@ class text_msg_handler(object):
                 action_dict = { 
                     '使用者{}製作'.format(uid[0:8]): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + 'UID' + text_msg_handler.SPLITTER + uid for uid in last_array
                 }
+            elif last_item_cat == bot.system_data_category.LAST_PIC_SHA:
+                action_dict = {}
+                for sha in last_array:
+                    sha = str(sha)
+                    action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + sha
+                    action_dict['詳細 - {}'.format(sha)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + sha
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_item_cat)), u'快速查詢'))
 
