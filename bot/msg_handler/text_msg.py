@@ -1056,9 +1056,9 @@ class text_msg_handler(object):
                 action_dict = {}
                 result_arr = [search_desc]
                 for id, city_name, country_code in search_result:
-                    action_dict[u'{}, {}'.format(city_name, country_code)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'W' + text_msg_handler.SPLITTER + str(id)
+                    action_dict[str(id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'W' + text_msg_handler.SPLITTER + str(id)
                     result_arr.append(u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)))
-                return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板'),
+                return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板，請參考搜尋結果點選'),
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
                 return u'{}\n{}'.format(search_desc, error.main.no_result())
