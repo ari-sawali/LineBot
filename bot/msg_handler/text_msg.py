@@ -1103,7 +1103,7 @@ class text_msg_handler(object):
             ret.append(u'檔案下載連結: (如下)')
             ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
             ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
-            ret.append(u'內含貼圖ID編號: {}'.format(u'、'.join([unicode(id) for id in dl_result.sticker_ids])))
+            ret.append(u'內含貼圖 {} 張'.format(dl_result.sticker_count))
 
             return [bot.line_api_wrapper.wrap_text_message(u'\n'.join(ret), self._webpage_generator), 
                     bot.line_api_wrapper.wrap_text_message(url + dl_result.compressed_file_path, self._webpage_generator)]

@@ -286,6 +286,14 @@ class line_sticker_download_result(object):
         return self._sticker_ids
     
     @property
+    def sticker_count(self):
+        """\
+        Returns:
+            Returns count of downloaded stickers in int.
+        """
+        return len(self._sticker_ids)
+    
+    @property
     def downloading_consumed_time(self):
         """\
         Returns:
