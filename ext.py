@@ -99,7 +99,6 @@ def string_to_int(*args):
     """Return None if string cannot convert to int"""
 
     try:
-        print args
         new_args = [int(i) for i in args]
         if len(new_args) > 1:
             return new_args
