@@ -208,6 +208,9 @@ class weather(object):
 
     @staticmethod
     def apparent_temperature(temp_celcius, wind_m_s, humidity):
+        wind_m_s = float(wind_m_s)
+        humidity = float(humidity)
+        temp_celcius = float(temp_celcius)
         return (1.04 * temp_celcius) + (0.2 * ((humidity / 100.0) * 6.105 * exp(17.27 * temp_celcius / (237.7 + temp_celcius)))) - (0.65 * wind_m_s) - 2.7
 
 class uv_index(object):
