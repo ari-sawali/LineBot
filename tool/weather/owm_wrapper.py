@@ -194,7 +194,7 @@ class weather(object):
                 app_temp = weather.UNKNOWN
 
             ret.append(u'最低氣溫{:.2f}℃ | 最高氣溫{:.2f}℃ | 體感溫度{:.2f}℃'.format(min_temp, max_temp, app_temp))
-            ret.append(u'雲量{}% | 雨量 {:.2f} mm | 雪量 {:.2f} mm (3小時內)'.format(cloud, rain, snow))
+            ret.append(u'雲量{}% | 雨量 {:.2f} mm | 雪量 {:.2f} mm'.format(cloud, rain, snow))
             ret.append(wind_summary)
 
         ret.append(u'@{} (UTC+8)'.format(ref_time))
