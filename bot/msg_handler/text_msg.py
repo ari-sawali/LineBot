@@ -20,8 +20,8 @@ class special_text_handler(object):
         self._weather_config = db.weather_report_config(mongo_db_uri)
 
         self._special_keyword = {
-            u'天氣': self._handle_text_spec_weather_simple,
-            u'詳細天氣': self._handle_text_spec_weather_detail
+            u'天氣': (self._handle_text_spec_weather, (False,)),
+            u'詳細天氣': (self._handle_text_spec_weather, (True,))
         }
 
     def handle_text(self, event):
@@ -31,22 +31,17 @@ class special_text_handler(object):
 
         uid = bot.line_api_wrapper.source_user_id(event.source)
 
-        spec_func = self._special_keyword.get(msg_text, None)
+        spec = self._special_keyword.get(msg_text, None)
         
-        if spec_func is not None:
-            rep_text = spec_func()
+        if spec is not None:
+            spec_func, spec_param = spec
+            rep_text = spec_func(*[spec_param + [uid]])
             self._line_api_wrapper.reply_message_text(token, rep_text)
             return True
 
         return False
 
-    def _handle_text_spec_weather_simple(self, uid):
-        return self.__handle_text_spec_weather(False, uid)
-
-    def _handle_text_spec_weather_detail(self, uid):
-        return self.__handle_text_spec_weather(True, uid)
-
-    def __handle_text_spec_weather(self, detailed, uid):
+    def _handle_text_spec_weather(self, detailed, uid):
         ret = []
 
         config_data = self._weather_config.get_config(uid) 
