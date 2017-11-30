@@ -1091,23 +1091,30 @@ class text_msg_handler(object):
                 return error.main.miscellaneous(u'查無貼圖資料。(圖包ID: {})'.format(package_id))
             
             dl_result = self._sticker_dl.download_stickers(sticker_meta, dl_sound)
+            url = u''
 
             with self._flask_app.app_context():
-                ret = u"""\
-                貼圖圖包下載完成，請盡快下載。
-                檔案將於小水母休眠後刪除。
-                
-                檔案下載連結:
-                {}
-                下載耗時 {:.2f} 秒
-                壓縮耗時 {:.2f} 秒
-                內含貼圖ID編號: {}
-                \
-                """
-                
-                return ret.format(
-                    request.host_url + dl_result.compressed_file_path, dl_result.downloading_consumed_time, 
-                    dl_result.compression_consumed_time, u'、'.format(dl_result.sticker_ids))
+                url = request.host_url
+
+            ret = u"""\
+            貼圖圖包下載完成，請盡快下載。
+            檔案將於小水母休眠後刪除。
+            
+            圖包ID: {}
+            {} (由 {} 製作)
+
+            檔案下載連結:
+            {}
+            下載耗時 {:.2f} 秒
+            壓縮耗時 {:.2f} 秒
+            內含貼圖ID編號: {}
+            \
+            """
+            
+            return ret.format(
+                sticker_meta.pack_id, sticker_meta.title, sticker_meta.author,
+                url + dl_result.compressed_file_path, dl_result.downloading_consumed_time, 
+                dl_result.compression_consumed_time, u'、'.format(dl_result.sticker_ids))
         else:
             return error.main.lack_of_thing(u'參數')
 
