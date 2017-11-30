@@ -45,6 +45,7 @@ class special_text_handler(object):
         ret = []
 
         config_data = self._weather_config.get_config(uid) 
+        print config_data
         if config_data is not None and len(config_data) > 0:
             ret.extend([self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config])
         else:
