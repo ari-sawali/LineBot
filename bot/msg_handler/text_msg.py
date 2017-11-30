@@ -35,7 +35,7 @@ class special_text_handler(object):
         
         if spec is not None:
             spec_func, spec_param = spec
-            rep_text = spec_func(*[spec_param + [uid]])
+            rep_text = spec_func(*(spec_param + (uid)))
             self._line_api_wrapper.reply_message_text(token, rep_text)
             return True
 
