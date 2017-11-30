@@ -14,8 +14,9 @@ class sticker_content_type(ext.EnumWithName):
     STATIC = 2, '靜態貼圖'
 
 class line_sticker_downloader(object):
-    def __init__(self, file_proc_path):
+    def __init__(self, file_proc_path, download_sound_code):
         self._file_proc_path = file_proc_path
+        self._download_sound_code = download_sound_code
     
     def _get_content(self, sticker_content_type, pack_id, list_ids):
         """\
@@ -74,27 +75,31 @@ class line_sticker_downloader(object):
         """
         stk_ids = sticker_metadata.stickers
         pack_id = sticker_metadata.pack_id
-        pack_name = str(pack_id)
-
-        content_type_to_download = sticker_content_type.ANIMATED if sticker_metadata.is_animated_sticker else sticker_content_type.STATIC
-
-        _start = time.time()
-        path_list = self._get_content(content_type_to_download, pack_id, stk_ids)
-        
-        if download_sound_if_available and sticker_metadata.is_animated_sticker:
-            path_list.extend(self._get_content(sticker_content_type.SOUND, pack_id, stk_ids))
-        time_consumed_dl = time.time() - _start
-
-        _start = time.time()
+        pack_name = str(pack_id) + self._download_sound_code if download_sound_if_available else ''
         comp_file_path = os.path.join(self._file_proc_path, pack_name + '.zip')
-        
-        with zipfile.ZipFile(comp_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for path in path_list:
-                zipf.write(path, os.path.basename(path))
 
-        shutil.rmtree(os.path.join(self._file_proc_path, pack_name))
+        if os.path.isfile(comp_file_path):
+            time_consumed_dl = 0.0
+            time_consumed_comp = 0.0
+        else:
+            content_type_to_download = sticker_content_type.ANIMATED if sticker_metadata.is_animated_sticker else sticker_content_type.STATIC
 
-        time_consumed_comp = time.time() - _start
+            _start = time.time()
+            path_list = self._get_content(content_type_to_download, pack_id, stk_ids)
+            
+            if download_sound_if_available and sticker_metadata.is_animated_sticker:
+                path_list.extend(self._get_content(sticker_content_type.SOUND, pack_id, stk_ids))
+            time_consumed_dl = time.time() - _start
+
+            _start = time.time()
+            
+            with zipfile.ZipFile(comp_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for path in path_list:
+                    zipf.write(path, os.path.basename(path))
+
+            shutil.rmtree(os.path.join(self._file_proc_path, pack_name))
+
+            time_consumed_comp = time.time() - _start
 
         return line_sticker_download_result(comp_file_path, stk_ids, time_consumed_dl, time_consumed_comp)
     
@@ -116,6 +121,10 @@ class line_sticker_downloader(object):
             return line_sticker_metadata(json_dict)
         else:
             raise MetaNotFoundException(pack_meta.status_code)
+
+    @property
+    def dl_sound_code(self):
+        return self._download_sound_code
 
     @staticmethod
     def get_meta_url(pack_id):

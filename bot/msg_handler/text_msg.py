@@ -82,7 +82,7 @@ class text_msg_handler(object):
         self._weather_reporter = weather_reporter
         self._weather_config = db.weather_report_config(mongo_db_uri)
         self._weather_id_reg = tool.weather.weather_reporter.CITY_ID_REGISTRY
-        self._sticker_dl = tool.line_sticker_downloader(file_tmp_path)
+        self._sticker_dl = tool.line_sticker_downloader(file_tmp_path, 'S')
         
         self._pymongo_client = None
 
@@ -1079,10 +1079,8 @@ class text_msg_handler(object):
              
     def _DL(self, src, params, key_permission_lv, group_config_type):
         if params[1] is not None:
-            DL_SOUND_CODE = 'S'
-
-            dl_sound = params[1].endswith(DL_SOUND_CODE)
-            package_id = ext.string_to_int(params[1].replace(DL_SOUND_CODE, ''))
+            dl_sound = params[1].endswith(self._sticker_dl.dl_sound_code)
+            package_id = ext.string_to_int(params[1].replace(self._sticker_dl.dl_sound_code, ''))
 
             if package_id is None:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'整數，代表圖包ID', params[1])
