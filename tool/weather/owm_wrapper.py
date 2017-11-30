@@ -179,15 +179,17 @@ class weather(object):
                     wind_lv = weather.UNKNOWN
                 else:
                     wind_lv = Beaufort_scale(wind_spd)
+                    wind_spd = u'{:.2f}'.format(wind_spd)
                     
                 wind_deg = wind.get('deg', weather.UNKNOWN)
                 if wind_deg == weather.UNKNOWN:
                     wind_dir = weather.UNKNOWN
                 else:
                     wind_dir = ext.dir_symbol(wind_deg)
+                    wind_deg = u'{:.2f}'.format(wind_deg)
 
                 try:
-                    wind_summary = u'風速 {:.2f} m/s ({}級) {:.2f}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
+                    wind_summary = u'風速 {} m/s ({}級) {}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
                 except ValueError:
                     wind_summary = u'風力相關: {}'.format(wind)
 
