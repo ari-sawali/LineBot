@@ -891,7 +891,7 @@ class text_msg_handler(object):
                     item = str(item)
                     action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + str(item)
                     action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + str(item)
-                    if type_cat == bot.system_data_category.LAST_STICKER:
+                    if last_item_cat == bot.system_data_category.LAST_STICKER:
                         action_dict['貼圖包下載 - {}'.format(item.package_id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + str(item)
             elif last_item_cat == bot.system_data_category.LAST_PAIR_ID:
                 action_dict = {}
