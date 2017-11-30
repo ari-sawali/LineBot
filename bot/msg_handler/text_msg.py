@@ -1064,14 +1064,11 @@ class text_msg_handler(object):
         else:
             search_result = self._weather_id_reg.ids_for(action, None, 'like')
             search_result_count = len(search_result)
-            search_result = search_result[:15]
+            search_result_simp = search_result[:15]
             search_desc = u'搜尋字詞: {} (共{}筆結果)'.format(action, search_result_count)
             if len(search_result) > 0:
-                action_dict = {}
-                result_arr = [search_desc]
-                for id, city_name, country_code in search_result:
-                    action_dict[str(id)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'W' + text_msg_handler.SPLITTER + str(id)
-                    result_arr.append(u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)))
+                result_arr = [search_desc] + [u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)) for id, city_name, country_code in search_result]
+                action_dict = { str(id): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'W' + text_msg_handler.SPLITTER + str(id) for id, city_name, country_code in search_result_simp}
                 return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板，請參考搜尋結果點選'),
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
