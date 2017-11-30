@@ -1045,6 +1045,9 @@ class text_msg_handler(object):
 
         ids = ext.string_to_int(*action.split(self._array_separator))
         if ids is not None:
+            if isinstance(ids, int):
+                ids = [ids]
+
             if len(ids) > 10:
                 return error.main.invalid_thing_with_correct_format(u'批次查詢量', u'最多一次10筆', ids)
             
