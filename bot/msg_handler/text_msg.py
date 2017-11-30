@@ -14,9 +14,10 @@ from error import error
 import bot, db, ext
 
 class special_text_handler(object):
-    def __init__(self, line_api_wrapper, weather_reporter):
+    def __init__(self, mongo_db_uri, line_api_wrapper, weather_reporter):
         self._line_api_wrapper = line_api_wrapper
         self._weather_reporter = weather_reporter
+        self._weather_config = db.weather_report_config(mongo_db_uri)
 
         self._special_keyword = {
             u'天氣': self._handle_text_spec_weather_simple,
@@ -28,6 +29,8 @@ class special_text_handler(object):
         token = event.reply_token
         msg_text = event.message.text
 
+        uid = bot.line_api_wrapper.source_user_id(event.source)
+
         spec_func = self._special_keyword.get(msg_text, None)
         
         if spec_func is not None:
@@ -37,18 +40,20 @@ class special_text_handler(object):
 
         return False
 
-    def _handle_text_spec_weather_simple(self):
-        return self.__handle_text_spec_weather(False)
+    def _handle_text_spec_weather_simple(self, uid):
+        return self.__handle_text_spec_weather(False, uid)
 
-    def _handle_text_spec_weather_detail(self):
-        return self.__handle_text_spec_weather(True)
+    def _handle_text_spec_weather_detail(self, uid):
+        return self.__handle_text_spec_weather(True, uid)
 
-    def __handle_text_spec_weather(self, detailed):
+    def __handle_text_spec_weather(self, detailed, uid):
         ret = []
 
-        for id in tool.weather.DEFAULT_IDS:
-            # ERRRRRRRRORRRRRR
-            ret.append(self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.DETAIL if detailed else tool.weather.output_config.SIMPLE, 12, 24))
+        config_data = self._weather_config.get_config(uid) 
+        if config_data is not None:
+            ret.extend([self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config])
+        else:
+            ret.extend([self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.DETAIL if detailed else tool.weather.output_config.SIMPLE, 12, 24) for id in tool.weather.DEFAULT_IDS])
 
         return u'\n==========\n'.join(ret)
 
@@ -56,7 +61,7 @@ class text_msg_handler(object):
     HEAD = 'JC'
     SPLITTER = '\n'
 
-    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator):
+    def __init__(self, command_manager, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter):
         self._mongo_uri = mongo_db_uri
         self._flask_app = flask_app
         self._config_manager = config_manager
@@ -79,6 +84,9 @@ class text_msg_handler(object):
         self._imgur_api_wrapper = imgur_api_wrapper
         self._oxr_client = oxr_client
         self._string_calculator = string_calculator
+        self._weather_reporter = weather_reporter
+        self._weather_config = db.weather_report_config(mongo_db_uri)
+        self._weather_id_reg = tool.weather.weather_reporter.CITY_ID_REGISTRY
         
         self._pymongo_client = None
 
@@ -999,7 +1007,61 @@ class text_msg_handler(object):
             
             return texts.replace('\n', '\\n')
         else:
-            text = error.main.lack_of_thing(u'參數')
+            return error.main.lack_of_thing(u'參數')
+             
+    def _W(self, src, params, key_permission_lv, group_config_type):
+        if params[1] is None:
+            return error.main.lack_of_thing(u'參數')
+
+        action = params[1]
+        if any(action == k for k in 'AD'):
+            uid = bot.line_api_wrapper.source_user_id(src)
+
+            if action == 'A':
+                city_id = ext.string_to_int(params[2])
+                if city_id is None:
+                    return error.main.incorrect_param('參數2', '整數')
+
+                mode_dict = { 'S': tool.weather.output_config.SIMPLE, 'D': tool.weather.output_config.DETAIL }
+                mode = mode_dict.get(params[3], tool.weather.output_config.SIMPLE)
+
+                interval = ext.string_to_int(params[4])
+                if interval is None:
+                    return error.main.incorrect_param('參數4', '整數')
+
+                data_range = ext.string_to_int(params[5])
+                if data_range is None:
+                    return error.main.incorrect_param('參數5', '整數')
+
+                return self._weather_config.add_config(uid, city_id, mode, interval, data_range)
+            elif action == 'D':
+                city_id = ext.string_to_int(params[2])
+                if city_id is None:
+                    return error.main.incorrect_param('參數2', '整數')
+
+                return self._weather_config.del_config(uid, city_id)
+            else:
+                raise NotImplementedError()
+
+        ids = ext.string_to_int(*action.split(self._array_separator))
+        if ids is not None:
+            if len(ids) > 10:
+                return error.main.invalid_thing_with_correct_format(u'批次查詢量', u'最多一次10筆', ids)
+            
+            return u'\n==========\n'.join([self._weather_reporter.get_data_by_owm_id(id) for id in ids])
+        else:
+            search_result = self._weather_id_reg.ids_for(action, None, 'like')[:15]
+            search_desc = u'搜尋字詞: {}'.format(action)
+            if len(search_result) > 0:
+                action_dict = {}
+                result_arr = [search_desc]
+                for id, city_name, country_code in search_result:
+                    action_dict[u'{}, {}'.format(city_name, country_code)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'W' + text_msg_handler.SPLITTER + str(id)
+                    result_arr.append(u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)))
+                return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板'),
+                        bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
+            else:
+                return u'{}\n{}'.format(search_desc, error.main.no_result())
 
     def _STK(self, src, params, key_permission_lv, group_config_type):
         sticker_id = params[1]

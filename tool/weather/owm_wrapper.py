@@ -179,7 +179,6 @@ class weather(object):
                     wind_lv = weather.UNKNOWN
                 else:
                     wind_lv = Beaufort_scale(wind_spd)
-                    print wind_lv
                     
                 wind_deg = wind.get('deg', weather.UNKNOWN)
                 if wind_deg == weather.UNKNOWN:
