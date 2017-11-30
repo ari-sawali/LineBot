@@ -279,6 +279,8 @@ def handle_error(event, exception_instance):
     src = event.source
     token = event.reply_token
 
+    stack_exc = traceback.format_exc()
+
     error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
     if isinstance(exception_instance, LineBotApiError):
         error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(exception_instance.status_code)
@@ -295,11 +297,11 @@ def handle_error(event, exception_instance):
             error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exception_instance.message.decode("utf-8"))
     
     try:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc(), str(event))
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc, str(event))
     except UnicodeEncodeError:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().encode('utf-8'), str(event).encode("utf-8"))
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc.encode('utf-8'), str(event).encode("utf-8"))
     except UnicodeDecodeError:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(traceback.format_exc().decode('utf-8'), str(event).decode("utf-8"))
+        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc.decode('utf-8'), str(event).decode("utf-8"))
 
     error_msg += webpage_generator.rec_error(exception_instance, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 
