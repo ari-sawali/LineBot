@@ -50,6 +50,7 @@ class owm(object):
             l = f.get_location()
 
             forecast_weather_list = [weather(w) for w in f_w[:hours_within / 3:interval / 3]]
+            print 'tt'
             uv = self._owm_client.uvindex_around_coords(l.get_lat(), l.get_lon())
 
             return OwmResult(l, weather(c_w), forecast_weather_list, uv)
@@ -98,9 +99,7 @@ class OwmResult:
         ret.append(u'【目前天氣】')
         ret.append(self._current.to_string(o_config))
         ret.append(u'【未來天氣】')
-        r = [w.to_string(o_config) for w in self._weather_list]
-        print 'r'
-        ret.append(u'\n\n'.join(r))
+        ret.append(u'\n\n'.join([w.to_string(o_config) for w in self._weather_list]))
 
         return u'\n'.join(ret)
 
