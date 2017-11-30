@@ -1062,8 +1062,10 @@ class text_msg_handler(object):
             
             return u'\n==========\n'.join([self._weather_reporter.get_data_by_owm_id(id, mode, interval, data_range) for id in ids])
         else:
-            search_result = self._weather_id_reg.ids_for(action, None, 'like')[:15]
-            search_desc = u'搜尋字詞: {}'.format(action)
+            search_result = self._weather_id_reg.ids_for(action, None, 'like')
+            search_result_count = len(search_result)
+            search_result = search_result[:15]
+            search_desc = u'搜尋字詞: {} (共{}筆結果)'.format(action, search_result_count)
             if len(search_result) > 0:
                 action_dict = {}
                 result_arr = [search_desc]
