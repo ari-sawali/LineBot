@@ -145,12 +145,13 @@ oxford_dict_obj = bot.oxford_api_wrapper('en')
 
 # File path
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
+sticker_dl_path = os.path.join(os.path.dirname(__file__), 'sticker_dl')
 
 # Tool instance initialization
 str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, bot.config_category_timeout.CALCULATOR))
 
 # Message handler initialization
-text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, static_tmp_path)
+text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, sticker_dl_path)
 spec_text_handler = bot.msg_handler.special_text_handler(MONGO_DB_URI, line_api, weather_reporter)
 game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api, cmd_mgr)
 img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path)
@@ -158,19 +159,23 @@ img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, stati
 global_handler = bot.msg_handler.global_msg_handle(line_api, sys_config, MONGO_DB_URI, text_handler, spec_text_handler, game_handler, img_handler)
 
 # function for create tmp dir for download content
-def make_tmp_dir():
-    try:
-        os.makedirs(static_tmp_path)
-    except OSError as exc:
-        import shutil
+def make_dir(dir_list):
+    def _make_dir(dir):
+        try:
+            os.makedirs(dir)
+        except OSError as exc:
+            import shutil
 
-        if exc.errno == errno.EEXIST:
-            shutil.rmtree(static_tmp_path)
-            make_tmp_dir()
-        elif os.path.isdir(static_tmp_path):
-            raise Exception('Path has been set to represent the static temporary path.')
-        else:
-            raise
+            if exc.errno == errno.EEXIST:
+                shutil.rmtree(dir)
+                make_dir()
+            elif os.path.isdir(dir):
+                raise Exception('Application path is conflicted. Choose another path. {}'.format(dir))
+            else:
+                raise
+
+    for dir in dir_list:
+        _make_dir(dir)
 
 #########################
 ##### VIRTUAL ROUTE #####
@@ -336,7 +341,6 @@ def handle_unfollow():
 
 
 if __name__ == "__main__":
-    # create tmp dir for download content
-    make_tmp_dir()
+    make_dir([static_tmp_path, sticker_dl_path])
 
     app.run(port=os.environ['PORT'], host='0.0.0.0')

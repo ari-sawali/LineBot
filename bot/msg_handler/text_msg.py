@@ -1097,14 +1097,13 @@ class text_msg_handler(object):
                 url = request.host_url
             
             ret = [u'貼圖圖包下載完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'']
-            ret.append(u'')
             ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
             ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
             ret.append(u'')
             ret.append(u'檔案下載連結:\n{}'.format(url + dl_result.compressed_file_path))
             ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
             ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
-            ret.append(u' 內含貼圖ID編號: {}'.format(u'、'.format(dl_result.sticker_ids)))
+            ret.append(u'內含貼圖ID編號: {}'.format(u'、'.join(dl_result.sticker_ids)))
 
             return u'\n'.join(ret)
         else:
