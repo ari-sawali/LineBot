@@ -146,7 +146,7 @@ class AqiData:
         Returns:
             AQI in integer.
         """
-        return int(self._data.get('iaqi', {}).get('o3', {}).get('v', AqiData.UNKNOWN_INT))
+        return int(self._data.get('iaqi', {}).get('pm10', {}).get('v', AqiData.UNKNOWN_INT))
     
     @property
     def pm25(self):
@@ -156,7 +156,7 @@ class AqiData:
         Returns:
             AQI in integer.
         """
-        return int(self._data.get('iaqi', {}).get('o3', {}).get('v', AqiData.UNKNOWN_INT))
+        return int(self._data.get('iaqi', {}).get('pm25', {}).get('v', AqiData.UNKNOWN_INT))
     
     @property
     def so2(self):
@@ -166,7 +166,7 @@ class AqiData:
         Returns:
             AQI in integer.
         """
-        return int(self._data.get('iaqi', {}).get('o3', {}).get('v', AqiData.UNKNOWN_INT))
+        return int(self._data.get('iaqi', {}).get('so2', {}).get('v', AqiData.UNKNOWN_INT))
 
     def to_string(self, o_config=output_config.SIMPLE):
         if self._ok:
