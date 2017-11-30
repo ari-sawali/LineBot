@@ -106,7 +106,7 @@ class weather_report_child_config(dict_like_mapping):
         if not all(k in org_dict for k in (weather_report_child_config.CITY_ID, weather_report_child_config.MODE, weather_report_child_config.INTERVAL, weather_report_child_config.DATA_RANGE)):
             raise ValueError('Incomplete dictionary. {}'.format(org_dict))
 
-        super(weather_report_config_data, self).__init__(org_dict)
+        super(weather_report_child_config, self).__init__(org_dict)
         
     @property
     def city_id(self):
@@ -123,5 +123,3 @@ class weather_report_child_config(dict_like_mapping):
     @property
     def data_range(self):
         return self[weather_report_child_config.DATA_RANGE]
-
-    
