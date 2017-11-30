@@ -145,13 +145,12 @@ oxford_dict_obj = bot.oxford_api_wrapper('en')
 
 # File path
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-sticker_dl_path = os.path.join(os.path.dirname(__file__), 'sticker_dl')
 
 # Tool instance initialization
 str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, bot.config_category_timeout.CALCULATOR))
 
 # Message handler initialization
-text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, sticker_dl_path)
+text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, static_tmp_path)
 spec_text_handler = bot.msg_handler.special_text_handler(MONGO_DB_URI, line_api, weather_reporter)
 game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api, cmd_mgr)
 img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path)
@@ -341,6 +340,6 @@ def handle_unfollow():
 
 
 if __name__ == "__main__":
-    make_dir([static_tmp_path, sticker_dl_path])
+    make_dir([static_tmp_path])
 
     app.run(port=os.environ['PORT'], host='0.0.0.0')
