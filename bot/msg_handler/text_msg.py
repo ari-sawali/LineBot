@@ -881,7 +881,7 @@ class text_msg_handler(object):
             rep_list = []
 
             if last_array is not None and len(last_array) > 0:
-                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (右邊較新)\n{}。'.format(unicode(last_item_cat), u'、'.join([unicode(item) for item in last_array])), self._webpage_generator))
+                rep_list.append(bot.line_api_wrapper.wrap_text_message(u'{} (越下面越新)\n{}。'.format(unicode(last_item_cat), u'\n'.join([unicode(item) for item in last_array])), self._webpage_generator))
             else:
                 return error.main.miscellaneous(u'沒有登記到本頻道的{}，有可能是因為機器人重新啟動而造成。\n\n本次開機時間: {}'.format(unicode(last_item_cat), self._system_data.boot_up))
 
