@@ -1096,16 +1096,17 @@ class text_msg_handler(object):
             with self._flask_app.test_request_context():
                 url = request.host_url
             
-            ret = [u'貼圖圖包下載完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'']
+            ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'']
             ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
             ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
             ret.append(u'')
-            ret.append(u'檔案下載連結:\n{}'.format(url + dl_result.compressed_file_path))
+            ret.append(u'檔案下載連結: (如下)')
             ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
             ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
             ret.append(u'內含貼圖ID編號: {}'.format(u'、'.join(dl_result.sticker_ids)))
 
-            return u'\n'.join(ret)
+            return [bot.line_api_wrapper.wrap_text_message(u'\n'.join(ret), self._webpage_generator), 
+                    bot.line_api_wrapper.wrap_text_message(url + dl_result.compressed_file_path, self._webpage_generator)]
         else:
             return error.main.lack_of_thing(u'參數')
 
