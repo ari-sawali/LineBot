@@ -98,9 +98,9 @@ class AqiData:
         return int(self._data.get('aqi', AqiData.UNKNOWN_INT))
 
     @property
-    def aqi_main_index(self):
+    def primary_pollutant(self):
         """
-        The index of main AQI.
+        The primary pollutant. Aqi will use this index.
 
         Returns:
             Name of index in string.
@@ -169,10 +169,9 @@ class AqiData:
 
     def to_string(self, o_config=output_config.SIMPLE):
         if self._ok:
-            ret = [u'空氣品質指數(AQI) {} ({})'.format(self.aqi, AqiData.aqi_level(self.aqi))]
+            ret = [u'空氣品質指數(AQI) {} ({}) - 主汙染源 {}'.format(self.aqi, AqiData.aqi_level(self.aqi), self.primary_pollutant)]
 
             if o_config == output_config.DETAIL:
-                ret[0] += u' - 主參考指標: {}'.format(self.aqi_main_index)
                 ret.append(u'【空氣指數細目 (AQI指數)】')
                 ret.append(u'PM2.5: {} ({})'.format(self.pm25, AqiData.aqi_level(self.pm25)))
                 ret.append(u'PM10: {} ({})'.format(self.pm10, AqiData.aqi_level(self.pm10)))

@@ -725,7 +725,7 @@ class text_msg_handler(object):
             else:
                 text = error.main.incorrect_param(u'參數1', u'ACTIVATE(啟用)、D(刪除權限)')
         elif params[1] is not None:
-            cfg_type = ext.string_to_int(cfg_type)
+            cfg_type = ext.string_to_int(params[1])
         
             if cfg_type is None:
                 return error.main.invalid_thing_with_correct_format(u'參數1', u'群組設定代碼(整數)', cfg_type)

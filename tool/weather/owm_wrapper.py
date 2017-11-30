@@ -28,7 +28,7 @@ uv_risk_trans = {
      'extreme': u'危險' 
 }
 
-Beaufort_scale = lambda v: round((v/0.836)**(2/3))
+Beaufort_scale = lambda v: int(round((v/0.836)**(2/3.0)))
 
 class owm(object):
     def __init__(self, app_key):
@@ -186,7 +186,7 @@ class weather(object):
                 else:
                     wind_dir = ext.dir_symbol(wind_deg)
 
-                wind_summary = u'風速 {:.2f} m/s ({:.0f}級) {:.2f}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
+                wind_summary = u'風速 {:.2f} m/s ({}級) {:.2f}° ({})'.format(wind_spd, wind_lv, wind_deg, wind_dir)
 
             if all(item is not None for item in (temp, wind, humid)) and all(item != weather.UNKNOWN for item in (temp_cur, wind_spd, humid)):
                 app_temp = weather.apparent_temperature(temp_cur, wind_spd, humid)

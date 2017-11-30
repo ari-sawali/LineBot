@@ -3,6 +3,7 @@
 from collections import namedtuple
 
 import ext
+import cityids
 
 Coordinate = namedtuple('Coordinate', ['lat', 'lng'])
 
@@ -11,6 +12,8 @@ class output_config(ext.EnumWithName):
     DETAIL = 1, '詳細'
 
 class weather_reporter(object):
+    CITY_ID_REGISTRY = cityids.CityIDRegistry('cityids/%03d-%03d.txt.gz')
+
     def __init__(self, owm_client, aqicn_client):
         self._owm = owm_client
         self._aqicn = aqicn_client

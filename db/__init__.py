@@ -24,6 +24,10 @@ from .stk_rec import (
     sticker_recorder, sticker_record_data
 )
 
+from .weather import (
+    weather_report_config
+)
+
 from .misc import (
     PackedResult
 )

@@ -29,6 +29,10 @@
     <Content Include="templates\LaTeX.html" />
     <Content Include="templates\StickerRanking.html" />
     <Content Include="templates\WebPage.html" />
+    <Content Include="tool\weather\cityids\097-102.txt.gz" />
+    <Content Include="tool\weather\cityids\103-108.txt.gz" />
+    <Content Include="tool\weather\cityids\109-114.txt.gz" />
+    <Content Include="tool\weather\cityids\115-122.txt.gz" />
     <Content Include="tool\weather\owm_code.json" />
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +67,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="db\sys_stats.py" />
+    <Compile Include="db\weather.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ext.py">
       <SubType>Code</SubType>
     </Compile>
@@ -119,6 +126,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tool\weather\aqicn_wrapper.py" />
+    <Compile Include="tool\weather\cityids\cityidregistry.py" />
+    <Compile Include="tool\weather\cityids\__init__.py" />
     <Compile Include="tool\weather\main.py" />
     <Compile Include="tool\weather\owm_wrapper.py" />
     <Compile Include="tool\weather\__init__.py" />
@@ -143,6 +152,7 @@
     <Folder Include="static\" />
     <Folder Include="tool\" />
     <Folder Include="tool\weather\" />
+    <Folder Include="tool\weather\cityids\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

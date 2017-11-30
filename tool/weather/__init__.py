@@ -9,3 +9,5 @@ from .aqicn_wrapper import (
 from .main import (
     output_config, weather_reporter, Coordinate
 )
+
+import cityids
