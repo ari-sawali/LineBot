@@ -98,7 +98,9 @@ class OwmResult:
         ret.append(u'【目前天氣】')
         ret.append(self._current.to_string(o_config))
         ret.append(u'【未來天氣】')
-        ret.append(u'\n\n'.join([w.to_string(o_config) for w in self._weather_list]))
+        r = [w.to_string(o_config) for w in self._weather_list]
+        print 'r'
+        ret.append(u'\n\n'.join(r))
 
         return u'\n'.join(ret)
 
