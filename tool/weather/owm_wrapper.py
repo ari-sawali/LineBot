@@ -103,10 +103,10 @@ class OwmResult:
         return u'\n'.join(ret)
 
     def get_location_string(self, o_config):
-        ret = u'{}, {}'.format(self._location.get_name(), self._location.get_country())
+        ret = u'{}, {} (#{})'.format(self._location.get_name(), self._location.get_country(), self._location.get_ID())
 
         if o_config == output_config.DETAIL:
-            ret += u' @{}, {}'.format(self._location.get_lat(), self._location.get_lon())
+            ret += u' @{}'.format(Coordinate(self._location.get_lat(), self._location.get_lon()))
 
         return ret
 

@@ -664,7 +664,16 @@ class global_msg_handle(object):
         latitude = event.message.latitude
         longitude = event.message.longitude
 
-        reply_text = self._weather_reporter.get_data_by_coord(tool.weather.Coordinate(latitude, longitude), tool.weather.output_config.DETAIL, 12)
+        src_type = bot.line_event_source_type.determine(src)
+
+        if src_type == bot.line_event_source_type.GROUP or src_type == bot.line_event_source_type.ROOM:
+            op_config = tool.weather.output_config.SIMPLE
+        elif src_type == bot.line_event_source_type.USER:
+            op_config = tool.weather.output_config.DETAIL
+        else:
+            raise NotImplementedError(src_type)
+
+        reply_text = self._weather_reporter.get_data_by_coord(tool.weather.Coordinate(latitude, longitude), op_config, 12)
         if reply_text is not None:
             self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
             self._line_api_wrapper.reply_message_text(token, reply_text)

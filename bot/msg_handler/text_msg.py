@@ -18,6 +18,7 @@ class special_text_handler(object):
         self._line_api_wrapper = line_api_wrapper
         self._weather_reporter = weather_reporter
         self._weather_config = db.weather_report_config(mongo_db_uri)
+        self._system_stats = db.system_statistics(mongo_db_uri)
 
         self._special_keyword = {
             u'天氣': (self._handle_text_spec_weather, (False,)),
@@ -42,6 +43,8 @@ class special_text_handler(object):
         return False
 
     def _handle_text_spec_weather(self, detailed, uid):
+        self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
+
         ret = []
 
         config_data = self._weather_config.get_config(uid) 

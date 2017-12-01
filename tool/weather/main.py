@@ -58,19 +58,12 @@ class weather_reporter(object):
         return self._proc_weather_data(coord, weather_data, o_config)
 
     def _proc_weather_data(self, owm_city_id_or_coord, weather_data, o_config):
-        if isinstance(owm_city_id_or_coord, Coordinate):
-            expr = str(owm_city_id_or_coord)
-        elif isinstance(owm_city_id_or_coord, int):
-            expr = u'(#{})'.format(owm_city_id_or_coord)
-        else:
-            expr = owm_city_id_or_coord
-
         if weather_data is not None:
             ret = []
             coord = weather_data.get_location_coordinate()
             aqi_data = self._aqicn.get_location_feed_aqi_data(coord)
 
-            ret.append(u'位置: {} ({})'.format(weather_data.get_location_string(o_config), expr))
+            ret.append(u'位置: {}'.format(weather_data.get_location_string(o_config)))
             ret.append(u'【空氣品質相關】')
             ret.append(aqi_data.to_string(o_config))
             ret.append(u'【紫外線相關】')
@@ -80,4 +73,4 @@ class weather_reporter(object):
 
             return u'\n'.join(ret)
         else:
-            return u'查無資料。({})'.format(expr)
+            return u'查無資料。({})'.format(owm_city_id_or_coord)
