@@ -106,7 +106,7 @@ class OwmResult:
         ret = u'{}, {}'.format(self._location.get_name(), self._location.get_country())
 
         if o_config == output_config.DETAIL:
-            ret += u'@{}, {}'.format(self._location.get_lat(), self._location.get_lon())
+            ret += u' @{}, {}'.format(self._location.get_lat(), self._location.get_lon())
 
         return ret
 

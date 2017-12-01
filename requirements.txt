@@ -9,3 +9,4 @@ sympy
 pymongo
 google-api-python-client
 pyowm
+Pillow
