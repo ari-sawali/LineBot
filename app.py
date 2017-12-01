@@ -167,7 +167,7 @@ def make_dir(dir_list):
 
             if exc.errno == errno.EEXIST:
                 shutil.rmtree(dir)
-                make_dir()
+                _make_dir(dir)
             elif os.path.isdir(dir):
                 raise Exception('Application path is conflicted. Choose another path. {}'.format(dir))
             else:

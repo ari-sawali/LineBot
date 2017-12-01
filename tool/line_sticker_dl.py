@@ -69,9 +69,6 @@ class line_sticker_downloader(object):
 
         Returns:
             Returns path of compressed sticker package(zip).
-
-        Errors: 
-            raise `MetaNotFoundException` if status code of getting pack meta is not 200.
         """
         stk_ids = sticker_metadata.stickers
         pack_id = sticker_metadata.pack_id

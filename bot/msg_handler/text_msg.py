@@ -910,7 +910,7 @@ class text_msg_handler(object):
                     action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'Q' + text_msg_handler.SPLITTER + sha
                     action_dict['詳細 - {}'.format(sha)] = text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'I' + text_msg_handler.SPLITTER + sha
 
-            rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_item_cat)), u'快速查詢'))
+            rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_item_cat)), u'快捷指令/快速查詢'))
 
             return rep_list
         else:
@@ -1102,7 +1102,7 @@ class text_msg_handler(object):
             with self._flask_app.test_request_context():
                 url = request.host_url
             
-            ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'']
+            ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'若要將動態貼圖轉為gif，請點此 https://ezgif.com/apng-to-gif', u'']
             ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
             ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
             ret.append(u'')
