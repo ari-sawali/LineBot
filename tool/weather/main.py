@@ -124,7 +124,7 @@ class weather_reporter(object):
             else:
                 detail_location = u''
 
-            ret.append(u'位置: {}{}'.format(weather_data.get_location_string(o_config)), detail_location)
+            ret.append(u'位置: {}{}'.format(weather_data.get_location_string(o_config), detail_location))
             ret.append(u'【空氣品質相關】')
             ret.append(aqi_data.to_string(o_config))
             ret.append(u'【紫外線相關】')
