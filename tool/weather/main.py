@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from collections import namedtuple
+from geopy.distance import vincenty
+import math
 
 import ext
 import cityids
@@ -36,6 +38,60 @@ class Coordinate(object):
 
         return u'{}{}, {}{}'.format(lat_dir, abs(self._latitude), lng_dir, abs(self._longitude))
 
+class CoordinateRelationship(object):
+    def __init__(self, distance_km, direction_deg):
+        self._distance_km = distance_km
+        self._direction_deg = direction_deg
+
+    @property
+    def distance(self):
+        """
+        Returns:
+            Distance between two coordinates. Using WGS-84 ellipsoid ,vincenty formulae and geopy to calculate.
+        """
+        return self._distance_km
+
+    @property
+    def direction(self):
+        """
+        Returns:
+            Direction in degrees.
+        """
+        return self._direction_deg
+
+    @staticmethod
+    def _calculate_deg(source_coord, target_coord):
+        d_lat = math.radians(target_coord.lat - source_coord.lat)
+        d_lng = math.radians(target_coord.lng - source_coord.lng)
+
+        lat1 = math.radians(source_coord.lat)
+        lat2 = math.radians(target_coord.lat)
+
+        y = math.sin(d_lng) * math.cos(lat2)
+        x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(d_lng)
+        brng = math.degrees(math.atan2(y, x)) % 360.0
+
+        return brng
+
+    @staticmethod
+    def calculate(source_coord, target_coord):
+        """
+        Calculate the distance between provided coordinates and the direction from source coordinates to target coordinates.
+
+        Returns:
+            CoordinateRelationship object.
+        """
+        dist = vincenty((source_coord.lat, source_coord.lng), (target_coord.lat, target_coord.lng)).km
+        deg = CoordinateRelationship._calculate_deg(source_coord, target_coord)
+
+        return CoordinateRelationship(dist, deg)
+
+    def __str__(self):
+        return '位於 {}°({}) {} 公里處'.format(self.direction, ext.dir_symbol(self.direction), self.distance)
+
+    def __unicode__(self):
+        return unicode(str(self).decode('utf-8'))
+
 class output_config(ext.EnumWithName):
     SIMPLE = 0, '簡潔'
     DETAIL = 1, '詳細'
@@ -63,7 +119,12 @@ class weather_reporter(object):
             coord = weather_data.get_location_coordinate()
             aqi_data = self._aqicn.get_location_feed_aqi_data(coord)
 
-            ret.append(u'位置: {}'.format(weather_data.get_location_string(o_config)))
+            if isinstance(owm_city_id_or_coord, Coordinate):
+                detail_location = u' ({})'.format(CoordinateRelationship.calculate(owm_city_id_or_coord, coord))
+            else:
+                detail_location = u''
+
+            ret.append(u'位置: {}{}'.format(weather_data.get_location_string(o_config)), detail_location)
             ret.append(u'【空氣品質相關】')
             ret.append(aqi_data.to_string(o_config))
             ret.append(u'【紫外線相關】')
