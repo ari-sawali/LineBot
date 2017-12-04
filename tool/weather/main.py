@@ -87,7 +87,7 @@ class CoordinateRelationship(object):
         return CoordinateRelationship(dist, deg)
 
     def __str__(self):
-        return '位於 {}°({}) {} 公里處'.format(self.direction, ext.dir_symbol(self.direction), self.distance)
+        return '位於 {:.2f}°({}) {:.2f} 公里處'.format(self.direction, ext.dir_symbol(self.direction), self.distance)
 
     def __unicode__(self):
         return unicode(str(self).decode('utf-8'))
@@ -120,7 +120,7 @@ class weather_reporter(object):
             aqi_data = self._aqicn.get_location_feed_aqi_data(coord)
 
             if isinstance(owm_city_id_or_coord, Coordinate):
-                detail_location = u' ({})'.format(CoordinateRelationship.calculate(owm_city_id_or_coord, coord))
+                detail_location = u' (氣象站{})'.format(CoordinateRelationship.calculate(owm_city_id_or_coord, coord))
             else:
                 detail_location = u''
 
