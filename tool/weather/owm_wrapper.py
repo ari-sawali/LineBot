@@ -120,6 +120,7 @@ class weather(object):
         CODE_DICT = json.loads(r)
 
     def __init__(self, weather):
+        print weather.to_JSON()
         self._weather = weather
 
     def to_string(self, o_config):
