@@ -159,18 +159,14 @@ class weather(object):
                 cloud = weather.UNKNOWN
 
             rain = self._weather.get_rain()
-            print len(rain)
-            print len(rain.items())
-            if len(rain) > 1:
-                print rain
+            if len(rain) > 0:
                 rain = rain.get(u'3h', 0)
-                print rain
             else:
                 rain = 0
             print rain
 
             snow = self._weather.get_snow()
-            if len(snow) > 1:
+            if len(snow) > 0:
                 snow = snow.get(u'3h', 0)
             else:
                 snow = 0
