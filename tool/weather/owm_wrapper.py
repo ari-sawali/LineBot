@@ -159,6 +159,7 @@ class weather(object):
                 cloud = weather.UNKNOWN
 
             rain = self._weather.get_rain()
+            print len(rain)
             if len(rain) > 1:
                 print rain
                 rain = rain.get(u'3h', 0)
