@@ -120,7 +120,6 @@ class weather(object):
         CODE_DICT = json.loads(r)
 
     def __init__(self, weather):
-        print weather.to_JSON()
         self._weather = weather
 
     def to_string(self, o_config):
@@ -160,10 +159,12 @@ class weather(object):
                 cloud = weather.UNKNOWN
 
             rain = self._weather.get_rain()
+            print rain
             if len(rain) > 1:
                 rain = rain.get('3h', 0)
             else:
                 rain = 0
+            print rain
 
             snow = self._weather.get_snow()
             if len(snow) > 1:
