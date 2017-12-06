@@ -160,6 +160,7 @@ class weather(object):
 
             rain = self._weather.get_rain()
             print len(rain)
+            print len(rain.items())
             if len(rain) > 1:
                 print rain
                 rain = rain.get(u'3h', 0)
