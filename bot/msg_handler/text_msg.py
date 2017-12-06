@@ -1023,7 +1023,7 @@ class text_msg_handler(object):
         mode_dict = { 'S': tool.weather.output_config.SIMPLE, 'D': tool.weather.output_config.DETAIL }
 
         default_interval = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_INTERVAL_HR)
-        default_data_range= self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_DATA_RANGE_HR)
+        default_data_range = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_DATA_RANGE_HR)
 
         action = params[1]
         if any(action == k for k in 'AD'):
