@@ -1122,7 +1122,7 @@ class text_msg_handler(object):
     def _STK(self, src, params, key_permission_lv, group_config_type):
         sticker_id = ext.string_to_int(params[1])
         if sticker_id is not None:
-            return bot.line_api_wrapper.wrap_image_message(bot.line_api_wrapper.sticker_png_url(sticker_id_num))
+            return bot.line_api_wrapper.wrap_image_message(bot.line_api_wrapper.sticker_png_url(sticker_id))
         else:
             category = params[1]
             hour_range = ext.string_to_int(params[2])
