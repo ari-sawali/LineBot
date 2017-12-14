@@ -94,7 +94,13 @@ class line_sticker_downloader(object):
                 for path in path_list:
                     zipf.write(path, os.path.basename(path))
 
-            shutil.rmtree(os.path.join(self._file_proc_path, pack_name))
+            try:
+                shutil.rmtree(os.path.join(self._file_proc_path, pack_name))
+            except OSError as exc:
+                if exc.errno == errno.ENOENT:
+                    pass
+                else:
+                    raise exc
 
             time_consumed_comp = time.time() - _start
 
