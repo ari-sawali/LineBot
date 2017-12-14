@@ -564,7 +564,7 @@ class user_data_manager(db_base):
         Raise InsufficientPermissionError if action is not allowed.
         """
         if not bot.line_api_wrapper.is_valid_room_group_id(group_id) and not bot.line_api_wrapper.is_valid_user_id(group_id):
-            raise ValueError(error.error.main.miscellaneous(u'Illegal group_id.'))
+            raise ValueError(error.error.main.miscellaneous(u'Illegal group_id. ({})'.format(group_id)))
 
         if setter_uid == target_uid or self._check_action_is_allowed(setter_uid, group_id, target_permission_lv):
             new_user_data = user_data.init_by_field(target_uid, group_id, target_permission_lv)
