@@ -51,7 +51,7 @@ class special_text_handler(object):
         self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
 
         config_data = self._weather_config.get_config(uid) 
-        if config_data is not None and len(config_data.config) > 0 and False:
+        if config_data is not None and len(config_data.config) > 0:
             ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
 
             return u'\n==========\n'.join(ret)
