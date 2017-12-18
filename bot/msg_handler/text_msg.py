@@ -50,11 +50,10 @@ class special_text_handler(object):
     def _handle_text_spec_weather(self, detailed, uid):
         self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
 
-        ret = []
-
         config_data = self._weather_config.get_config(uid) 
         if config_data is not None and len(config_data.config) > 0 and False:
-            ret.extend([self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config])
+            ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
+
             return u'\n==========\n'.join(ret)
         else:
             command_head = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'W' + bot.msg_handler.text_msg_handler.SPLITTER
@@ -72,9 +71,7 @@ class special_text_handler(object):
             if detailed:
                 template_actions = { k: v + bot.msg_handler.text_msg_handler.SPLITTER + 'D' for k, v in template_actions.iteritems() }
 
-            template = bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title, template_title)
-
-            ret.extend(template)
+            return bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title, template_title)
 
 
 class text_msg_handler(object):
