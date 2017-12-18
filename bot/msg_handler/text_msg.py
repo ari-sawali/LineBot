@@ -22,8 +22,7 @@ class special_text_handler(object):
 
         self._special_keyword = {
             u'天氣': (self._handle_text_spec_weather, (False,)),
-            u'詳細天氣': (self._handle_text_spec_weather, (True,)),
-            u'帥哥': (self._handle_text_spec_weather, (True,))
+            u'詳細天氣': (self._handle_text_spec_weather, (True,))
         }
 
     def handle_text(self, event):
@@ -54,7 +53,7 @@ class special_text_handler(object):
         ret = []
 
         config_data = self._weather_config.get_config(uid) 
-        if config_data is not None and len(config_data.config) > 0:
+        if config_data is not None and len(config_data.config) > 0 and False:
             ret.extend([self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config])
             return u'\n==========\n'.join(ret)
         else:
