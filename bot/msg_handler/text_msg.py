@@ -59,6 +59,7 @@ class special_text_handler(object):
             command_head = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'W' + bot.msg_handler.text_msg_handler.SPLITTER
 
             template_title = u'快速天氣查詢'
+            template_title_alt = u'快速天氣查詢樣板，請使用手機查看。'
             template_actions = { 
                 tool.weather.owm.DEFAULT_TAICHUNG.name: command_head + str(tool.weather.owm.DEFAULT_TAICHUNG.id),
                 tool.weather.owm.DEFAULT_TAIPEI.name: command_head + str(tool.weather.owm.DEFAULT_TAIPEI.id),
@@ -71,7 +72,7 @@ class special_text_handler(object):
             if detailed:
                 template_actions = { k: v + bot.msg_handler.text_msg_handler.SPLITTER + 'D' for k, v in template_actions.iteritems() }
 
-            return bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title, template_title)
+            return bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title_alt, template_title)
 
 
 class text_msg_handler(object):
