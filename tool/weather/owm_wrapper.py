@@ -2,6 +2,7 @@
 
 import os, io, json
 import datetime
+from collections import namedtuple
 
 import numpy
 import pyowm
@@ -12,13 +13,7 @@ import ext
 
 from .main import output_config, Coordinate
 
-DEFAULT_IDS = [1668341, 1668399, 1673820, 1735161, 1819729, 1821274]
-# 1668341 = Taipei
-# 1668399 = Taichung
-# 1673820 = Kaohsiung
-# 1735161 = Kuala Lumper
-# 1819729 = Hong Kong
-# 1821274 = Macau
+Weather_ID_Pair = namedtuple('Weather_ID_Pair', ['name', 'id'])
 
 uv_risk_trans = {
      'low': u'低', 
@@ -31,6 +26,13 @@ uv_risk_trans = {
 Beaufort_scale = lambda v: int(round((v/0.836)**(2/3.0)))
 
 class owm(object):
+    DEFAULT_TAIPEI = Weather_ID_Pair('Taipei', 1668341)
+    DEFAULT_TAICHUNG = Weather_ID_Pair('Taichung', 1668399)
+    DEFAULT_KAOHSIUNG = Weather_ID_Pair('Kaohsiung', 1673820)
+    DEFAULT_KUALA_LUMPER = Weather_ID_Pair('Kuala Lumper', 1735161)
+    DEFAULT_HONG_KONG = Weather_ID_Pair('Hong Kong', 1819729)
+    DEFAULT_MACAU = Weather_ID_Pair('Macau', 1821274)
+
     def __init__(self, app_key):
         self._owm_client = pyowm.OWM(app_key)
 

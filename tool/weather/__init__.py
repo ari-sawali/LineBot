@@ -1,5 +1,5 @@
 from .owm_wrapper import (
-    owm, DEFAULT_IDS
+    owm
 )
 
 from .aqicn_wrapper import (

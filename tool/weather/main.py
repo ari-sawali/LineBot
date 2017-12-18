@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
 from geopy.distance import vincenty
 import math
 
 import ext
 import cityids
 
-Coordinate = namedtuple('Coordinate', ['lat', 'lng'])
 class Coordinate(object):
     def __init__(self, latitude, longitude):
         self._latitude = latitude

@@ -22,7 +22,8 @@ class special_text_handler(object):
 
         self._special_keyword = {
             u'天氣': (self._handle_text_spec_weather, (False,)),
-            u'詳細天氣': (self._handle_text_spec_weather, (True,))
+            u'詳細天氣': (self._handle_text_spec_weather, (True,)),
+            u'帥哥': (self._handle_text_spec_weather, (True,))
         }
 
     def handle_text(self, event):
@@ -37,7 +38,12 @@ class special_text_handler(object):
         if spec is not None:
             spec_func, spec_param = spec
             rep_text = spec_func(*(spec_param + (uid,)))
-            self._line_api_wrapper.reply_message_text(token, rep_text)
+
+            if isinstance(rep_text, (str, unicode)):
+                self._line_api_wrapper.reply_message_text(token, rep_text)
+            else:
+                self._line_api_wrapper.reply_message(token, rep_text)
+
             return True
 
         return False
@@ -50,10 +56,27 @@ class special_text_handler(object):
         config_data = self._weather_config.get_config(uid) 
         if config_data is not None and len(config_data.config) > 0:
             ret.extend([self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config])
+            return u'\n==========\n'.join(ret)
         else:
-            ret.extend([self._weather_reporter.get_data_by_owm_id(id, tool.weather.output_config.DETAIL if detailed else tool.weather.output_config.SIMPLE, 12, 24) for id in tool.weather.DEFAULT_IDS])
+            command_head = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'W' + bot.msg_handler.text_msg_handler.SPLITTER
 
-        return u'\n==========\n'.join(ret)
+            template_title = u'快速天氣查詢'
+            template_actions = { 
+                tool.weather.owm.DEFAULT_TAICHUNG.name: command_head + str(tool.weather.owm.DEFAULT_TAICHUNG.id),
+                tool.weather.owm.DEFAULT_TAIPEI.name: command_head + str(tool.weather.owm.DEFAULT_TAIPEI.id),
+                tool.weather.owm.DEFAULT_KAOHSIUNG.name: command_head + str(tool.weather.owm.DEFAULT_KAOHSIUNG.id),
+                tool.weather.owm.DEFAULT_HONG_KONG.name: command_head + str(tool.weather.owm.DEFAULT_HONG_KONG.id),
+                tool.weather.owm.DEFAULT_KUALA_LUMPER.name: command_head + str(tool.weather.owm.DEFAULT_KUALA_LUMPER.id),
+                tool.weather.owm.DEFAULT_MACAU.name: command_head + str(tool.weather.owm.DEFAULT_MACAU.id)
+            }
+
+            if detailed:
+                template_actions = { k: v + bot.msg_handler.text_msg_handler.SPLITTER + 'D' for k, v in template_actions.iteritems() }
+
+            template = bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title, template_title)
+
+            ret.extend(template)
+
 
 class text_msg_handler(object):
     HEAD = 'JC'
@@ -1084,7 +1107,7 @@ class text_msg_handler(object):
                 return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板，請參考搜尋結果點選'),
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
-                return u'{}\n{}'.format(search_desc, error.main.no_result())
+                return u'{}\n{}\n若城市名為中文，請用該城市的英文名搜尋。'.format(search_desc, error.main.no_result())
              
     def _DL(self, src, params, key_permission_lv, group_config_type):
         if params[1] is not None:
