@@ -103,7 +103,7 @@ class system_data(dict_like_mapping):
     WEBPAGE_VIEWED = 'wp'
     EXTEND_FUNCTION_USED = 'ext'
 
-    _CAT_TRANS_DICT = { COMMAND_CALLED: u'指令使用次數', WEBPAGE_VIEWED: u'網頁瀏覽次數', EXTEND_FUNCTION_USED: u'延展功能使用' }
+    _CAT_TRANS_DICT = { COMMAND_CALLED: u'系統指令', WEBPAGE_VIEWED: u'網頁瀏覽', EXTEND_FUNCTION_USED: u'延展功能', GAME_COMMAND_USED: u'遊戲指令' }
 
     @staticmethod
     def translate_category(cat):

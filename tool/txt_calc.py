@@ -393,4 +393,3 @@ class calc_result_data(object):
         return u'計算{}\n\n{}'.format(
             u'成功' if self._success else u'失敗', 
             self.get_basic_text())
-
