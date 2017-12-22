@@ -39,15 +39,6 @@ class text_calculator(object):
         result_data = calc_result_data(text)
         init_time = time.time()
 
-        result_data = calc_result_data(text, True)
-        text = text_calculator.formula_to_py(result_data.formula_str)
-        print text.encode('utf-8')
-        print type(text)
-        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
-        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',').encode('utf-8')
-        print ' '.join(text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',').split(',')).encode('utf-8')
-        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[1:]
-        
         if text_calculator.is_non_calc(text):
             result_data.auto_record_time(init_time)
             return result_data
@@ -111,8 +102,6 @@ class text_calculator(object):
 
             result_data.auto_record_time(start_time)
 
-            print result
-
             if isinstance(result, (float, int, long)):
                 if isinstance(result, long) and result.bit_length() > 333:
                     result_data.over_length = True
@@ -162,17 +151,19 @@ class text_calculator(object):
                 result_data.success = False
                 result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
             else:
-                var_init = text_line[0].replace(' ', ',')
-                var_init_symbol = ' '.join(var_init.split(','))
+                var_org = text_line[0]
+
+                var_init_field = var_org.replace(' ', ',')
+                var_init_symbol = var_org
                 formula_list = text_line[1:]
 
                 if any((not formula.endswith(text_calculator.EQUATION_KEYWORD)) for formula in formula_list):
                     result_data.success = False
                     result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
                 else:
-                    formula_list_replaced = [text_calculator.formula_to_py(eq).replace(text_calculator.EQUATION_KEYWORD, '') for eq in text_line[1:]]
+                    formula_list_replaced = [eq.replace(text_calculator.EQUATION_KEYWORD, '') for eq in formula_list]
 
-                    exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init, var_init_symbol)
+                    exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init_field, var_init_symbol)
                     exec_py += '\nresult = sympy.solve([{}], {})'.format(','.join(formula_list_replaced), var_init)
 
                     start_time = init_time
