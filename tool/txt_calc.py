@@ -22,7 +22,7 @@ class calc_type(Enum):
 
 class text_calculator(object):
     EQUATION_KEYWORD = u'=0'
-    EQUATION_VAR_FORMULA_SEPARATOR = ' '
+    EQUATION_VAR_FORMULA_SEPARATOR = u'和'
 
     def __init__(self, timeout=15):
         self._queue = MultiQueue()
@@ -153,7 +153,7 @@ class text_calculator(object):
             else:
                 var_org = text_line[0]
 
-                var_init_field = var_org.replace(' ', ',')
+                var_init_field = var_org.replace(u' ', u',')
                 var_init_symbol = var_org
                 formula_list = text_line[1:]
 
@@ -161,7 +161,7 @@ class text_calculator(object):
                     result_data.success = False
                     result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
                 else:
-                    formula_list_replaced = [eq.replace(text_calculator.EQUATION_KEYWORD, '') for eq in formula_list]
+                    formula_list_replaced = [eq.replace(text_calculator.EQUATION_KEYWORD, u'') for eq in formula_list]
 
                     exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init_field, var_init_symbol)
                     exec_py += '\nresult = sympy.solve([{}], {})'.format(','.join(formula_list_replaced), var_init)
