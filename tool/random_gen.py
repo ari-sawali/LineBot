@@ -48,7 +48,7 @@ class random_drawer(object):
         text += u'\n實際中率【{:.2%}】'.format(shot_count / float(len(result_list)))
 
         prediction_probability = 1
-        for i in range(0, shot_count):
+        for i in range(0, shot_count if shot_count >= prediction_count else prediction_count):
             prediction_probability -= scipy.special.comb(count, i) * probability**i * (1 - probability)**(count - i)
             if i < prediction_count and prediction_probability >= 0.0001:
                 text += u'\n中{}+機率【{:.2%}】'.format(i + 1, prediction_probability)
