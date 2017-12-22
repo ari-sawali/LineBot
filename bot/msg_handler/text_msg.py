@@ -136,6 +136,11 @@ class text_msg_handler(object):
                 cmd_data = cmd_obj
                 break
 
+        # terminate if set to silence
+        if group_config_type <= db.config_type.SILENCE and cmd_data.function_code != 'GA':
+            print 'Terminate because the group is set to silence and function code is not GA.'
+            return False
+
         if cmd_data is None:
             print 'Called an not existed command.'
             return False

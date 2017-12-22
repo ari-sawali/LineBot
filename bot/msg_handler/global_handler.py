@@ -339,11 +339,11 @@ class global_msg_handle(object):
         user_permission = self._get_user_permission(src)
         self._system_data.set(bot.system_data_category.LAST_UID, cid, uid)
 
-        #######################################################
-        ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
-        #######################################################
+        #########################################
+        ### TERMINATE CHECK - USER RESTIRCTED ###
+        #########################################
 
-        terminate = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
+        terminate = user_permission == bot.permission.RESTRICTED
 
         if terminate:
             print 'terminate - group set to silence or user is restricted'
