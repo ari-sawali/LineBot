@@ -38,8 +38,6 @@ class text_calculator(object):
         """
         result_data = calc_result_data(text)
         init_time = time.time()
-        
-        print calculation_type
 
         if text_calculator.is_non_calc(text):
             result_data.auto_record_time(init_time)
@@ -62,6 +60,22 @@ class text_calculator(object):
             else:
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
             calc_proc.start()
+
+            result_dataa = calc_result_data(text, True)
+            text = text_calculator.formula_to_py(result_dataa.formula_str)
+            
+            text_line = text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
+            var_org = text_line[0]
+
+            var_init_field = var_org.replace(u' ', u',')
+            var_init_symbol = var_org
+            formula_list = text_line[1:]
+
+            print text
+            print var_org
+            print var_init_field
+            print var_init_symbol
+            print formula_list
 
             result_data = self._queue.get(True, self._timeout)
         except Queue.Empty:
