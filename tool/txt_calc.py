@@ -179,7 +179,7 @@ class text_calculator(object):
                     result_data.auto_record_time(start_time)
                     
                     result_data.formula_str = '\n'.join(formula_list)
-                    result_data.calc_result = str_calc_result
+                    result_data.calc_result = str_calc_result + u'{}'.format(text_line)
         except Exception as ex:
             result_data.success = False
             result_data.calc_result = '{} - {}'.format(type(ex), ex.message)
