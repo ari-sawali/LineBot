@@ -39,6 +39,9 @@ class text_calculator(object):
         result_data = calc_result_data(text)
         init_time = time.time()
 
+        result_data = calc_result_data(text, True)
+        text = text_calculator.formula_to_py(result_data.formula_str)
+        print text
         print type(text)
         print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
         
