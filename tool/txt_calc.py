@@ -38,6 +38,9 @@ class text_calculator(object):
         """
         result_data = calc_result_data(text)
         init_time = time.time()
+
+        print type(text)
+        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
         
         if text_calculator.is_non_calc(text):
             result_data.auto_record_time(init_time)
