@@ -150,6 +150,7 @@ class text_calculator(object):
         text = text_calculator.formula_to_py(result_data.formula_str)
 
         try:
+            start_time = init_time
             text_line = text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
             
             if len(text_line) < 2:
@@ -199,9 +200,6 @@ class text_calculator(object):
 
         text = text_calculator.formula_to_py(result_data.formula_str)
 
-        print text
-        sys.stdout.flush()
-
         try:
             start_time = init_time
             exec('result = sympy.factor(text)') in globals(), locals()
@@ -215,7 +213,6 @@ class text_calculator(object):
             result_data.auto_record_time(start_time)
             
             result_data.calc_result = str_calc_result
-
         except Exception as ex:
             result_data.success = False
             result_data.calc_result = '{} - {}'.format(type(ex), ex.message)
