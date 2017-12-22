@@ -251,7 +251,7 @@ class text_calculator(object):
     @staticmethod
     def is_non_calc(text):
         try:
-            text.decode('ascii')
+            text.replace(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR, '').replace(text_calculator.EQUATION_KEYWORD, '').decode('ascii')
             return (text.startswith('0') and '.' not in text) or text.startswith('+') or text.endswith('.')
         except UnicodeDecodeError:
             return True
