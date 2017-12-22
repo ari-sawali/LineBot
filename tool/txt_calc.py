@@ -58,6 +58,8 @@ class text_calculator(object):
                 else:
                     calc_proc = self._get_calculate_proc(calc_type.NORMAL, (init_time, text, debug, self._queue))
             else:
+                print calculation_type
+
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
             calc_proc.start()
 
@@ -179,7 +181,7 @@ class text_calculator(object):
                     result_data.auto_record_time(start_time)
                     
                     result_data.formula_str = '\n'.join(formula_list)
-                    result_data.calc_result = str_calc_result + u'{}'.format(text_line)
+                    result_data.calc_result = str_calc_result
         except Exception as ex:
             result_data.success = False
             result_data.calc_result = '{} - {}'.format(type(ex), ex.message)
