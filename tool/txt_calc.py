@@ -9,16 +9,17 @@ from enum import Enum
 import re
 import time
 
-from error import error
-
 from math import *
 import sympy
 
-class calc_type(Enum):
-    UNKNOWN = -1
-    NORMAL = 0
-    POLYNOMIAL_FACTORIZATION = 1
-    ALGEBRAIC_EQUATIONS = 2
+from error import error
+import ext
+
+class calc_type(ext.EnumWithName):
+    UNKNOWN = -1, '不明'
+    BASIC = 0, '一般'
+    POLYNOMIAL_FACTORIZATION = 1, '因式分解'
+    ALGEBRAIC_EQUATIONS = 2, '方程式求解'
 
 class text_calculator(object):
     EQUATION_KEYWORD = u'=0'
@@ -56,23 +57,9 @@ class text_calculator(object):
 
                     calc_proc = self._get_calculate_proc(calc_type_var, (init_time, text, debug, self._queue))
                 else:
-                    calc_proc = self._get_calculate_proc(calc_type.NORMAL, (init_time, text, debug, self._queue))
+                    calc_proc = self._get_calculate_proc(calc_type.BASIC, (init_time, text, debug, self._queue))
             else:
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
-
-            text = text_calculator.formula_to_py(text)
-            text_line = text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
-            var_org = text_line[0]
-
-            var_init_field = var_org.replace(u' ', u',')
-            var_init_symbol = var_org
-            formula_list = text_line[1:]
-
-            print text
-            print var_org
-            print var_init_field
-            print var_init_symbol
-            print formula_list
 
             calc_proc.start()
 
@@ -95,7 +82,7 @@ class text_calculator(object):
         """
         args_tuple: (init_time, text, debug, self._queue)
         """
-        if type_enum == calc_type.NORMAL:
+        if type_enum == calc_type.BASIC:
             return Process(target=self._basic_calc_proc, args=args_tuple)
         elif type_enum == calc_type.ALGEBRAIC_EQUATIONS:
             return Process(target=self._algebraic_equations, args=args_tuple)
@@ -106,6 +93,7 @@ class text_calculator(object):
 
     def _basic_calc_proc(self, init_time, text, debug, queue):
         result_data = calc_result_data(text)
+        result_data.calc_type = calc_type.BASIC
         try:
             start_time = init_time
             result = ''
@@ -157,6 +145,8 @@ class text_calculator(object):
 
     def _algebraic_equations(self, init_time, text, debug, queue):
         result_data = calc_result_data(text, True)
+        result_data.calc_type = calc_type.ALGEBRAIC_EQUATIONS
+
         text = text_calculator.formula_to_py(result_data.formula_str)
 
         try:
@@ -205,6 +195,8 @@ class text_calculator(object):
 
     def _polynomial_factorization(self, init_time, text, debug, queue):
         result_data = calc_result_data(text, True)
+        result_data.calc_type = calc_type.POLYNOMIAL_FACTORIZATION
+
         text = text_calculator.formula_to_py(result_data.formula_str)
 
         print text
@@ -275,10 +267,11 @@ class text_calculator(object):
 class calc_result_data(object):
     def __init__(self, formula_str, latex_avaliable=False):
         self._formula_str = formula_str
-        self._calc_result = None
         self._latex = None
         self._calc_time = -1.0
+        self._calc_type = calc_type.BASIC
         self._type_cast_time = -1.0
+        self._calc_result = None
         self._timeout = False
         self._success = False
         self._over_length = False
@@ -374,6 +367,14 @@ class calc_result_data(object):
     def token(self, value):
         self._token = value
 
+    @property
+    def calc_type(self):
+        return self._calc_type
+
+    @calc_type.setter
+    def calc_type(self, value):
+        self._calc_type = value
+
     def auto_record_time(self, start_time):
         if self._calc_time == -1.0:
             self._calc_time = time.time() - start_time
@@ -384,11 +385,12 @@ class calc_result_data(object):
                 self._type_cast_time = time.time() - start_time
 
     def get_basic_text(self):
-        return u'算式:\n{}\n結果:\n{}\n計算時間:\n{}\n顯示時間:\n{}'.format(
+        return u'算式:\n{}\n結果:\n{}\n計算 {} | 顯示 {}\n計算種類: {}'.format(
             self._formula_str,
             self._calc_result,
-            u'(未執行)' if self._calc_time == -1.0 else u'{:f}秒'.format(self._calc_time),
-            u'(未執行)' if self._type_cast_time == -1.0 else u'{:f}秒'.format(self._type_cast_time))
+            u'(未執行)' if self._calc_time == -1.0 else u'{:3f}秒'.format(self._calc_time),
+            u'(未執行)' if self._type_cast_time == -1.0 else u'{:3f}秒'.format(self._type_cast_time),
+            self._calc_type)
 
     def get_debug_text(self):
         return u'計算{}\n\n{}'.format(
