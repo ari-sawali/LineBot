@@ -38,6 +38,8 @@ class text_calculator(object):
         """
         result_data = calc_result_data(text)
         init_time = time.time()
+        
+        print calculation_type
 
         if text_calculator.is_non_calc(text):
             result_data.auto_record_time(init_time)
@@ -58,8 +60,6 @@ class text_calculator(object):
                 else:
                     calc_proc = self._get_calculate_proc(calc_type.NORMAL, (init_time, text, debug, self._queue))
             else:
-                print calculation_type
-
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
             calc_proc.start()
 
