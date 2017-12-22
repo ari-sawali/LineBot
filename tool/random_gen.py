@@ -2,6 +2,7 @@
 
 import random
 import string
+import scipy.special
 
 class random_drawer(object):
     @staticmethod
@@ -45,9 +46,13 @@ class random_drawer(object):
         text += u'\n抽選結果【中{}次 | 失{}次】'.format(shot_count, miss_count)
         text += u'\n中選位置【{}】'.format(u'、'.join([str(key) for key, value in result_list.iteritems() if value]))
         text += u'\n實際中率【{:.2%}】'.format(shot_count / float(len(result_list)))
-        for i in range(0, prediction_count):
-            prediction_probability = (1 - (1 - probability) ** (count - i)) * probability ** i
-            if prediction_probability >= 0:
+
+        prediction_probability = 1
+        for i in range(0, shot_count):
+            prediction_probability -= scipy.special.comb(count, i) * probability**i * (1 - probability)**(count - i)
+            if i < prediction_count and prediction_probability >= 0.0001:
+                text += u'\n中{}+機率【{:.2%}】'.format(i + 1, prediction_probability)
+            elif i == shot_count - 1:
                 text += u'\n中{}+機率【{:.2%}】'.format(i + 1, prediction_probability)
 
         return text

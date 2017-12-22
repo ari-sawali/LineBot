@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import httplib
 
 class error(object):
     USER_MANUAL_URL = 'https://sites.google.com/view/jellybot'
@@ -103,7 +104,25 @@ class error(object):
         def text_length_too_long(length, max_length, external_link):
             return u'因訊息長度({}字)超過LINE API限制({}字)，故無法顯示。請點下方連結以查看訊息。\n{}'.format(length, max_length, external_link)
 
+    class oxford_api(object):
+        @staticmethod
+        def no_result(vocabulary):
+            return u'No result of {}.'.format(vocabulary)
+
+        @staticmethod
+        def err_with_status_code(status_code):
+            return u'An error has occurred while querying the data. Status Code: {} ({})'.format(status_code, httplib.responses[status_code])
+
+        @staticmethod
+        def disabled():
+            return u'Oxford dictionary has beed disabled. The reason might be an illegal api key or over quota.'
+
+        @staticmethod
+        def sense_not_found():
+            return u'No sense found in the entry.'
+
     class sys_command(object):
+        @staticmethod
         def lack_of_parameters(indexes=None):
             if indexes is None:
                 indexes = u'參數'
@@ -111,11 +130,18 @@ class error(object):
                 indexes = u'、'.join([u'參數{}'.format(num) for num in indexes])
 
             return error.main.lack_of_thing(indexes)
-
-    class auto_reply(object):
+        
         @staticmethod
-        def illegal_flags(flags):
-            return error.main.invalid_thing_with_correct_format(u'旗標', u'兩個字元，第一字代表關鍵字種類；第二字代表回覆種類。\n內容應為文字(T)、貼圖(S)或圖片(P)', flags)
+        def syntax_error(function_code):
+            return u'語法有誤。請檢查輸入的指令是否正確。\n嘗試使用功能代號: {}\n\n使用說明書: {}'.format(function_code, error.USER_MANUAL_URL)
+
+        @staticmethod
+        def action_not_implemented(function_code, match_at, action_text):
+            return u'於{}的驗證式第{}句中，發生未定義的行為: {}。請檢查語法是否正確。'.format(function_code, match_at, action_text)
+
+        @staticmethod
+        def regex_not_implemented(function_code, match_at, regex):
+            return u'未定義{}的驗證式第{}句({})的處理。請檢查語法是否正確。'.format(function_code, match_at, regex)
 
     class string_calculator(object):
         @staticmethod

@@ -20,10 +20,10 @@ GROUP_DB_NAME = 'group'
 ############
 
 class config_type(ext.EnumWithName):
-    SILENCE = 0, '全靜音'
-    SYS_ONLY = 1, '限指令'
-    GROUP_DATABASE_ONLY = 2, '限群組庫'
-    ALL = 3, '無限制'
+    SILENCE = 0, '啞巴'
+    SYS_ONLY = 1, '機器人'
+    GROUP_DATABASE_ONLY = 2, '服務員'
+    ALL = 3, '八嘎囧'
 
 class msg_type(ext.EnumWithName):
     UNKNOWN = -1, '不明'

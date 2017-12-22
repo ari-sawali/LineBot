@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0bb36a2f-d020-4a60-9e1b-191bcb75c539}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>app.py</StartupFile>
+    <StartupFile>app_local.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -37,6 +37,7 @@
     <Content Include="tool\weather\owm_code.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="app_local.py" />
     <Compile Include="app.py" />
     <Compile Include="bot\commands.py">
       <SubType>Code</SubType>
@@ -122,6 +123,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tool\random_gen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="tool\regex.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tool\txt_calc.py">

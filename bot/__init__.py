@@ -1,4 +1,6 @@
-import msg_handler, email
+from msg_handler import *
+
+from email import *
 
 from .system import (
     line_api_wrapper, imgur_api_wrapper, line_event_source_type, oxford_api_wrapper, system_data, system_data_category, infinite_loop_preventer, UserProfileNotFoundError, sticker_data
@@ -9,7 +11,7 @@ from .webpage import (
 )
 
 from .commands import (
-    permission, cmd_category, command_object, cmd_dict, commands_manager, permission
+    permission, command_object, sys_cmd_dict, game_cmd_dict, permission, remote
 )
 
 from .config import (

@@ -4,10 +4,13 @@ line-bot-sdk==1.5.0
 psycopg2
 validators
 numpy
+scipy
 enum34
 sympy
 pymongo
 google-api-python-client
 pyowm
 Pillow
+economics
 geopy
+pycountry

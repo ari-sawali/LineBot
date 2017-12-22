@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
+import sys
 from multiprocessing import Process, Queue as MultiQueue
 import Queue
 
@@ -20,7 +21,8 @@ class calc_type(Enum):
     ALGEBRAIC_EQUATIONS = 2
 
 class text_calculator(object):
-    EQUATION_KEYWORD = '=0'
+    EQUATION_KEYWORD = u'=0'
+    EQUATION_VAR_FORMULA_SEPARATOR = u'和'
 
     def __init__(self, timeout=15):
         self._queue = MultiQueue()
@@ -139,40 +141,61 @@ class text_calculator(object):
         queue.put(result_data)
 
     def _algebraic_equations(self, init_time, text, debug, queue):
-        # TODO: wrong format error handling
         result_data = calc_result_data(text, True)
         text = text_calculator.formula_to_py(result_data.formula_str)
+
         try:
-            text_line = text.split('\n')
+            text_line = text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
             
             if len(text_line) < 2:
                 result_data.success = False
                 result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
-                queue.put(result_data)
+            else:
+                var_init = text_line[0].replace(' ', ',')
+                var_init_symbol = ' '.join(var_init.split(','))
+                formula_list = text_line[1:]
+
+                if any((not formula.endswith(text_calculator.EQUATION_KEYWORD)) for formula in formula_list):
+                    result_data.success = False
+                    result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
+                else:
+                    formula_list_replaced = [text_calculator.formula_to_py(eq).replace(text_calculator.EQUATION_KEYWORD, '') for eq in text_line[1:]]
+
+                    exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init, var_init_symbol)
+                    exec_py += '\nresult = sympy.solve([{}], {})'.format(','.join(formula_list_replaced), var_init)
+
+                    start_time = init_time
+                    exec(exec_py) in globals(), locals()
+
+                    result_data.auto_record_time(start_time)
+
+                    result_data.success = True
+
+                    start_time = time.time()
+                    str_calc_result = str(result)
+                    result_data.latex = sympy.latex(result)
+                    result_data.auto_record_time(start_time)
+                    
+                    result_data.formula_str = '\n'.join(formula_list)
+                    result_data.calc_result = str_calc_result
+        except Exception as ex:
+            result_data.success = False
+            result_data.calc_result = '{} - {}'.format(type(ex), ex.message)
+                
+            result_data.auto_record_time(start_time)
             
-            var_init = text_line[0].replace(' ', '')
-            var_init_symbol = ' '.join(var_init.split(','))
-            formula_list = text_line[1:]
+        queue.put(result_data)
 
-            if any((not formula.endswith(text_calculator.EQUATION_KEYWORD)) for formula in formula_list):
-                result_data.success = False
-                result_data.calc_result = error.string_calculator.wrong_format_to_calc_equations()
-                queue.put(result_data)
-            
-            formula_list_replaced = [text_calculator.formula_to_py(eq).replace(text_calculator.EQUATION_KEYWORD, '') for eq in text_line[1:]]
+    def _polynomial_factorization(self, init_time, text, debug, queue):
+        result_data = calc_result_data(text, True)
+        text = text_calculator.formula_to_py(result_data.formula_str)
 
-            # [u'x**2-1']
+        print text
+        sys.stdout.flush()
 
-            exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init, var_init_symbol)
-            exec_py += '\nresult = sympy.solve([{}], {})'.format(
-                ','.join(formula_list_replaced),
-                var_init)
-            print exec_py
-            print formula_list_replaced
-
+        try:
             start_time = init_time
-            exec(exec_py) in globals(), locals()
-
+            exec('result = sympy.factor(text)') in globals(), locals()
             result_data.auto_record_time(start_time)
 
             result_data.success = True
@@ -182,7 +205,6 @@ class text_calculator(object):
             result_data.latex = sympy.latex(result)
             result_data.auto_record_time(start_time)
             
-            result_data.formula_str = '\n'.join(formula_list)
             result_data.calc_result = str_calc_result
 
         except Exception as ex:
@@ -190,37 +212,6 @@ class text_calculator(object):
             result_data.calc_result = '{} - {}'.format(type(ex), ex.message)
                 
             result_data.auto_record_time(start_time)
-
-            if debug:
-                print result_data.get_debug_text().encode('utf-8')
-            
-        queue.put(result_data)
-
-    def _polynomial_factorization(self, init_time, text, debug, queue):
-        result_data = calc_result_data(text, True)
-        text = text_calculator.formula_to_py(result_data.formula_str)
-        try:
-            start_time = init_time
-            exec('result = sympy.factor(text)')
-            result_data.auto_record_time(start_time)
-
-            result_data.success = True
-
-            start_time = time.time()
-            str_calc_result = str(result)
-            result_data.latex = sympy.latex(result)
-            result_data.auto_record_time(start_time)
-            
-            result_data.calc_result = str_calc_result
-
-        except Exception as ex:
-            result_data.success = False
-            result_data.calc_result = ex.message
-                
-            result_data.auto_record_time(start_time)
-
-            if debug:
-                print result_data.get_debug_text().encode('utf-8')
             
         queue.put(result_data)
 

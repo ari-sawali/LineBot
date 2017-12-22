@@ -16,13 +16,13 @@ class word_type(ext.EnumWithName):
     PICTURE = 2, '圖片'
 
     @staticmethod
-    def determine_by_flag(char):
-        if char == 'T':
+    def determine_by_word(unicode_word):
+        if any(unicode_word == w for w in (u'收到', u'回答')):
             return word_type.TEXT
-        elif char == 'S':
-            return word_type.STICKER
-        elif char == 'P':
+        elif any(unicode_word == w for w in (u'看到', u'回圖')):
             return word_type.PICTURE
+        elif any(unicode_word == w for w in (u'被貼', u'回貼')):
+            return word_type.STICKER
         else:
             raise UnknownFlagError()
 
@@ -45,8 +45,6 @@ class ActionNotAllowed(Exception):
 
 class group_dict_manager(db_base):
     WORD_DICT_DB_NAME = 'word_dict'
-
-    CODE_OF_GLOBAL_RANGE = 'GLOBAL'
 
     VALIDATION_JSON = """{
                            "grp": {
@@ -332,10 +330,12 @@ class group_dict_manager(db_base):
         else:
             return None
 
-    def disable_keyword(self, keyword, disabler, pinned=False, exclude_id=None):
+    def disable_keyword(self, keywords, disabler, pinned=False, exclude_id=None):
         """Return disabled data list in type pair_data. None if nothing updated."""
+        if isinstance(keywords, (str, unicode)):
+            keywords = [keywords]
 
-        query_dict = { pair_data.KEYWORD: keyword }
+        query_dict = { pair_data.KEYWORD: { '$in': keywords } }
 
         if exclude_id is not None:
             query_dict[pair_data.SEQUENCE] = { '$ne': exclude_id }
@@ -382,12 +382,43 @@ class group_dict_manager(db_base):
 
             return pair_data(data_result)
 
-    def set_pinned_by_index(self, id_or_id_list, pinned=True):
-        """Return success or not in boolean type"""
+    def set_pinned_by_index(self, ids, pinned=True):
+        """
+        Add Linked words by ID(s) to specified keyword pair. Keyword pair is specified by ID(s).
 
-        if isinstance(id_or_id_list, (int, long)):
-            id_or_id_list = [id_or_id_list]
-        update_result = self.update_many({ '$and': [{ pair_data.SEQUENCE: { '$in': id_or_id_list } }, { pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }] }, 
+        Parameters:
+            ids: ID of pair(s) to execute. This can be list(in int, str, or unicode), int, str or unicode. Contents will be automatically transformed to int type. 
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+
+        ids = [int(id) for id in ids]
+
+        update_result = self.update_many({ '$and': [{ pair_data.SEQUENCE: { '$in': ids } }, { pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }] }, 
+                                         { '$set': { pair_data.PROPERTIES + '.' + pair_data.PINNED: pinned }})
+
+        return update_result.matched_count == update_result.modified_count and update_result.matched_count > 0
+
+    def set_pinned_by_keyword(self, keywords, pinned=True):
+        """
+        Add Linked words by ID(s) to specified keyword pair. Keyword pair is specified by ID(s).
+
+        Parameters:
+            target_ids: ID of pair(s) to execute. This can be list(in int, str, or unicode), int, str or unicode. Contents will be automatically transformed to int type. 
+            linked_words: Word(s) to execute. This can be list(in str, or unicode), str or unicode.
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+
+        if isinstance(keywords, (str, unicode)):
+            keywords = [keywords]
+
+        update_result = self.update_many({ '$and': [{ pair_data.KEYWORD: { '$in': keywords } }, { pair_data.PROPERTIES + '.' + pair_data.DISABLED: False }] }, 
                                          { '$set': { pair_data.PROPERTIES + '.' + pair_data.PINNED: pinned }})
 
         return update_result.matched_count == update_result.modified_count and update_result.matched_count > 0
@@ -426,29 +457,98 @@ class group_dict_manager(db_base):
         """Return none if nothing found, else return result in list of pair_data class"""
         filter_dict = { pair_data.STATISTICS + '.' + pair_data.CREATOR: uid }
         return self._search(filter_dict)
+    
+    def _preproc_linked_by_id(self, target_ids, linked_ids, able_to_mod_pin):
+        if isinstance(target_ids, (int, str)):
+            target_ids = [int(target_ids)]
 
-    def add_linked_word(self, id, word_or_list, able_to_mod_pin=False):
-        """Return true if matched count is equal to modified count AND matched count is greater than 0"""
-        if isinstance(word_or_list, (str, unicode)):
-            word_or_list = [word_or_list]
+        target_ids = [int(i) for i in target_ids]
 
-        filter_dict = { pair_data.SEQUENCE: id, pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS + '.' + str(15 - len(word_or_list)): { '$exists': False }}
+        if isinstance(linked_ids, (str, unicode)):
+            linked_ids = [linked_ids]
+            
+        filter_dict = { pair_data.SEQUENCE: { '$in': target_ids } }
         if not able_to_mod_pin:
             filter_dict[pair_data.PINNED] = False
 
-        result = self.update_one(filter_dict, { '$pushAll': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: word_or_list } })
-        return result.matched_count > 0 and result.matched_count == result.modified_count
+        return filter_dict, linked_ids
 
-    def del_linked_word(self, id, word_or_list, able_to_mod_pin=False):
-        """Return true if matched count is equal to modified count AND matched count is greater than 0"""
-        if isinstance(word_or_list, (str, unicode)):
-            word_or_list = [word_or_list]
+    def add_linked_word_by_id(self, target_ids, linked_ids, able_to_mod_pin=False):
+        """
+        Add Linked words by ID(s) to specified keyword pair. Keyword pair is specified by ID(s).
 
-        filter_dict = { pair_data.SEQUENCE: id }
+        Parameters:
+            target_ids: ID of pair(s) to execute. This can be list(in int, str, or unicode), int, str or unicode. Contents will be automatically transformed to int type. 
+            linked_words: Word(s) to execute. This can be list(in str, or unicode), str or unicode.
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+        filter_dict, linked_ids = self._preproc_linked_by_id(target_ids, linked_ids, able_to_mod_pin)
+
+        return self._postproc_linked(filter_dict, linked_ids, True)
+
+    def del_linked_word_by_id(self, target_ids, linked_ids, able_to_mod_pin=False):
+        """
+        Delete Linked words from specified keyword pair. Keyword pair is specified by ID(s).
+
+        Parameters:
+            target_ids: ID of pair(s) to execute. This can be list(in int, str, or unicode), int, str or unicode. Contents will be automatically transformed to int type. 
+            linked_words: Word(s) to execute. This can be list(in str, or unicode), str or unicode.
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+        filter_dict, linked_ids = self._preproc_linked_by_id(target_ids, linked_ids, able_to_mod_pin)
+
+        return self._postproc_linked(filter_dict, linked_ids, False)
+
+    def _preproc_linked_by_word(self, target_words, linked_words, able_to_mod_pin):
+        if isinstance(target_words, (str, unicode)):
+            target_words = [target_words]
+
+        if isinstance(linked_words, (str, unicode)):
+            linked_words = [linked_words]
+
+        filter_dict = { pair_data.KEYWORD: { '$in': target_words } }
         if not able_to_mod_pin:
             filter_dict[pair_data.PINNED] = False
 
-        result = self.update_one(filter_dict, { '$pullAll': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: word_or_list } })
+        return filter_dict, linked_words
+
+    def add_linked_word_by_word(self, target_words, linked_words, able_to_mod_pin=False):
+        """
+        Add Linked words by ID(s) to specified keyword pair. Keyword pair is specified by keyword(s).
+
+        Parameters:
+            target_words: Keyword of pair(s) to execute. This can be list(in str, or unicode), str or unicode.
+            linked_words: Word(s) to execute. This can be list(in str, or unicode), str or unicode.
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+        filter_dict, linked_words = self._preproc_linked_by_word(target_words, linked_words, able_to_mod_pin)
+        
+        return self._postproc_linked(filter_dict, linked_words, True)
+
+    def del_linked_word_by_word(self, target_words, linked_words, able_to_mod_pin=False):
+        """
+        Delete Linked words from specified keyword pair. Keyword pair is specified by keyword.
+
+        Parameters:
+            target_words: Keyword of pair(s) to execute. This can be list(in str, or unicode), str or unicode.
+            linked_words: Word(s) to execute. This can be list(in str, or unicode), str or unicode.
+
+        Returns:
+            Return true if matched count is equal to modified count AND matched count is greater than 0.
+        """
+        filter_dict, linked_words = self._preproc_linked_by_word(target_words, linked_words, able_to_mod_pin)
+
+        return self._postproc_linked(filter_dict, linked_words, False)
+
+    def _postproc_linked(self, filter_dict, linked_words, is_add):
+        """is_add: True=ADD, False=DEL"""
+        result = self.update_one(filter_dict, { '$pushAll' if is_add else '$pullAll': { pair_data.PROPERTIES + '.' + pair_data.LINKED_WORDS: linked_words } })
         return result.matched_count > 0 and result.matched_count == result.modified_count
 
     def _search(self, filter_dict):
@@ -646,7 +746,7 @@ class group_dict_manager(db_base):
                 text_to_join.append(u'第{}名 - {}\n{}組 | {}次 | {:.2f}次/組 | {} pt'.format(
                     index, uname, user_data.created_pair_count, user_data.created_pair_used_count, user_data.created_pair_avg_used_count, ext.simplify_num(user_data.activity_point)))
         else:
-            text_to_join.append(error.main.no_result())
+            text_to_join = [error.main.no_result()]
 
         return '\n'.join(text_to_join)
 
@@ -1202,5 +1302,3 @@ class CreatedInDaysData(dict_like_mapping):
     def get_string(self):
         return u'1天內 {} | 3天內 {} | 7天內 {} | 15天內 {}'.format(
             self[CreatedInDaysData.IN_1DAY], self[CreatedInDaysData.IN_3DAYS], self[CreatedInDaysData.IN_7DAYS], self[CreatedInDaysData.IN_15DAYS])
-
-

@@ -12,29 +12,47 @@ class weather_report_config(db_base):
     def __init__(self, mongo_db_uri):
         super(weather_report_config, self).__init__(mongo_db_uri, DB_NAME, weather_report_config.COLLECTION_NAME, False, [weather_report_config_data.USER_ID])
 
-    def add_config(self, uid, city_id, mode=tool.weather.output_config.SIMPLE, interval=3, data_range=120):
+    def add_config(self, uid, city_ids, mode=tool.weather.output_config.SIMPLE, interval=3, data_range=120):
         """Return result in string"""
+        city_ids = ext.string_to_int(city_ids)
+
         if not bot.line_api_wrapper.is_valid_user_id(uid):
             return error.error.line_bot_api.illegal_user_id(uid)
         if data_range < 0 or data_range % 3 != 0 or data_range > 120:
             return error.error.main.invalid_thing_with_correct_format(u'資料範圍(小時內)', u'0~120之間，並且是3的倍數的整數。', data_range)
         if interval < 0 or interval % 3 != 0 or interval > data_range:
             return error.error.main.invalid_thing_with_correct_format(u'資料頻率', u'0~{}(資料範圍)之間，並且是3的倍數的整數。'.format(data_range), interval)
-        if ext.string_to_int(city_id) is None:
-            return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_id)
+        if city_ids is None:
+            return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_ids)
 
-        self.update_one({ weather_report_config_data.USER_ID: uid }, { '$push': { weather_report_config_data.CONFIG: weather_report_child_config.init_by_field(city_id, mode, interval, data_range) } }, True)
-        return u'已新增常用城市。\n城市ID: {}\n模式: {}\n查看{}小時內每{}小時的資料。'.format(city_id, unicode(mode), data_range, interval)
+        if isinstance(city_ids, int):
+            city_ids = [city_ids]
 
-    def del_config(self, uid, city_id):
+        mod_result = self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pushAll': { weather_report_config_data.CONFIG: [weather_report_child_config.init_by_field(city_id, mode, interval, data_range) for city_id in city_ids] } }, True)
+
+        if mod_result.modified_count > 0:
+            return u'已新增常用城市。\n{}'.format(u'\n'.join([u'城市ID: {} ({})\n查看{}小時內每{}小時的資料。'.format(city_id, unicode(mode), data_range, interval) for city_id in city_ids]))
+        else:
+            return u'沒有更動任何常用城市。'
+
+    def del_config(self, uid, city_ids):
         """Return result in string"""
+        city_ids = ext.string_to_int(city_ids)
+
         if not bot.line_api_wrapper.is_valid_user_id(uid):
             return error.error.line_bot_api.illegal_user_id(uid)
-        if ext.string_to_int(city_id) is None:
-            return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_id)
+        if city_ids is None:
+            return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_ids)
 
-        self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pull': { weather_report_config_data.CONFIG: { weather_report_child_config.CITY_ID: city_id } } }, True)
-        return u'已刪除常用城市。\n城市ID: {}'.format(city_id)
+        if isinstance(city_ids, int):
+            city_ids = [city_ids]
+
+        mod_result = self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pullAll': { weather_report_config_data.CONFIG: { weather_report_child_config.CITY_ID: city_ids } } }, True)
+
+        if mod_result.modified_count > 0:
+            return u'已刪除常用城市。\n城市ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in city_ids]))
+        else:
+            return u'沒有更動任何常用城市。'
 
     def get_config(self, uid):
         """None if no config exists."""

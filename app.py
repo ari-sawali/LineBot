@@ -81,7 +81,7 @@ else:
 
 # system command related initialization
 sys_data = bot.system_data()
-cmd_mgr = bot.commands_manager(bot.cmd_dict)
+game_cmd_mgr = bot.commands_manager(bot.game_cmd_dict)
 
 # configurations initialization
 config_mgr = bot.config_manager('SystemConfig.ini')
@@ -150,9 +150,9 @@ static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 str_calc = tool.text_calculator(config_mgr.getint(bot.config_category.TIMEOUT, bot.config_category_timeout.CALCULATOR))
 
 # Message handler initialization
-text_handler = bot.msg_handler.text_msg_handler(cmd_mgr, app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, static_tmp_path)
+text_handler = bot.msg_handler.text_msg_handler(app, config_mgr, line_api, MONGO_DB_URI, oxford_dict_obj, sys_data, webpage_generator, imgur_api_wrapper, oxr_client, str_calc, weather_reporter, static_tmp_path)
 spec_text_handler = bot.msg_handler.special_text_handler(MONGO_DB_URI, line_api, weather_reporter)
-game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api, cmd_mgr)
+game_handler = bot.msg_handler.game_msg_handler(MONGO_DB_URI, line_api, game_cmd_mgr)
 img_handler = bot.msg_handler.img_msg_handler(line_api, imgur_api_wrapper, static_tmp_path)
 
 global_handler = bot.msg_handler.global_msg_handle(line_api, sys_config, MONGO_DB_URI, text_handler, spec_text_handler, game_handler, img_handler)
@@ -257,7 +257,7 @@ def handle_join(event):
     
     if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
         group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
-        group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'G' }
+        group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.HEAD + u'群組的資料' }
 
         template_alt_text = '群組資料查閱快捷樣板'
         template_title = '相關指令'
@@ -265,7 +265,7 @@ def handle_join(event):
         if group_data is None:
             activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
             
-            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + bot.msg_handler.text_msg_handler.SPLITTER + 'GA' + bot.msg_handler.text_msg_handler.SPLITTER + 'ACTIVATE' + bot.msg_handler.text_msg_handler.SPLITTER + activation_token
+            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.HEAD + u'啟用公用資料庫' + activation_token
             group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
             line_api.reply_message(reply_token, 
                                    [bot.line_api_wrapper.introduction_template(),
@@ -300,12 +300,14 @@ def handle_error(event, exception_instance):
         except UnicodeDecodeError:
             error_msg += u'錯誤種類: {}\n第{}行 - {}'.format(exc_type, exc_tb.tb_lineno, exception_instance.message.decode("utf-8"))
     
+    event_text = repr(event).replace('\\\\', "\\").decode("unicode-escape").encode("utf-8")
+
     try:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc, str(event))
+        tb_text = u'{}\nEvent Body:\n{}'.format(stack_exc, event_text)
     except UnicodeEncodeError:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc.encode('utf-8'), str(event).encode("utf-8"))
+        tb_text = u'{}\nEvent Body:\n{}'.format(stack_exc.encode('utf-8'), event_text.encode('utf-8'))
     except UnicodeDecodeError:
-        tb_text = u'{}\n\nEvent Body:\n{}'.format(stack_exc.decode('utf-8'), str(event).decode("utf-8"))
+        tb_text = u'{}\nEvent Body:\n{}'.format(stack_exc.decode('utf-8'), event_text.decode('utf-8'))
 
     error_msg += webpage_generator.rec_error(exception_instance, tb_text, bot.line_api_wrapper.source_channel_id(src), error_msg)
 

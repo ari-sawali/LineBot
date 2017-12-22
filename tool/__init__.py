@@ -14,4 +14,8 @@ from .line_sticker_dl import (
     line_sticker_downloader, MetaNotFoundException
 )
 
-import curr_exc, weather
+from .regex import regex_finder
+
+from .weather import *
+
+from .curr_exc import *

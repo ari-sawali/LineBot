@@ -46,7 +46,8 @@ class config_data(dict_like_mapping):
                 config_data.INTERCEPT: True,
                 config_data.CALCULATOR_DEBUG: False,
                 config_data.REPLY_ERROR: False,
-                config_data.INTERCEPT_DISPLAY_NAME: False
+                config_data.INTERCEPT_DISPLAY_NAME: False,
+                config_data.SEND_ERROR_REPORT: True
             }
 
         if config_data.SILENCE not in org_dict:

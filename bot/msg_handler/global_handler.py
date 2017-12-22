@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os, sys
 from linebot.models import (
     TextMessage, StickerMessage, ImageMessage, VideoMessage, AudioMessage, LocationMessage
@@ -175,7 +176,7 @@ class global_msg_handle(object):
             elif isinstance(event.message, LocationMessage):
                 print 'Latitude: {} Longitude: {}'.format(event.message.latitude, event.message.longitude)
             else:
-                print '(not implemented intercept output.)'
+                print '(intercept output not implemented.)'
                 print event.message
             print '=================================================================='
 
@@ -212,14 +213,11 @@ class global_msg_handle(object):
 
     def _handle_text_sys_command(self, event, user_permission, group_config_type):
         """Return whether message has been replied."""
-        full_text = event.message.text
-        if bot.msg_handler.global_msg_handle.SPLITTER in full_text:
-            head, content = split(full_text, global_msg_handle.SPLITTER, 2)
-
-            if head == text_msg_handler.HEAD:
-                return self._txt_handle.handle_text(event, content, user_permission, group_config_type)
-            elif head == game_msg_handler.HEAD:
-                return self._game_handle.handle_text(event, content, user_permission)
+        full_text = unicode(event.message.text)
+        if text_msg_handler.can_try_handle(full_text):
+            return self._txt_handle.handle_text(event, user_permission, group_config_type)
+        elif game_msg_handler.can_try_handle(full_text):
+            return self._game_handle.handle_text(event, user_permission)
 
         return False
 
@@ -233,7 +231,7 @@ class global_msg_handle(object):
         rps_result = self._rps_data.play(src_cid, src_uid, content, False)
 
         if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
-            self._system_stats.command_called('RPS')
+            self._system_stats.command_called(u'猜拳遊戲')
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 
@@ -242,7 +240,8 @@ class global_msg_handle(object):
     def _handle_text_auto_reply(self, event, config):
         """Return whether message has been replied. THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
         full_text = event.message.text
-        reply_data = self._get_kwd_instance(event.source, config).get_reply_data(full_text)
+        src = event.source
+        reply_data = self._get_kwd_instance(src, config).get_reply_data(full_text)
         if reply_data is not None:
             self._handle_auto_reply(event, reply_data)
             return True
@@ -421,7 +420,7 @@ class global_msg_handle(object):
         rps_result = self._rps_data.play(src_cid, src_uid, content, True)
 
         if rps_result is not None and all(rps_result != res_str for res_str in (db.rps_message.error.game_instance_not_exist(), db.rps_message.error.game_is_not_enabled(), db.rps_message.error.player_data_not_found(), db.rps_message.error.unknown_battle_item())):
-            self._system_stats.command_called('RPS')
+            self._system_stats.command_called(u'猜拳遊戲')
             self._line_api_wrapper.reply_message_text(event.reply_token, rps_result)
             return True  
 

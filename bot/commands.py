@@ -9,44 +9,36 @@ class permission(ext.EnumWithName):
     ADMIN = 2, '管理員'
     BOT_ADMIN = 3, '機器人管理員'
 
-class cmd_category(ext.EnumWithName):
-    MAIN = 0, '主要指令'
-    EXTEND = 1, '延伸指令'
-    GAME = 2, '遊戲用指令'
+class remote(ext.EnumWithName):
+    NOT_AVAILABLE = 0, '不可用'
+    GROUP_ID_ONLY = 1, '限群組ID'
+    ALLOW_PUBLIC = 2, '可控公群'
+    ALLOW_GLOBAL = 3, '可控全域'
+    ALLOW_ALL = 4, '可控公群/全域'
+
+    @staticmethod
+    def PUBLIC_TOKEN():
+        return 'PUBLIC'
+
+    @staticmethod
+    def GLOBAL_TOKEN():
+        return 'GLOBAL'
 
 class command_object(object):
-    def __init__(self, min_split, max_split, cmd_category, remotable, group_id_allow_public, lowest_permission_req=permission.USER):
-        self._split_max = max_split
-        self._split_min = min_split
-        self._category = cmd_category
-        self._count = 0
+    def __init__(self, head, function_code, remotable, lowest_permission_req=permission.USER):
+        self._head = head
+        self._function_code = function_code
         self._remotable = remotable
-        self._gid_allow_public = group_id_allow_public
         self._lowest_permission_required = lowest_permission_req
 
     @property
-    def split_max(self):
-        """Maximum split count."""
-        return self._split_max + int(self._remotable)
+    def head(self):
+        """Head of command."""
+        return self._head
 
     @property
-    def split_min(self):
-        """Minimum split count."""
-        return self._split_min
-
-    @property
-    def count(self):
-        """Called count."""
-        return self._count
-
-    @count.setter
-    def count(self, value):
-        """Called count."""
-        self._count = value 
-
-    @property
-    def category(self):
-        return self._category
+    def remotable(self):
+        return self._remotable
 
     @property
     def lowest_permission(self):
@@ -54,61 +46,41 @@ class command_object(object):
         return self._lowest_permission_required
 
     @property
-    def remotable(self):
-        return self._remotable
-
-    @property
-    def allow_gid_public(self):
-        if self._remotable:
-            return self._gid_allow_public
-        else:
-            return False
+    def function_code(self):
+        """Code of function"""
+        return self._function_code
 
 # Provide lowest permission requirement, if some command requires higher permission, handle inside txt msg handling function.
-cmd_dict = { 'S': command_object(4, 4, cmd_category.MAIN, False, False, permission.BOT_ADMIN), 
-             'A': command_object(3, 5, cmd_category.MAIN, True, True), 
-             'M': command_object(3, 5, cmd_category.MAIN, True, False, permission.MODERATOR), 
-             'D': command_object(1, 2, cmd_category.MAIN, True, True), 
-             'R': command_object(1, 2, cmd_category.MAIN, True, False, permission.MODERATOR), 
-             'E': command_object(2, 3, cmd_category.MAIN, True, True, permission.MODERATOR), 
-             'X': command_object(1, 3, cmd_category.MAIN, True, True), 
-             'Q': command_object(0, 2, cmd_category.MAIN, True, True), 
-             'I': command_object(1, 2, cmd_category.MAIN, True, True), 
-             'K': command_object(1, 2, cmd_category.MAIN, True, True),
-             'P': command_object(1, 2, cmd_category.EXTEND, True, True), 
-             'G': command_object(0, 1, cmd_category.EXTEND, True, False), 
-             'GA': command_object(1, 4, cmd_category.EXTEND, True, True, permission.MODERATOR),  
-             'H': command_object(0, 0, cmd_category.EXTEND, False, False), 
-             'SHA': command_object(1, 1, cmd_category.EXTEND, False, False), 
-             'O': command_object(1, 1, cmd_category.EXTEND, False, False), 
-             'RD': command_object(1, 2, cmd_category.EXTEND, False, False), 
-             'L': command_object(1, 1, cmd_category.EXTEND, True, False),
-             'T': command_object(1, 1, cmd_category.EXTEND, False, False),
-             'C': command_object(0, 3, cmd_category.EXTEND, False, False),
-             'FX': command_object(1, 2, cmd_category.EXTEND, False, False),
-             'N': command_object(1, 1, cmd_category.EXTEND, False, False),
-             'W': command_object(1, 5, cmd_category.EXTEND, False, False),
-             'DL': command_object(1, 1, cmd_category.EXTEND, False, False),
-             'STK': command_object(1, 3, cmd_category.EXTEND, False, False),
-             'RPS': command_object(0, 4, cmd_category.GAME, False, False) }
+sys_cmd_dict = { u'記住': command_object(u'記住', 'A', remote.ALLOW_ALL), 
+                 u'置頂': command_object(u'置頂', 'M', remote.GROUP_ID_ONLY, permission.MODERATOR), 
+                 u'忘記': command_object(u'忘記', 'D', remote.ALLOW_ALL), 
+                 u'忘記置頂': command_object(u'忘記置頂', 'R', remote.ALLOW_ALL), 
+                 u'找': command_object(u'找', 'Q', remote.ALLOW_ALL), 
+                 u'詳細找': command_object(u'詳細找', 'I', remote.ALLOW_ALL), 
+                 u'修改': command_object(u'修改', 'E', remote.ALLOW_ALL), 
+                 u'複製': command_object(u'複製', 'X', remote.NOT_AVAILABLE), 
+                 u'清除': command_object(u'清除', 'X2', remote.NOT_AVAILABLE, permission.ADMIN), 
+                 u'群組': command_object(u'群組', 'G', remote.ALLOW_ALL), 
+                 u'當': command_object(u'當', 'GA', remote.GROUP_ID_ONLY), 
+                 u'讓': command_object(u'讓', 'GA2', remote.GROUP_ID_ONLY), 
+                 u'啟用': command_object(u'啟用', 'GA3', remote.GROUP_ID_ONLY), 
+                 u'頻道': command_object(u'頻道', 'H', remote.NOT_AVAILABLE), 
+                 u'系統': command_object(u'系統', 'P', remote.ALLOW_ALL), 
+                 u'使用者': command_object(u'使用者', 'P2', remote.GROUP_ID_ONLY),
+                 u'前': command_object(u'前', 'K', remote.ALLOW_ALL), 
+                 u'最近的': command_object(u'最近的', 'L', remote.GROUP_ID_ONLY), 
+                 u'匯率': command_object(u'匯率', 'C', remote.NOT_AVAILABLE), 
+                 u'雜湊': command_object(u'雜湊', 'SHA', remote.NOT_AVAILABLE), 
+                 u'貼圖': command_object(u'貼圖', 'STK', remote.NOT_AVAILABLE), 
+                 u'編碼': command_object(u'編碼', 'T', remote.NOT_AVAILABLE), 
+                 u'查': command_object(u'查', 'O', remote.NOT_AVAILABLE), 
+                 u'抽': command_object(u'抽', 'RD', remote.NOT_AVAILABLE), 
+                 u'解': command_object(u'解', 'FX', remote.NOT_AVAILABLE), 
+                 u'DB': command_object(u'DB', 'S', remote.NOT_AVAILABLE, permission.ADMIN), 
+                 u'天氣': command_object(u'天氣', 'W', remote.NOT_AVAILABLE), 
+                 u'下載': command_object(u'下載', 'DL', remote.NOT_AVAILABLE) }
 
-class commands_manager(object):
-    def __init__(self, cmd_dict):
-        self._cmd_dict = cmd_dict
-
-    def is_permission_required(self, cmd):
-        cmd_obj = self.get_command_data(cmd)
-        if cmd_obj is None:
-            raise CommandNotExistException(cmd)
-        else:
-            return int(cmd_obj.lowest_permission) > int(permission.USER)
-
-    def is_command_exist(self, cmd):
-        cmd_obj = self.get_command_data(cmd)
-        return cmd_obj is not None
-
-    def get_command_data(self, cmd):
-        return self._cmd_dict.get(cmd, None)
+game_cmd_dict = { u'猜拳': command_object(u'猜拳', 'RPS', remote.NOT_AVAILABLE) } 
 
 class CommandNotExistException(Exception):
     def __init__(self, *args):

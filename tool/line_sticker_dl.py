@@ -14,9 +14,10 @@ class sticker_content_type(ext.EnumWithName):
     STATIC = 2, '靜態貼圖'
 
 class line_sticker_downloader(object):
-    def __init__(self, file_proc_path, download_sound_code):
+    DOWNLOAD_SOUND_CODE = 'S'
+
+    def __init__(self, file_proc_path):
         self._file_proc_path = file_proc_path
-        self._download_sound_code = download_sound_code
     
     def _get_content(self, sticker_content_type, pack_id, list_ids):
         """\
@@ -72,7 +73,7 @@ class line_sticker_downloader(object):
         """
         stk_ids = sticker_metadata.stickers
         pack_id = sticker_metadata.pack_id
-        pack_name = str(pack_id) + (self._download_sound_code if download_sound_if_available else '')
+        pack_name = str(pack_id) + (line_sticker_downloader.DOWNLOAD_SOUND_CODE if download_sound_if_available else '')
         comp_file_path = os.path.join(self._file_proc_path, pack_name + '.zip')
 
         if os.path.isfile(comp_file_path):
@@ -124,10 +125,6 @@ class line_sticker_downloader(object):
             return line_sticker_metadata(json_dict)
         else:
             raise MetaNotFoundException(pack_meta.status_code)
-
-    @property
-    def dl_sound_code(self):
-        return self._download_sound_code
 
     @staticmethod
     def get_meta_url(pack_id):

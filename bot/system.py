@@ -6,12 +6,11 @@ from datetime import datetime, timedelta
 from collections import deque
 from sets import Set
 
-from linebot import exceptions
-
 import hashlib
 import operator
 import traceback
-import error, tool
+
+from linebot import exceptions
 
 from linebot.models import (
     SourceGroup, SourceRoom, SourceUser,
@@ -19,7 +18,10 @@ from linebot.models import (
     CarouselTemplate, ButtonsTemplate, CarouselColumn, MessageTemplateAction, URITemplateAction
 )
 
-import db
+
+import error, tool
+
+import db, bot
 import ext
 from .config import config_manager
 
@@ -250,6 +252,9 @@ class line_event_source_type(ext.EnumWithName):
             raise ValueError(error.error.main.miscellaneous(u'Undefined type of event source instance.'))
 
 class line_api_wrapper(object):
+    TEST_REPLY_TOKEN = "TEST"
+    LEGAL_ID_LENGTH = 33
+
     def __init__(self, line_api, webpage_generator):
         self._line_api = line_api
         self._webpage_generator = webpage_generator
@@ -316,12 +321,17 @@ class line_api_wrapper(object):
         return self._line_api.get_message_content(msg_id)
 
     def reply_message(self, reply_token, msgs):
-        self._line_api.reply_message(reply_token, msgs)
+        if reply_token == line_api_wrapper.TEST_REPLY_TOKEN:
+            print '================= REPLY ================='
+            print repr(msgs).replace('\\\\', "\\").decode("unicode-escape").encode("utf-8")
+            print '========================================='
+        else:
+            self._line_api.reply_message(reply_token, msgs)
 
     def reply_message_text(self, reply_token, msgs):
         if isinstance(msgs, (str, unicode)):
             msgs = [msgs]
-        self._line_api.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, self._webpage_generator) for msg in msgs])
+        self.reply_message(reply_token, [line_api_wrapper.wrap_text_message(msg, self._webpage_generator) for msg in msgs])
 
     @staticmethod
     def source_channel_id(event_source):
@@ -333,11 +343,11 @@ class line_api_wrapper(object):
     
     @staticmethod
     def is_valid_user_id(uid):
-        return uid is not None and len(uid) == 33 and uid.startswith('U')
+        return uid is not None and len(uid) == line_api_wrapper.LEGAL_ID_LENGTH and uid.startswith('U')
     
     @staticmethod
     def is_valid_room_group_id(gid, allow_public=False, allow_global=False):
-        return gid is not None and (len(gid) == 33 and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == db.word_dict_global.CODE_OF_PUBLIC_GROUP) or (allow_global and gid == db.group_dict_manager.CODE_OF_GLOBAL_RANGE))
+        return gid is not None and (len(gid) == line_api_wrapper.LEGAL_ID_LENGTH and (gid.startswith('C') or gid.startswith('R')) or (allow_public and gid == bot.remote.PUBLIC_TOKEN()) or (allow_global and gid == bot.remote.GLOBAL_TOKEN()))
     
     @staticmethod
     def determine_id_type(cid):
@@ -509,6 +519,20 @@ class imgur_api_wrapper(object):
         return text
 
 class oxford_api_wrapper(object):
+    SECTION_SPLITTER = u'.................................................................'
+    
+    KEY_RESULTS = 'results'
+    KEY_LEXICAL_ENTRIES = 'lexicalEntries'
+    KEY_LEXICAL_CATEGORY = 'lexicalCategory'
+    KEY_DERIVATIVE_OF = 'derivativeOf'
+    KEY_ENTRIES = 'entries'
+    KEY_SENSES = 'senses'
+    KEY_DEFINITIONS = 'definitions'
+    KEY_EXAMPLES = 'examples'
+    KEY_CROSS_REF = 'crossReferenceMarkers'
+    KEY_REGISTERS = 'registers'
+    KEY_TEXT = 'text'
+
     def __init__(self, language):
         """
         Set environment variable "OXFORD_ID", "OXFORD_KEY" as presented api id and api key.
@@ -531,6 +555,56 @@ class oxford_api_wrapper(object):
                 return r.json()
         else:
             raise RuntimeError(error.error.main.miscellaneous(u'Oxford dictionary not enabled.').encode('utf-8'))
+
+    @staticmethod
+    def json_to_string(json):
+        if type(json) is int:
+            code = json
+
+            if code == 404:
+                text_list = [error.error.oxford_api.no_result()]
+            else:
+                text_list = [error.error.oxford_api.err_with_status_code(code)]
+        else:
+            text_list = []
+
+            lexents = json[oxford_api_wrapper.KEY_RESULTS][0][oxford_api_wrapper.KEY_LEXICAL_ENTRIES]
+            for lexent in lexents:
+                text_list.append(u'== {} ({}) =='.format(lexent[oxford_api_wrapper.KEY_TEXT], lexent[oxford_api_wrapper.KEY_LEXICAL_CATEGORY]))
+                
+                if oxford_api_wrapper.KEY_DERIVATIVE_OF in lexent:
+                    derivative_arr = lexent[oxford_api_wrapper.KEY_DERIVATIVE_OF]
+                    text_list.append(u'Derivative: {}'.format(u', '.join([derivative_data[oxford_api_wrapper.KEY_TEXT] for derivative_data in derivative_arr])))
+
+                lexentarr = lexent[oxford_api_wrapper.KEY_ENTRIES]
+                for lexentElem in lexentarr:
+                    if oxford_api_wrapper.KEY_SENSES in lexentElem:
+                        sens = lexentElem[oxford_api_wrapper.KEY_SENSES]
+                        
+                        text_list.append(u'Definition:')
+                        for index, sen in enumerate(sens, start=1):
+                            if oxford_api_wrapper.KEY_DEFINITIONS in sen:
+                                proc_definitions = [u'{}. {} {}'.format(index, de, u'({})'.format(u', '.join(sen[oxford_api_wrapper.KEY_REGISTERS])) if oxford_api_wrapper.KEY_REGISTERS in sen else u'') for de in sen[oxford_api_wrapper.KEY_DEFINITIONS]]
+
+                                text_list.extend(proc_definitions)
+                                    
+                            if oxford_api_wrapper.KEY_CROSS_REF in sen:
+                                proc_cross_ref = [u'{}. {} (Cross Reference Marker)'.format(index, crm) for crm in sen[oxford_api_wrapper.KEY_CROSS_REF]]
+
+                                text_list.extend(proc_cross_ref)
+                            
+                            if oxford_api_wrapper.KEY_EXAMPLES in sen:
+                                proc_examples = [u'------{}'.format(ex[oxford_api_wrapper.KEY_TEXT]) for ex in sen[oxford_api_wrapper.KEY_EXAMPLES]]
+
+                                text_list.extend(proc_examples)
+                    else:
+                        text_list.append(error.error.oxford_api.sense_not_found())
+
+                text_list.append(oxford_api_wrapper.SECTION_SPLITTER)
+
+        text_list.append(u'Powered by Oxford Dictionary.')
+
+        return u'\n'.join(text_list)
 
     @property
     def enabled(self):

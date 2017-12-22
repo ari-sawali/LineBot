@@ -43,7 +43,7 @@ class webpage_manager(object):
                         err_detail += simplified.decode('utf-8')
                 
                 print '===================================='
-                print 'ERROR CAPTURED.'
+                print '!!!!!!!!!!!!! AN ERROR HAS OCCURRED !!!!!!!!!!!!!'
                 print err_detail.encode('utf-8')
                 print '===================================='
 

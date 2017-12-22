@@ -58,7 +58,7 @@ class sticker_recorder(db_base):
 
         return u'\n'.join(text_to_join)
 
-    def hottest_sticker(self, hours_range_within=None, limit=None):
+    def hottest_sticker_str(self, hours_range_within=None, limit=None):
         """
         Will return PackedResult. Limited is for LINE message output, Full is for webpage generating.
 

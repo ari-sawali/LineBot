@@ -278,7 +278,7 @@ class rps_holder(db_base):
 
         return rps_message.message.statisics_reset_complete()
 
-    def switch_enabled(self, cid):
+    def set_enabled(self, cid, enabled):
         """
         Return result string.
         If game is not exist, return rps_message.error.game_instance_not_exist().
@@ -286,13 +286,10 @@ class rps_holder(db_base):
         if not self._check_instance_exist(cid):
             return rps_message.error.game_instance_not_exist()
 
-        org_enabled = self._get_cache_enabled(cid)
-        new_enabled = not org_enabled
+        self._set_cache_enabled(cid, enabled)
+        self.update_one({ rps_online.CHAT_INSTANCE_ID: cid }, { '$set': { rps_online.PROPERTIES + '.' + rps_online.ENABLED: enabled } })
 
-        self._set_cache_enabled(cid, new_enabled)
-        self.update_one({ rps_online.CHAT_INSTANCE_ID: cid }, { '$set': { rps_online.PROPERTIES + '.' + rps_online.ENABLED: new_enabled } })
-
-        return rps_message.message.game_enabled_changed(new_enabled)
+        return rps_message.message.game_enabled_changed(enabled)
 
     def delete_game(self, cid):
         """
