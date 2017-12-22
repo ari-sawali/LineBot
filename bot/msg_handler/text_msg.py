@@ -1147,7 +1147,7 @@ class text_msg_handler(object):
              
     def _FX(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = [ur'小水母 解因式分解([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
-                      ur'小水母 解方程式 ?(變數(.+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
+                      ur'小水母 解方程式 ?(變數(.+)(?<! )) ?(方程式([\s!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+))']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 

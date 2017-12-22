@@ -22,7 +22,7 @@ class calc_type(Enum):
 
 class text_calculator(object):
     EQUATION_KEYWORD = u'=0'
-    EQUATION_VAR_FORMULA_SEPARATOR = u'和'
+    EQUATION_VAR_FORMULA_SEPARATOR = ' '
 
     def __init__(self, timeout=15):
         self._queue = MultiQueue()
