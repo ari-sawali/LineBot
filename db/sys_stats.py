@@ -47,7 +47,8 @@ class system_statistics(db_base):
     def get_statistics(self):
         SEPARATOR = '_'
 
-        keys = {system_data.COMMAND_CALLED: list(bot.cmd_dict.keys()), 
+        keys = {system_data.COMMAND_CALLED: list(bot.sys_cmd_dict.keys()), 
+                system_data.GAME_COMMAND_USED: list(bot.game_cmd_dict.keys()), 
                 system_data.WEBPAGE_VIEWED: list([unicode(type_enum) for type_enum in webpage_content_type]),
                 system_data.EXTEND_FUNCTION_USED: list([unicode(type_enum) for type_enum in extend_function_category])}
 
@@ -98,6 +99,7 @@ class system_data(dict_like_mapping):
     """
     RECORD_DATE = 'rec_date'
     COMMAND_CALLED = 'cmd'
+    GAME_COMMAND_USED = 'gm'
     WEBPAGE_VIEWED = 'wp'
     EXTEND_FUNCTION_USED = 'ext'
 
@@ -111,6 +113,7 @@ class system_data(dict_like_mapping):
     def init_by_field(date=None):
         init_dict = {
             system_data.COMMAND_CALLED: {},
+            system_data.GAME_COMMAND_USED: {},
             system_data.WEBPAGE_VIEWED: {},
             system_data.EXTEND_FUNCTION_USED: {}
         }
@@ -132,6 +135,9 @@ class system_data(dict_like_mapping):
 
             if not system_data.EXTEND_FUNCTION_USED in org_dict:
                 org_dict[system_data.EXTEND_FUNCTION_USED] = {}
+
+            if not system_data.GAME_COMMAND_USED in org_dict:
+                org_dict[system_data.GAME_COMMAND_USED] = {}
         else:
             raise ValueError('Dictionary is none.')
 
@@ -148,6 +154,10 @@ class system_data(dict_like_mapping):
     @property
     def extend_func_used(self):
         return self[system_data.EXTEND_FUNCTION_USED]
+
+    @property
+    def game_command_used(self):
+        return self[system_data.GAME_COMMAND_USED]
 
     @property
     def date(self):
