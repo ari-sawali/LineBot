@@ -170,7 +170,7 @@ class text_calculator(object):
                     formula_list_replaced = [eq.replace(text_calculator.EQUATION_KEYWORD, u'') for eq in formula_list]
 
                     exec_py = '{} = sympy.symbols(\'{}\', real=True)'.format(var_init_field, var_init_symbol)
-                    exec_py += '\nresult = sympy.solve([{}], {})'.format(','.join(formula_list_replaced), var_init)
+                    exec_py += '\nresult = sympy.solve([{}], {})'.format(','.join(formula_list_replaced), var_init_field)
 
                     start_time = init_time
                     exec(exec_py) in globals(), locals()
