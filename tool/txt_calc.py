@@ -44,6 +44,9 @@ class text_calculator(object):
         print text.encode('utf-8')
         print type(text)
         print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
+        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',')
+        print ' '.join(text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',').split(','))
+        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[1:]
         
         if text_calculator.is_non_calc(text):
             result_data.auto_record_time(init_time)
