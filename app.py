@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # TODO: modulize parameter validation(txt handle)
+# TODO: modulize error
 
 import os, sys, errno
 import tempfile

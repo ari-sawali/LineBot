@@ -111,6 +111,8 @@ class text_calculator(object):
 
             result_data.auto_record_time(start_time)
 
+            print result
+
             if isinstance(result, (float, int, long)):
                 if isinstance(result, long) and result.bit_length() > 333:
                     result_data.over_length = True
