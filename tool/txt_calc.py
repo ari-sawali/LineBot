@@ -59,11 +59,8 @@ class text_calculator(object):
                     calc_proc = self._get_calculate_proc(calc_type.NORMAL, (init_time, text, debug, self._queue))
             else:
                 calc_proc = self._get_calculate_proc(calculation_type, (init_time, text, debug, self._queue))
-            calc_proc.start()
 
-            result_dataa = calc_result_data(text, True)
-            text = text_calculator.formula_to_py(result_dataa.formula_str)
-            
+            text = text_calculator.formula_to_py(text)
             text_line = text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
             var_org = text_line[0]
 
@@ -76,6 +73,8 @@ class text_calculator(object):
             print var_init_field
             print var_init_symbol
             print formula_list
+
+            calc_proc.start()
 
             result_data = self._queue.get(True, self._timeout)
         except Queue.Empty:
