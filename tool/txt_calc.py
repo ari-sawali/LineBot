@@ -43,7 +43,7 @@ class text_calculator(object):
         text = text_calculator.formula_to_py(result_data.formula_str)
         print text.encode('utf-8')
         print type(text)
-        print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)
+        print [unicode(t) for t in text.encode('utf-8').split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR.decode('utf-8'))]
         print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',').encode('utf-8')
         print ' '.join(text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[0].replace(' ', ',').split(',')).encode('utf-8')
         print text.split(text_calculator.EQUATION_VAR_FORMULA_SEPARATOR)[1:]

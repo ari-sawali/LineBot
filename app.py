@@ -1,20 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# IMPORTANT: create activity point of group(calculate all stats of group)
-# IMPORTANT: cache keyword_dict
-# IMPORTANT: set expire time to pair
-# TODO: hide keyword pair from indexing(Q I)
-# TODO: self silent (new db), turn off auto upload
-# TODO: modulize error message
-# TODO: self diagnostic
-# UNDONE: group_data will save empty mem field in database
-# UNDONE: game_msg_handler Shorten + Modulize
-# UNDONE: find related pair of sticker (using global keyword dict manager)
-# UNDONE: increase performance of calling ranking by pair (integrate?)
-# UNDONE: increase performance of getting multi user's profile (multi process/thread? - https://docs.python.org/2/library/multiprocessing.html)
-# UNDONE: format timezone
-# UNDONE: machine learning to filter content - https://machine-learning-python.kspax.io/
-# UNDONE: RPG GAME
+# TODO: modulize parameter validation(txt handle)
 
 import os, sys, errno
 import tempfile
