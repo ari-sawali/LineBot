@@ -385,8 +385,8 @@ class calc_result_data(object):
         return u'算式:\n{}\n結果:\n{}\n計算 {} | 顯示 {}\n計算種類: {}'.format(
             self._formula_str,
             self._calc_result,
-            u'(未執行)' if self._calc_time == -1.0 else u'{:3f}秒'.format(self._calc_time),
-            u'(未執行)' if self._type_cast_time == -1.0 else u'{:3f}秒'.format(self._type_cast_time),
+            u'(未執行)' if self._calc_time == -1.0 else u'{:.3f}秒'.format(self._calc_time),
+            u'(未執行)' if self._type_cast_time == -1.0 else u'{:.3f}秒'.format(self._type_cast_time),
             unicode(self._calc_type))
 
     def get_debug_text(self):
