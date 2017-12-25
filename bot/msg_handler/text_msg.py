@@ -1304,7 +1304,7 @@ class param_packer(object):
             else:
                 raise UndefinedCommandCategoryException()
 
-            super(param_packer, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+            super(param_packer.func_S, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
 
 class packer_factory(object):
     _S = [param_packer.func_S(ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
