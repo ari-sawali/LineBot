@@ -4,6 +4,7 @@ import ast
 
 from error import error
 import ext
+import tool
 
 class param_packer_base(object):
     def __init__(self, CH_regex, EN_regex, command_category, param_objs):
