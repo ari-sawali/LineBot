@@ -15,28 +15,6 @@ import bot, db, ext
 from .misc import *
 from .text_msg_param import *
 
-# 收參數
-# 檢查
-# 打包
-# 執行
-# 輸出
-# 
-# pack_result (message, success, param)
-# exec_result (message)
-# 
-# if type == CH:
-# 	pack_result = pack_func_CH(param) -> check in pack
-# elif type == EN:
-# 	pack_result = pack_func_EN(param) -> check in pack
-# else:
-# 	raise Error
-# 
-# if not pack_result.success:
-# 	return pack_result.message
-# 
-# exec_result = exec_func(pack_result.param)
-# return exec_result.message
-
 class text_msg_handler(object):
     CH_HEAD = u'小水母 '
     EN_HEAD = u'JC\n'
@@ -1306,6 +1284,28 @@ class text_msg_handler(object):
                full_text.startswith(text_msg_handler.EN_HEAD) or \
                bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
 
+class param_packer(object):
+    class func_S(param_packer_base):
+        class command_category(ext.EnumWithName):
+            DB_COMMAND = 1, '資料庫指令'
+
+        class param_category(ext.EnumWithName):
+            DB_NAME = 1, '資料庫名稱'
+            MAIN_CMD = 2, '主指令'
+            MAIN_PRM = 3, '主參數'
+            OTHER_PRM = 4, '其餘參數'
+
+        def __init__(self, CH_regex, EN_regex, command_category):
+            if command_category == param_packer.func_S.command_category.DB_COMMAND:
+                prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.MAIN_PRM, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.conv_unicode)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            super(param_packer, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+
 class packer_factory(object):
     _S = [param_packer.func_S(ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
                               ur'JC\nS\n(.+)\n(.+)\n(.+)\n(.+)', 
@@ -1383,27 +1383,5 @@ class packer_factory(object):
 
     _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
             ur'小水母 貼圖(\d+)']
-
-class param_packer(object):
-    class func_S(param_packer_base):
-        class command_category(ext.EnumWithName):
-            DB_COMMAND = 1, '資料庫指令'
-
-        class param_category(ext.EnumWithName):
-            DB_NAME = 1, '資料庫名稱'
-            MAIN_CMD = 2, '主指令'
-            MAIN_PRM = 3, '主參數'
-            OTHER_PRM = 4, '其餘參數'
-
-        def __init__(self, CH_regex, EN_regex, command_category):
-            if command_category == param_packer.func_S.command_category.DB_COMMAND:
-                prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.MAIN_PRM, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.conv_unicode)]
-            else:
-                raise UndefinedCommandCategoryException()
-
-            super(param_packer, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
 
 
