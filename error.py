@@ -128,6 +128,18 @@ class error(object):
 
     class sys_command(object):
         @staticmethod
+        def must_https(obj):
+            return u'必須是https連結。({})'.format(obj)
+
+        @staticmethod
+        def must_int(obj):
+            return u'必須是整數。({})'.format(obj)
+
+        @staticmethod
+        def must_int(obj):
+            return u'必須是SHA224雜湊結果。({})'.format(obj)
+
+        @staticmethod
         def lack_of_parameters(indexes=None):
             if indexes is None:
                 indexes = u'參數'

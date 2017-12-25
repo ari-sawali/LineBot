@@ -127,3 +127,16 @@ def dir_symbol(deg):
     part_alloc_deg = (CIRCLE_DEG / len(dir_symbol_dict))
 
     return dir_symbol_dict[int(floor(((float(deg) + (part_alloc_deg / 2)) % CIRCLE_DEG) / part_alloc_deg))]
+
+class action_result(object):
+    def __init__(self, result, success):
+        self._result = result
+        self._success = success
+
+    @property
+    def result(self):
+        return self._result
+
+    @property
+    def success(self):
+        return self._success

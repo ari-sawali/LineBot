@@ -278,17 +278,14 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
-                self._reg_mongo()
+                adder_uid_result = self._A_get_adder_uid(src)
+                if not adder_uid_result.success:
+                    return adder_uid_result.result
 
-                param_dict = packing_result.result
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                kwd_add_result = self._A_add_kw(kwd_instance, packing_result.result, pinned, adder_uid_result.result)
 
-                text = self._S_generate_output_head(param_dict)
-                try:
-                    text += self._S_generate_output_mongo_result(param_dict)
-                except pymongo.errors.OperationFailure as ex:
-                    text += error.mongo_db.op_fail(ex)
-
-                return text
+                return kwd_add_result.result
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
@@ -296,65 +293,50 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
+    def _A_get_adder_uid(self, src):
         # try to get complete profile
         try:
             new_profile_uid = bot.line_api_wrapper.source_user_id(src)
             self._line_api_wrapper.profile_name(new_profile_uid)
         except bot.UserProfileNotFoundError as ex:
-            return error.line_bot_api.unable_to_receive_user_id()
+            return ext.action_result(error.line_bot_api.unable_to_receive_user_id(), False)
 
         # verify uid structure
         if not bot.line_api_wrapper.is_valid_user_id(new_profile_uid):
-            return error.line_bot_api.illegal_user_id(new_profile_uid)
+            return ext.action_result(error.line_bot_api.illegal_user_id(new_profile_uid), False)
 
-        # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+        return ext.action_result(new_profile_uid, True)
 
-        if regex_result.match_at == 0:
-            rcv_type = regex_result.group(3)[:2]
-            rep_type = regex_result.group(7)[:2]
+    def _A_add_kw(self, kwd_instance, param_dict, pinned, adder_uid):
+        rcv_content = self._A_get_rcv_content(param_dict)
+        rep_content = self._A_get_rep_content(param_dict)
 
-            # checking type of keyword and reply
-            try:
-                rcv_type = db.word_type.determine_by_word(rcv_type)
-                rep_type = db.word_type.determine_by_word(rep_type)
-            except db.UnknownFlagError:
-                return error.sys_command.action_not_implemented(u'A', regex_result.match_at, u'{} & {}'.format(rcv_type, rep_type))
+        # create and write
+        result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, param_dict[param_packer.func_A.param_category.RCV_TYPE], param_dict[param_packer.func_A.param_category.REP_TYPE], None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
 
-            if rcv_type == db.word_type.TEXT:
-                rcv_content = regex_result.group(4)
-            elif rcv_type == db.word_type.PICTURE:
-                rcv_content = regex_result.group(5)
-            elif rcv_type == db.word_type.STICKER:
-                rcv_content = regex_result.group(6)
-            else:
-                return error.sys_command.action_not_implemented(u'A', regex_result.match_at, u'{} (rcv)'.format(rcv_type))
-
-            if rep_type == db.word_type.TEXT:
-                rep_content = regex_result.group(8)
-            elif rep_type == db.word_type.PICTURE:
-                rep_content = regex_result.group(9)
-            elif rep_type == db.word_type.STICKER:
-                rep_content = regex_result.group(10)
-            else:
-                return error.sys_command.action_not_implemented(u'A', regex_result.match_at, u'{} (rep)'.format(rep_type))
-            
-            rep_att = regex_result.group(2)
-            if rep_att is not None and not (rep_type == db.word_type.PICTURE or rep_type == db.word_type.STICKER):
-                return error.main.miscellaneous(u'附加回覆只可以在回覆種類為圖片或貼圖時使用。')
-
-            # create and write
-            result = kwd_instance.insert_keyword(rcv_content, rep_content, new_profile_uid, pinned, rcv_type, rep_type, None, rep_att)
-
-            # check whether success
-            if isinstance(result, (str, unicode)):
-                return result
-            elif isinstance(result, db.pair_data):
-                return u'回覆組新增成功。\n' + result.basic_text(True)
-            else:
-                raise ValueError('Unknown type of return result.')
+        # check whether success
+        if isinstance(result, (str, unicode)):
+            return ext.action_result(result, False)
+        elif isinstance(result, db.pair_data):
+            return ext.action_result(u'回覆組新增成功。\n' + result.basic_text(True), True)
         else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'A/M', regex_result.match_at, regex_result.regex))
+            raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
+
+    def _A_get_rcv_content(self, param_dict):
+        if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
+            return param_dict[param_packer.func_A.param_category.RCV_TXT]
+        elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
+            return param_dict[param_packer.func_A.param_category.RCV_STK]
+        elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
+            return param_dict[param_packer.func_A.param_category.RCV_PIC]
+
+    def _A_get_rep_content(self, param_dict):
+        if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
+            return param_dict[param_packer.func_A.param_category.REP_TXT]
+        elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
+            return param_dict[param_packer.func_A.param_category.REP_STK]
+        elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
+            return param_dict[param_packer.func_A.param_category.REP_PIC]
         
     def _M(self, src, execute_in_gid, group_config_type, executor_permission, text):
         return self._A(src, execute_in_gid, group_config_type, executor_permission, text, True)
@@ -1324,19 +1306,22 @@ class param_packer(object):
                             parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.check_dict)]
             else:
                 raise UndefinedCommandCategoryException()
+
+            return prm_objs
     
     class func_A(param_packer_base):
         class command_category(ext.EnumWithName):
-            ADD_PAIR = 1, '新增回覆組'
+            ADD_PAIR_CH = 1, '新增回覆組(中文)'
+            ADD_PAIR_EN = 2, '新增回覆組(英文)'
 
         class param_category(ext.EnumWithName):
             ATTACHMENT_TEXT = 1, '附加回覆語句'
             ATTACHMENT = 2, '附加回覆內容'
-            RCV_ORG = 3, '接收(原始)'
+            RCV_TYPE = 3, '接收(種類)'
             RCV_TXT = 4, '接收(文字)'
             RCV_STK = 5, '接收(貼圖)'
             RCV_PIC = 6, '接收(圖片)'
-            REP_ORG = 7, '回覆(原始)'
+            REP_TYPE = 7, '回覆(種類)'
             REP_TXT = 8, '回覆(文字)'
             REP_STK = 9, '回覆(貼圖)'
             REP_PIC = 10, '回覆(圖片)'
@@ -1347,28 +1332,44 @@ class param_packer(object):
             super(param_packer.func_A, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
 
         def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_A.command_category.ADD_PAIR:
-                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT_TEXT, param_validator.conv_unicode), 
-                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.RCV_ORG, param_validator.conv_pair_type_from_org),  
-                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.REP_ORG, param_validator.conv_pair_type_from_org), 
-                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_pair_type_from_org), 
-                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_unicode), 
-                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.conv_unicode)]
+            if command_category == param_packer.func_A.command_category.ADD_PAIR_CH:
+                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT_TEXT, param_validator.conv_unicode, True), 
+                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),  
+                            parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.conv_pair_type_from_org),  
+                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
+                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
+                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
+                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
+                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True), 
+                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True)]
+            elif command_category == param_packer.func_A.command_category.ADD_PAIR_EN:
+                prm_objs = [parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.conv_pair_type_from_org),  
+                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
+                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
+                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
+                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
+                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True), 
+                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
+                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
             else:
                 raise UndefinedCommandCategoryException()
 
+            return prm_objs
+
 class packer_factory(object):
-    _S = [param_packer.func_S(ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
-                              ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))', 
-                              param_packer.func_S.command_category.DB_COMMAND)]
+    _S = [param_packer.func_S(CH_regex=ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
+                              EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))', 
+                              command_category=param_packer.func_S.command_category.DB_COMMAND)]
 
-    _M = [ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
+    _M = [param_packer.func_A(CH_regex='小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))', command_category=param_packer.func_A.command_category.ADD_PAIR_CH),
+          param_packer.func_A(EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?',
+                              command_category=param_packer.func_A.command_category.ADD_PAIR_EN)]
 
-    _A = [ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
+    _A = [param_packer.func_A(CH_regex='小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))', command_category=param_packer.func_A.command_category.ADD_PAIR_CH),
+          param_packer.func_A(EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?',
+                              command_category=param_packer.func_A.command_category.ADD_PAIR_EN)]
 
     _R = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 

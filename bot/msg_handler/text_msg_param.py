@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ast
+import re
 
 from error import error
 import ext, db
@@ -80,14 +81,16 @@ class param_packing_result(object):
         return self._status
 
 class parameter(object):
-    def __init__(self, field_enum, validator_method):
+    def __init__(self, field_enum, validator_method, allow_null=False):
         """
         Parameter:
             field_enum: Enum that represents this field.
             validator_method: Method to validate the parameter. If the method is not come from param_validator, the action may be unexpected.
+            allow_null: Allow this field to be null.
         """
         self._field_enum = field_enum
         self._validator = validator_method
+        self._allow_null = allow_null
 
     @property
     def field_enum(self):
@@ -101,7 +104,7 @@ class parameter(object):
         Returns:
             return param_validation_result.
         """
-        return self._validator(content)
+        return self._validator(content, self._allow_null)
 
 class param_validator(object):
     """
@@ -110,13 +113,22 @@ class param_validator(object):
 
     Input:
         obj: parameter object (usually string) to validate.
+        allow_null: allow parameter pass the validation if the parameter is null.
 
     Returns:
         param_check_result. Ret of result may be an error message, or processed parameter.
     """
+    @staticmethod
+    def base_null(obj, allow_null):
+        if allow_null and obj is None:
+            return param_validation_result(obj, True)
 
     @staticmethod
-    def check_dict(obj):
+    def check_dict(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
         try:
             obj = ast.literal_eval(obj)
 
@@ -128,14 +140,57 @@ class param_validator(object):
             return param_validation_result(error.main.miscellaneous(u'字串型別分析失敗。\n{}\n\n訊息: {}'.format(obj, ex.message)), False)
 
     @staticmethod
-    def conv_unicode(obj):
+    def conv_unicode(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
         try:
             return param_validation_result(unicode(obj), True)
         except Exception as ex:
             return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
 
     @staticmethod
-    def conv_pair_type_from_org(obj):
+    def validate_https(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        if obj.startswith('https://'):
+            return param_validator.conv_unicode(obj)
+        else:
+            return param_validation_result(error.sys_command.must_https(obj), False)
+
+    @staticmethod
+    def validate_sha224(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        if re.match('[0-9a-fA-F]{56}'):
+            return param_validator.conv_unicode(obj)
+        else:
+            return param_validation_result(error.sys_command.must_sha(obj), False)
+
+    @staticmethod
+    def conv_int(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        new_int = ext.string_to_int(obj)
+
+        if new_int is not None:
+            return param_validation_result(new_int, False)
+        else:
+            return param_validation_result(error.sys_command.must_int(obj), False)
+
+    @staticmethod
+    def conv_pair_type_from_org(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
         if any(obj.startswith(w) for w in (u'收到', u'回答', u'T')):
             ret = db.word_type.TEXT
         elif any(obj.startswith(w) for w in (u'看到', u'回圖', u'P')):

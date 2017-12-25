@@ -22,10 +22,11 @@ class regex_finder(object):
                 regex = ext.to_list(regex)
 
             for re_pattern in regex:
-                pattern = ur"^" + re_pattern + ur"$"
-                match_result = re.match(pattern, text)
-                if match_result is not None:
-                    return RegexFindResult(num, match_result, pattern)
+                if re_pattern is not None:
+                    pattern = ur"^" + re_pattern + ur"$"
+                    match_result = re.match(pattern, text)
+                    if match_result is not None:
+                        return RegexFindResult(num, match_result, pattern)
 
         return None
 
