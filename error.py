@@ -136,7 +136,7 @@ class error(object):
             return u'必須是整數。({})'.format(obj)
 
         @staticmethod
-        def must_int(obj):
+        def must_sha(obj):
             return u'必須是SHA224雜湊結果。({})'.format(obj)
 
         @staticmethod
