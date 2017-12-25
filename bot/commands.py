@@ -25,16 +25,16 @@ class remote(ext.EnumWithName):
         return 'GLOBAL'
 
 class command_object(object):
-    def __init__(self, head, function_code, remotable, lowest_permission_req=permission.USER):
-        self._head = head
+    def __init__(self, headers, function_code, remotable, lowest_permission_req=permission.USER):
         self._function_code = function_code
+        self._headers = [function_code] + ext.to_list(headers)
         self._remotable = remotable
         self._lowest_permission_required = lowest_permission_req
 
     @property
-    def head(self):
-        """Head of command."""
-        return self._head
+    def headers(self):
+        """Headers of the command. (list)"""
+        return self._heads
 
     @property
     def remotable(self):

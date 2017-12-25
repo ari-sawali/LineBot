@@ -21,8 +21,8 @@ class regex_finder(object):
             if not isinstance(regex, list):
                 regex = ext.to_list(regex)
 
-            for re in regex:
-                pattern = ur"^" + regex + ur"$"
+            for re_pattern in regex:
+                pattern = ur"^" + re_pattern + ur"$"
                 match_result = re.match(pattern, text)
                 if match_result is not None:
                     return RegexFindResult(num, match_result, pattern)

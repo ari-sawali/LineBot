@@ -73,7 +73,7 @@ class text_msg_handler(object):
 
         cmd_data = None
         for cmd_kw, cmd_obj in bot.sys_cmd_dict.iteritems():
-            if text.startswith(text_msg_handler.CH_HEAD + cmd_kw):
+            if text.startswith(text_msg_handler.CH_HEAD + cmd_obj.headers[1]) or text.startswith(text_msg_handler.EN_HEAD + cmd_obj.headers[0]):
                 cmd_data = cmd_obj
                 break
 
@@ -87,7 +87,7 @@ class text_msg_handler(object):
             return False
 
         # log statistics
-        self._system_stats.command_called(cmd_data.head)
+        self._system_stats.command_called(cmd_data.function_code)
 
         # get function
         cmd_function = getattr(self, '_{}'.format(cmd_data.function_code))
