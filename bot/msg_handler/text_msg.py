@@ -1293,7 +1293,7 @@ class param_packer(object):
             MAIN_PRM = 3, '主參數'
             OTHER_PRM = 4, '其餘參數'
 
-        def __init__(self, CH_regex, EN_regex, command_category):
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
             prm_objs = self._get_prm_objs(command_category)
 
             super(param_packer.func_S, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
@@ -1326,7 +1326,7 @@ class param_packer(object):
             REP_STK = 9, '回覆(貼圖)'
             REP_PIC = 10, '回覆(圖片)'
 
-        def __init__(self, CH_regex, EN_regex, command_category):
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
             prm_objs = self._get_prm_objs(command_category)
 
             super(param_packer.func_A, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
@@ -1359,17 +1359,19 @@ class param_packer(object):
             return prm_objs
 
 class packer_factory(object):
-    _S = [param_packer.func_S(CH_regex=ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
-                              EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))', 
-                              command_category=param_packer.func_S.command_category.DB_COMMAND)]
+    _S = [param_packer.func_S(command_category=param_packer.func_S.command_category.DB_COMMAND,
+                              CH_regex=ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
+                              EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))')]
 
-    _M = [param_packer.func_A(CH_regex='小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))', command_category=param_packer.func_A.command_category.ADD_PAIR_CH),
-          param_packer.func_A(EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?',
-                              command_category=param_packer.func_A.command_category.ADD_PAIR_EN)]
+    _M = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
+                              CH_regex='小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
+                              EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
 
-    _A = [param_packer.func_A(CH_regex='小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))', command_category=param_packer.func_A.command_category.ADD_PAIR_CH),
-          param_packer.func_A(EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?',
-                              command_category=param_packer.func_A.command_category.ADD_PAIR_EN)]
+    _A = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
+                              CH_regex='小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
+                              EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
 
     _R = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
