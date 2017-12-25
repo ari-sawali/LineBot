@@ -69,12 +69,10 @@ class text_msg_handler(object):
         else:
             attempt_to_remote = False
             execute_remote_gid = src_gid
-            text = texts[0]
+            text = text
 
         cmd_data = None
         for cmd_obj in bot.sys_cmd_dict.itervalues():
-            print repr(text)
-            print repr(text_msg_handler.EN_HEAD + cmd_obj.headers[0])
             if text.startswith(text_msg_handler.CH_HEAD + cmd_obj.headers[1]) or text.startswith(text_msg_handler.EN_HEAD + cmd_obj.headers[0]):
                 cmd_data = cmd_obj
                 break
