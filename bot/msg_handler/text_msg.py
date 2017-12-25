@@ -1119,10 +1119,10 @@ class text_msg_handler(object):
 
                     for cat in cat_to_calc:
                         pli_comp = pli_t.get_data(cat) / pli_s.get_data(cat)
-                        actual_amount = float(amount) * conv_result.result * pli_comp
+                        actual_amount = conv_result.result * pli_comp
                         
+                        ret.append(u'')
                         ret.append(u'{}: 約{} {}'.format(unicode(cat), target_currency, actual_amount))
-                    ret.append(u'')
 
             return u'\n'.join(ret)
         else:
