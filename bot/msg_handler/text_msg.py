@@ -291,7 +291,7 @@ class text_msg_handler(object):
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
-                return
+                pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
