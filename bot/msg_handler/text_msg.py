@@ -71,7 +71,7 @@ class text_msg_handler(object):
             execute_remote_gid = src_gid
             text = text
 
-        cmd_data = self._get_cmd_data()
+        cmd_data = self._get_cmd_data(text)
 
         # terminate if set to silence
         if group_config_type <= db.config_type.SILENCE and cmd_data.function_code != 'GA':
@@ -123,7 +123,7 @@ class text_msg_handler(object):
 
         return True
 
-    def _get_cmd_data(self):
+    def _get_cmd_data(self, text):
         for cmd_obj in bot.sys_cmd_dict.itervalues():
             for header in cmd_obj.headers:
                 if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
