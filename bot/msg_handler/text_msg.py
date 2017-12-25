@@ -71,11 +71,7 @@ class text_msg_handler(object):
             execute_remote_gid = src_gid
             text = text
 
-        cmd_data = None
-        for cmd_obj in bot.sys_cmd_dict.itervalues():
-            if text.startswith(text_msg_handler.CH_HEAD + cmd_obj.headers[1]) or text.startswith(text_msg_handler.EN_HEAD + cmd_obj.headers[0]):
-                cmd_data = cmd_obj
-                break
+        cmd_data = self._get_cmd_data()
 
         # terminate if set to silence
         if group_config_type <= db.config_type.SILENCE and cmd_data.function_code != 'GA':
@@ -126,6 +122,12 @@ class text_msg_handler(object):
                 self._line_api_wrapper.reply_message(token, handle_result)
 
         return True
+
+    def _get_cmd_data(self):
+        for cmd_obj in bot.sys_cmd_dict.itervalues():
+            for header in cmd_obj.headers:
+                if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
+                    return cmd_obj
 
     def _get_kwd_instance(self, src, config, execute_remote_gid=None):
         cid = bot.line_api_wrapper.source_channel_id(src)
@@ -1313,9 +1315,10 @@ class param_packer(object):
         class command_category(ext.EnumWithName):
             ADD_PAIR_CH = 1, '新增回覆組(中文)'
             ADD_PAIR_EN = 2, '新增回覆組(英文)'
+            ADD_PAIR_AUTO_CH = 3, '新增回覆組(自動偵測，中文)'
+            ADD_PAIR_AUTO_EN = 4, '新增回覆組(自動偵測，英文)'
 
         class param_category(ext.EnumWithName):
-            ATTACHMENT_TEXT = 1, '附加回覆語句'
             ATTACHMENT = 2, '附加回覆內容'
             RCV_TYPE = 3, '接收(種類)'
             RCV_TXT = 4, '接收(文字)'
@@ -1325,6 +1328,8 @@ class param_packer(object):
             REP_TXT = 8, '回覆(文字)'
             REP_STK = 9, '回覆(貼圖)'
             REP_PIC = 10, '回覆(圖片)'
+            RCV_CONTENT = 11, '接收(內容)'
+            REP_CONTENT = 12, '回覆(內容)'
 
         def __init__(self, command_category, CH_regex=None, EN_regex=None):
             prm_objs = self._get_prm_objs(command_category)
@@ -1333,25 +1338,32 @@ class param_packer(object):
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_A.command_category.ADD_PAIR_CH:
-                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT_TEXT, param_validator.conv_unicode, True), 
-                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),  
-                            parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.conv_pair_type_from_org),  
+                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),  
+                            parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
                             parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
                             parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
                             parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
-                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
                             parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
                             parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True), 
                             parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True)]
             elif command_category == param_packer.func_A.command_category.ADD_PAIR_EN:
-                prm_objs = [parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.conv_pair_type_from_org),  
+                prm_objs = [parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
                             parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
                             parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
                             parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
-                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
                             parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
                             parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True), 
                             parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
+                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
+            elif command_category == param_packer.func_A.command_category.ADD_PAIR_AUTO_CH:
+                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),  
+                            parameter(param_packer.func_A.param_category.RCV_CONTENT, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.REP_CONTENT, param_validator.conv_unicode)]
+            elif command_category == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
+                prm_objs = [parameter(param_packer.func_A.param_category.RCV_CONTENT, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.REP_CONTENT, param_validator.conv_unicode),
                             parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
             else:
                 raise UndefinedCommandCategoryException()
@@ -1364,14 +1376,22 @@ class packer_factory(object):
                               EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))')]
 
     _M = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex=ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+                              CH_regex=ur'小水母 置頂 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
           param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
-                              EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
+                              EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_CH,
+                              CH_regex=ur'小水母 置頂 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(?:入 ?((?:.|\n)+)(?<! )) ?(?:出 ?((?:.|\n)+)(?<! ))'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_EN,
+                              EN_regex=ur'JC\nMM\n(.+)\n(.+)(?:\n(.+))?')]
 
     _A = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex=ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+                              CH_regex=ur'小水母 記住 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
           param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
-                              EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
+                              EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_CH,
+                              CH_regex=ur'小水母 記住 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(?:入 ?((?:.|\n)+)(?<! )) ?(?:出 ?((?:.|\n)+)(?<! ))'),
+          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_EN,
+                              EN_regex=ur'JC\nAA\n(.+)\n(.+)(?:\n(.+))?')]
 
     _R = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 

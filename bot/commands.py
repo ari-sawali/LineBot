@@ -27,7 +27,7 @@ class remote(ext.EnumWithName):
 class command_object(object):
     def __init__(self, headers, function_code, remotable, lowest_permission_req=permission.USER):
         self._function_code = function_code
-        self._headers = [function_code] + ext.to_list(headers)
+        self._headers = [function_code + u'\n'] + ext.to_list(headers)
         self._remotable = remotable
         self._lowest_permission_required = lowest_permission_req
 
@@ -51,8 +51,8 @@ class command_object(object):
         return self._function_code
 
 # Provide lowest permission requirement, if some command requires higher permission, handle inside txt msg handling function.
-sys_cmd_dict = { u'記住': command_object(u'記住', u'A', remote.ALLOW_ALL), 
-                 u'置頂': command_object(u'置頂', u'M', remote.GROUP_ID_ONLY, permission.MODERATOR), 
+sys_cmd_dict = { u'記住': command_object([u'記住', u'AA\n'], u'A', remote.ALLOW_ALL), 
+                 u'置頂': command_object([u'置頂', u'MM\n'], u'M', remote.GROUP_ID_ONLY, permission.MODERATOR), 
                  u'忘記': command_object(u'忘記', u'D', remote.ALLOW_ALL), 
                  u'忘記置頂': command_object(u'忘記置頂', u'R', remote.ALLOW_ALL), 
                  u'找': command_object(u'找', u'Q', remote.ALLOW_ALL), 

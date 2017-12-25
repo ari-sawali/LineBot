@@ -189,22 +189,38 @@ class param_validator(object):
         else:
             return param_validation_result(error.sys_command.must_int(obj), False)
 
-    @staticmethod
-    def conv_pair_type_from_org(obj, allow_null):
-        base = param_validator.base_null(obj, allow_null)
-        if base is not None:
-            return base
+    class keyword_dict(object):
+        @staticmethod
+        def conv_pair_type_from_org(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
 
-        if any(obj.startswith(w) for w in (u'收到', u'回答', u'T')):
-            ret = db.word_type.TEXT
-        elif any(obj.startswith(w) for w in (u'看到', u'回圖', u'P')):
-            ret = db.word_type.PICTURE
-        elif any(obj.startswith(w) for w in (u'被貼', u'回貼', u'S')):
-            ret = db.word_type.STICKER
-        else:
-            return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
+            if any(obj.startswith(w) for w in (u'收到', u'回答', u'T')):
+                ret = db.word_type.TEXT
+            elif any(obj.startswith(w) for w in (u'看到', u'回圖', u'P')):
+                ret = db.word_type.PICTURE
+            elif any(obj.startswith(w) for w in (u'被貼', u'回貼', u'S')):
+                ret = db.word_type.STICKER
+            else:
+                return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
 
-        return param_validation_result(ret, True)
+            return param_validation_result(ret, True)
+
+        @staticmethod
+        def get_type_auto(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            if param_validator.validate_https(obj).valid or param_validator.validate_sha224(obj).valid:
+                ret = db.word_type.PICTURE
+            elif param_validator.conv_int(obj).valid:
+                ret = db.word_type.STICKER
+            else:
+                ret = db.word_type.TEXT
+
+            return param_validation_result(ret, True)
 
 class param_validation_result(object):
     def __init__(self, ret, valid):
