@@ -121,6 +121,11 @@ class error(object):
         def sense_not_found():
             return u'No sense found in the entry.'
 
+    class mongo_db(object):
+        @staticmethod
+        def op_fail(err_instance):
+            return u'資料庫指令執行失敗。\n錯誤碼: {}\n錯誤訊息: {}'.format(err_instance.code, err_instance.message)
+
     class sys_command(object):
         @staticmethod
         def lack_of_parameters(indexes=None):

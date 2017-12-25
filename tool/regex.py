@@ -2,20 +2,30 @@
 
 import re
 
+import ext
+
 class regex_finder(object):
 
     @staticmethod
     def find_match(regex_list, text):
         """
+        Parameters:
+            regex_list: Check if the provided text match the provided pattern. This should be list, and the element of the list can be a tuple. If the element of the list is a list, regex check will iterate through it.
+            text: text to check.
+
         Returns:
             Has result: RegexFindResult
             No result: None
         """
         for num, regex in enumerate(regex_list):
-            pattern = ur"^" + regex + ur"$"
-            match_result = re.match(pattern, text)
-            if match_result is not None:
-                return RegexFindResult(num, match_result, pattern)
+            if not isinstance(regex, list):
+                regex = ext.to_list(regex)
+
+            for re in regex:
+                pattern = ur"^" + regex + ur"$"
+                match_result = re.match(pattern, text)
+                if match_result is not None:
+                    return RegexFindResult(num, match_result, pattern)
 
         return None
 

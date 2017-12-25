@@ -45,7 +45,7 @@ class special_text_handler(object):
 
             return u'\n==========\n'.join(ret)
         else:
-            command_head = bot.msg_handler.text_msg_handler.HEAD + u'天氣查詢 '
+            command_head = bot.msg_handler.text_msg_handler.CH_HEAD + u'天氣查詢 '
 
             template_title = u'快速天氣查詢'
             template_title_alt = u'快速天氣查詢樣板，請使用手機查看。'

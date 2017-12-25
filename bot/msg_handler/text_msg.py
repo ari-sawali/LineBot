@@ -7,13 +7,13 @@ import re
 
 from flask import request, url_for
 import pymongo
-import ast
 
 import tool
 from error import error
 import bot, db, ext
 
 from .misc import *
+from .text_msg_param import *
 
 # 收參數
 # 檢查
@@ -38,7 +38,9 @@ from .misc import *
 # return exec_result.message
 
 class text_msg_handler(object):
-    HEAD = u'小水母 '
+    CH_HEAD = u'小水母 '
+    EN_HEAD = u'JC\n'
+
     REMOTE_SPLITTER = u'\n'
 
     def __init__(self, flask_app, config_manager, line_api_wrapper, mongo_db_uri, oxford_api, system_data, webpage_generator, imgur_api_wrapper, oxr_client, string_calculator, weather_reporter, file_tmp_path):
@@ -93,7 +95,7 @@ class text_msg_handler(object):
 
         cmd_data = None
         for cmd_kw, cmd_obj in bot.sys_cmd_dict.iteritems():
-            if text.startswith(text_msg_handler.HEAD + cmd_kw):
+            if text.startswith(text_msg_handler.CH_HEAD + cmd_kw):
                 cmd_data = cmd_obj
                 break
 
@@ -249,42 +251,51 @@ class text_msg_handler(object):
             self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
 
     def _S(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
-        regex_list = [ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )']
+        packer_list = packer_factory._S
         
-        regex_result = tool.regex_finder.find_match(regex_list, text)
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                self._reg_mongo()
 
-        if regex_result is None:
-            return
+                param_dict = packing_result.result
 
-        self._reg_mongo()
+                text = self._S_generate_output_head(param_dict)
+                try:
+                    text += self._S_generate_output_mongo_result(param_dict)
+                except pymongo.errors.OperationFailure as ex:
+                    text += error.mongo_db.op_fail(ex)
 
-        if regex_result.match_at == 0:
-            db_name = param_checker.conv_unicode(regex_result.group(1))
-            main_cmd = param_checker.conv_unicode(regex_result.group(2))
-            main_prm = param_checker.conv_unicode(regex_result.group(3))
-            prm_dict = param_checker.check_dict(regex_result.group(4))
+                return text
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return packing_result.result
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                return
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-            text = u'目標資料庫:\n{}\n'.format(db_name)
-            text += u'資料庫主指令:\n{}\n'.format(main_cmd)
-            text += u'資料庫主指令參數:\n{}\n'.format(main_prm)
-            text += u'資料庫副指令:\n{}\n\n'.format(prm_dict)
+    def _S_generate_output_head(self, param_dict):
+        text = u'目標資料庫:\n{}\n'.format(param_dict[param_packer.func_S.param_category.DB_NAME])
+        text += u'資料庫主指令:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_CMD])
+        text += u'資料庫主指令參數:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_PRM])
+        text += u'資料庫副指令:\n{}\n\n'.format(param_dict[param_packer.func_S.param_category.OTHER_PRM])
 
-            try:
-                result = self._pymongo_client.get_database(db_name).command(main_cmd, main_prm, **prm_dict)
+        return text
 
-                text += ext.object_to_json(result)
-            except pymongo.errors.OperationFailure as ex:
-                text += u'資料庫指令執行失敗。\n錯誤碼: {}\n錯誤訊息: {}'.format(ex.code, ex.message)
+    def _S_generate_output_mongo_result(self, param_dict):
+        return ext.object_to_json(self._S_execute_mongo_shell(param_dict))
 
-            return text
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'S', regex_result.match_at, regex_result.regex))
+    def _S_execute_mongo_shell(self, param_dict):
+        return self._pymongo_client.get_database(param_dict[param_packer.func_S.param_category.DB_NAME]) \
+                                   .command(param_dict[param_packer.func_S.param_category.MAIN_CMD], 
+                                            param_dict[param_packer.func_S.param_category.MAIN_PRM], 
+                                            **param_dict[param_packer.func_S.param_category.OTHER_PRM])
     
     def _A(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = [ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
+            regex_list = packer_factory._M
         else:
-            regex_list = [ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
+            regex_list = packer_factory._A
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -356,9 +367,9 @@ class text_msg_handler(object):
     
     def _D(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+            regex_list = packer_factory._R
         else:
-            regex_list = [ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+            regex_list = packer_factory._D
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -406,11 +417,7 @@ class text_msg_handler(object):
         return self._D(src, execute_in_gid, group_config_type, executor_permission, text, True)
     
     def _Q(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 找 ?(可以用的|全部)',
-                      ur'小水母 找 ?ID範圍 ?(\d+)(到|~)(\d+)',
-                      ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
-                      ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
-                      ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+        regex_list = packer_factory._Q
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -436,11 +443,7 @@ class text_msg_handler(object):
         return text
     
     def _I(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 詳細找 ?(可以用的|全部)',
-                      ur'小水母 詳細找 ?ID範圍 ?(\d+)(到|~)(\d+)',
-                      ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
-                      ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的', 
-                      ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+        regex_list = packer_factory._I
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -465,8 +468,7 @@ class text_msg_handler(object):
         return text
     
     def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)', 
-                      ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)']
+        regex_list = packer_factory._X
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -528,13 +530,13 @@ class text_msg_handler(object):
             last_id_str = str(result_ids[-1])
             return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids])), self._webpage_generator),
                     bot.line_api_wrapper.wrap_template_with_action({
-                        u'回覆組資料查詢(簡略)': text_msg_handler.HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
-                        u'回覆組資料查詢(詳細)': text_msg_handler.HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
+                        u'回覆組資料查詢(簡略)': text_msg_handler.CH_HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
+                        u'回覆組資料查詢(詳細)': text_msg_handler.CH_HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
         else:
             return u'回覆組複製失敗。回覆組來源沒有符合條件的回覆組可供複製。'
         
     def _X2(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 清除(於([CR]{1}[0-9a-f]{32})中)?所有的回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340']
+        regex_list = packer_factory._X2
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -561,8 +563,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'X2', regex_result.match_at, regex_result.regex))
         
     def _E(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)跟((?:.|\n)+)(無|有)關', 
-                      ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(不)?置頂']
+        regex_list = packer_factory._E
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -588,7 +589,7 @@ class text_msg_handler(object):
         if is_ids:
             expr = u'、'.join([u'#{}'.format(str(id)) for id in target_array])
 
-            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
+            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
         else:
             expr = u'關鍵字: ' + u'、'.join(target_array)
 
@@ -644,7 +645,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'E', regex_result.match_at, regex_result.regex))
         
     def _K(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 前(([1-9]\d?)名)?(使用者|回覆組|使用過的)']
+        regex_list = packer_factory._K
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -681,8 +682,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'K', regex_result.match_at, regex_result.regex))
     
     def _P(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 系統訊息前(\d+)名', 
-                      ur'小水母 系統(自動回覆|資訊|圖片|匯率|黑名單)']
+        regex_list = packer_factory._P
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -729,7 +729,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'P', regex_result.match_at, regex_result.regex))
     
     def _P2(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 使用者 ?([U]{1}[0-9a-f]{32}) ?的資料']
+        regex_list = packer_factory._P2
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -763,14 +763,14 @@ class text_msg_handler(object):
                 text = u'UID:\n{}\n\n名稱:\n{}\n\n擁有權限:\n{}\n\n製作回覆組ID:\n{}'.format(uid, name, owned_permission, created_id_arr)
 
                 return [bot.line_api_wrapper.wrap_text_message(text, self._webpage_generator), 
-                        bot.line_api_wrapper.wrap_template_with_action({ u'查詢該使用者製作的回覆組': text_msg_handler.HEAD + u'找' + uid + u'做的' }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]
+                        bot.line_api_wrapper.wrap_template_with_action({ u'查詢該使用者製作的回覆組': text_msg_handler.CH_HEAD + u'找' + uid + u'做的' }, u'回覆組製作查詢快捷樣板', u'快捷查詢')]
             else:
                 return error.line_bot_api.illegal_user_id(uid)
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'P2', regex_result.match_at, regex_result.regex))
 
     def _G(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 群組([CR]{1}[0-9a-f]{32})?的資料']
+        regex_list = packer_factory._G
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -793,12 +793,12 @@ class text_msg_handler(object):
             group_statistics = group_data.get_status_string() + u'\n【回覆組相關】\n' + kwd_instance.get_statistics_string()
             
             return (bot.line_api_wrapper.wrap_text_message(group_statistics, self._webpage_generator), 
-                    bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.HEAD + u'找' + gid + u'裡面的'}, u'快速查詢群組資料庫樣板', u'相關指令'))
+                    bot.line_api_wrapper.wrap_template_with_action({ u'查詢群組資料庫': text_msg_handler.CH_HEAD + u'找' + gid + u'裡面的'}, u'快速查詢群組資料庫樣板', u'相關指令'))
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'G', regex_result.match_at, regex_result.regex))
         
     def _GA(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 當(啞巴|機器人|服務員|八嘎囧)']
+        regex_list = packer_factory._GA
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -833,7 +833,7 @@ class text_msg_handler(object):
         return text
     
     def _GA2(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 讓 ?([U]{1}[0-9a-f]{32}) ?變成(可憐兒|一般人|副管|管理員)']
+        regex_list = packer_factory._GA2
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -884,7 +884,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'GA2', regex_result.match_at, regex_result.regex))
     
     def _GA3(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 啟用公用資料庫([A-Z0-9]{40})']
+        regex_list = packer_factory._GA3
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -898,7 +898,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'GA3', regex_result.match_at, regex_result.regex))
         
     def _H(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 頻道資訊']
+        regex_list = packer_factory._H
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -913,7 +913,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'H', regex_result.match_at, regex_result.regex))
     
     def _SHA(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 雜湊SHA ?(.*)']
+        regex_list = packer_factory._SHA
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -928,7 +928,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'SHA', regex_result.match_at, regex_result.regex))
     
     def _O(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 查 ?(\w+)']
+        regex_list = packer_factory._O
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -946,9 +946,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'O', regex_result.match_at, regex_result.regex))
     
     def _RD(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', 
-                      ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', 
-                      ur'小水母 抽 ?(\d+)(到|~)(\d+)']
+        regex_list = packer_factory._RD
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -986,7 +984,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'RD', regex_result.match_at, regex_result.regex))
     
     def _L(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 最近的(貼圖|圖片|回覆組|發送者)']
+        regex_list = packer_factory._L
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1022,25 +1020,25 @@ class text_msg_handler(object):
                 for item in last_array:
                     stk_id = str(item.sticker_id)
                     pkg_id = str(item.package_id)
-                    action_dict['簡潔 - {}'.format(stk_id)] = text_msg_handler.HEAD + u'找' + stk_id
-                    action_dict['詳細 - {}'.format(stk_id)] = text_msg_handler.HEAD + u'詳細找' + stk_id
-                    action_dict['貼圖包下載 - {}'.format(pkg_id)] = text_msg_handler.HEAD + u'下載貼圖圖包' + pkg_id
+                    action_dict['簡潔 - {}'.format(stk_id)] = text_msg_handler.CH_HEAD + u'找' + stk_id
+                    action_dict['詳細 - {}'.format(stk_id)] = text_msg_handler.CH_HEAD + u'詳細找' + stk_id
+                    action_dict['貼圖包下載 - {}'.format(pkg_id)] = text_msg_handler.CH_HEAD + u'下載貼圖圖包' + pkg_id
             elif last_action_enum == bot.system_data_category.LAST_PAIR_ID:
                 action_dict = {}
                 for item in last_array:
                     item = str(item)
-                    action_dict['簡潔 - {}'.format(item)] = text_msg_handler.HEAD + u'找ID ' + item
-                    action_dict['詳細 - {}'.format(item)] = text_msg_handler.HEAD + u'詳細找ID ' + item
+                    action_dict['簡潔 - {}'.format(item)] = text_msg_handler.CH_HEAD + u'找ID ' + item
+                    action_dict['詳細 - {}'.format(item)] = text_msg_handler.CH_HEAD + u'詳細找ID ' + item
             elif last_action_enum == bot.system_data_category.LAST_UID:
                 action_dict = { 
-                    '使用者{}製作'.format(uid[0:9]): text_msg_handler.HEAD + u'找' + uid + u'做的' for uid in last_array
+                    '使用者{}製作'.format(uid[0:9]): text_msg_handler.CH_HEAD + u'找' + uid + u'做的' for uid in last_array
                 }
             elif last_action_enum == bot.system_data_category.LAST_PIC_SHA:
                 action_dict = {}
                 for sha in last_array:
                     sha = str(sha)
-                    action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.HEAD + u'找' + sha
-                    action_dict['詳細 - {}'.format(sha)] = text_msg_handler.HEAD + u'詳細找' + sha
+                    action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'找' + sha
+                    action_dict['詳細 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'詳細找' + sha
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_action_enum)), u'快捷指令/快速查詢'))
 
@@ -1051,7 +1049,7 @@ class text_msg_handler(object):
     def _T(self, src, execute_in_gid, group_config_type, executor_permission, text):
         from urllib import quote_plus
 
-        regex_list = [ur'小水母 編碼((?:.|\n)+)']
+        regex_list = packer_factory._T
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1066,10 +1064,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'T', regex_result.match_at, regex_result.regex))
     
     def _C(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 匯率(可用)?', 
-                      ur'小水母 匯率([A-Z ]{3,})', 
-                      ur'小水母 匯率((1999|20\d{2})(0[1-9]|1[1-2])([0-2][1-9]|3[0-1]))(時的([A-Z ]{3,}))?', 
-                      ur'小水母 匯率([A-Z]{3}) ([\d\.]+) ?轉成 ?([A-Z]{3})']
+        regex_list = packer_factory._C
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1105,7 +1100,7 @@ class text_msg_handler(object):
             conv_result = self._oxr_client.convert(source_currency, target_currency, amount)
             ret.append(conv_result.formatted_string)
             ret.append(u'')
-            ret.append(u'等物價水平換算:')
+            ret.append(u'等物價水平換算(使用指令PLI以獲得完整資訊):')
 
             country_entries_source = self._ctyccy.get_country_entry(currency_codes=source_currency)
             country_entries_target = self._ctyccy.get_country_entry(currency_codes=target_currency)
@@ -1129,8 +1124,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'T', regex_result.match_at, regex_result.regex))
              
     def _FX(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 解因式分解 ?([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
-                      ur'小水母 解方程式 ?(變數((?:.|\n)+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
+        regex_list = packer_factory._FX
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1166,8 +1160,7 @@ class text_msg_handler(object):
         return text
              
     def _W(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 天氣ID查詢 ?(\w+)', 
-                      ur'小水母 天氣(查詢|記錄|刪除) ?([\d\s]+) ?(詳|簡)? ?((\d+)小時內)? ?(每(\d+)小時)?']
+        regex_list = packer_factory._W
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1183,7 +1176,7 @@ class text_msg_handler(object):
             search_desc = u'搜尋字詞: {} (共{}筆結果)'.format(location_keyword, search_result_count)
             if len(search_result) > 0:
                 result_arr = [search_desc] + [u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)) for id, city_name, country_code in search_result]
-                action_dict = { str(id): text_msg_handler.HEAD + u'天氣查詢ID ' + str(id) for id, city_name, country_code in search_result_simp }
+                action_dict = { str(id): text_msg_handler.CH_HEAD + u'天氣查詢ID ' + str(id) for id, city_name, country_code in search_result_simp }
                 return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板，請參考搜尋結果點選'),
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
@@ -1227,7 +1220,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'W', regex_result.match_at, regex_result.regex))
              
     def _DL(self, src, execute_in_gid, group_config_type, executor_permission, text): 
-        regex_list = [ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?']
+        regex_list = packer_factory._DL
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1262,8 +1255,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'DL', regex_result.match_at, regex_result.regex))
         
     def _STK(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
-                      ur'小水母 貼圖(\d+)']
+        regex_list = packer_factory._STK
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1304,51 +1296,114 @@ class text_msg_handler(object):
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'STK', regex_result.match_at, regex_result.regex))
 
+    # UNDONE, try to get complete pli data
+    def _PLI(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        pass
+
     @staticmethod
     def can_try_handle(full_text):
-        return full_text.startswith(text_msg_handler.HEAD) or bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
+        return full_text.startswith(text_msg_handler.CH_HEAD) or \
+               full_text.startswith(text_msg_handler.EN_HEAD) or \
+               bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
 
-# UNDONE
-class param_pack(object):
-    class func_S_type(ext.EnumWithName):
-        DB_CONTROL = 1, '控制資料庫'
+class packer_factory(object):
+    _S = [param_packer.func_S(ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
+                              ur'JC\nS\n(.+)\n(.+)\n(.+)\n(.+)', 
+                              param_packer.func_S.command_category.DB_COMMAND)]
 
-    class func_S(object):
-        pass
+    _M = [ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
 
-    class func_A(object):
-        pass
+    _A = [ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
 
-class param_checker(object):
-    @staticmethod
-    def check_dict(obj):
-        try:
-            obj = ast.literal_eval(obj)
+    _R = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
-            if not isinstance(obj, dict):
-                return param_check_result(error.main.miscellaneous(u'輸入參數必須是合法dictionary型別。({})'.format(type(obj))), False)
+    _D = [ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
-            return param_check_result(obj, True)
-        except ValueError as ex:
-            return param_check_result(error.main.miscellaneous(u'參數4字串型別分析失敗。\n{}\n\n訊息: {}'.format(prm_dict, ex.message)), False)
+    _Q = [ur'小水母 找 ?(可以用的|全部)',
+          ur'小水母 找 ?ID範圍 ?(\d+)(到|~)(\d+)',
+          ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
+          ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
+          ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
-    @staticmethod
-    def conv_unicode(obj):
-        try:
-            return param_check_result(unicode(obj), True)
-        except Exception as ex:
-            return param_check_result(u'{} - {}'.format(type(ex), ex.message), False)
+    _I = [ur'小水母 詳細找 ?(可以用的|全部)',
+          ur'小水母 詳細找 ?ID範圍 ?(\d+)(到|~)(\d+)',
+          ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
+          ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的', 
+          ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+
+    _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)', 
+          ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)']
+
+    _X2 = [ur'小水母 清除(於([CR]{1}[0-9a-f]{32})中)?所有的回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340']
+
+    _E = [ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)跟((?:.|\n)+)(無|有)關', 
+          ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(不)?置頂']
+
+    _K = [ur'小水母 前(([1-9]\d?)名)?(使用者|回覆組|使用過的)']
+
+    _P = [ur'小水母 系統訊息前(\d+)名', 
+          ur'小水母 系統(自動回覆|資訊|圖片|匯率|黑名單)']
+
+    _P2 = [ur'小水母 使用者 ?([U]{1}[0-9a-f]{32}) ?的資料']
+
+    _G = [ur'小水母 群組([CR]{1}[0-9a-f]{32})?的資料']
+
+    _GA = [ur'小水母 當(啞巴|機器人|服務員|八嘎囧)']
+
+    _GA2 = [ur'小水母 讓 ?([U]{1}[0-9a-f]{32}) ?變成(可憐兒|一般人|副管|管理員)']
+
+    _GA3 = [ur'小水母 啟用公用資料庫([A-Z0-9]{40})']
+
+    _H = [ur'小水母 頻道資訊']
+
+    _SHA = [ur'小水母 雜湊SHA ?(.*)']
+
+    _O = [ur'小水母 查 ?(\w+)']
+
+    _RD = [ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', 
+           ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', 
+           ur'小水母 抽 ?(\d+)(到|~)(\d+)']
+
+    _L = [ur'小水母 最近的(貼圖|圖片|回覆組|發送者)']
+
+    _T = [ur'小水母 編碼((?:.|\n)+)']
+
+    _C = [ur'小水母 匯率(可用)?', 
+          ur'小水母 匯率([A-Z ]{3,})', 
+          ur'小水母 匯率((1999|20\d{2})(0[1-9]|1[1-2])([0-2][1-9]|3[0-1]))(時的([A-Z ]{3,}))?', 
+          ur'小水母 匯率([A-Z]{3}) ([\d\.]+) ?轉成 ?([A-Z]{3})']
+
+    _FX = [ur'小水母 解因式分解 ?([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
+           ur'小水母 解方程式 ?(變數((?:.|\n)+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
+
+    _W = [ur'小水母 天氣ID查詢 ?(\w+)', 
+          ur'小水母 天氣(查詢|記錄|刪除) ?([\d\s]+) ?(詳|簡)? ?((\d+)小時內)? ?(每(\d+)小時)?']
+
+    _DL = [ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?']
+
+    _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
+            ur'小水母 貼圖(\d+)']
+
+class param_packer(object):
+    class func_S(param_packer_base):
+        class command_category(ext.EnumWithName):
+            DB_COMMAND = 1, '資料庫指令'
+
+        class param_category(ext.EnumWithName):
+            DB_NAME = 1, '資料庫名稱'
+            MAIN_CMD = 2, '主指令'
+            MAIN_PRM = 3, '主參數'
+            OTHER_PRM = 4, '其餘參數'
+
+        def __init__(self, CH_regex, EN_regex, command_category):
+            if command_category == param_packer.func_S.command_category.DB_COMMAND:
+                prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.MAIN_PRM, param_validator.conv_unicode), 
+                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.conv_unicode)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            super(param_packer, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
 
 
-class param_check_result(object):
-    def __init__(self, ret, success):
-        self._ret = ret
-        self._success = success
-
-    @property
-    def ret(self):
-        return self._ret
-
-    @property
-    def success(self):
-        return self._success

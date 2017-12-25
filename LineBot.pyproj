@@ -65,6 +65,9 @@
     <Compile Include="bot\msg_handler\spec_text.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="bot\msg_handler\text_msg_param.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="db\base.py" />
     <Compile Include="db\content_holder.py">
       <SubType>Code</SubType>
