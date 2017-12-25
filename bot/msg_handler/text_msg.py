@@ -72,7 +72,7 @@ class text_msg_handler(object):
             text = texts[0]
 
         cmd_data = None
-        for cmd_kw, cmd_obj in bot.sys_cmd_dict.iteritems():
+        for cmd_obj in bot.sys_cmd_dict.itervalues():
             if text.startswith(text_msg_handler.CH_HEAD + cmd_obj.headers[1]) or text.startswith(text_msg_handler.EN_HEAD + cmd_obj.headers[0]):
                 cmd_data = cmd_obj
                 break
