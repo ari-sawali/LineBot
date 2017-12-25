@@ -30,6 +30,8 @@
     <Content Include="templates\LaTeX.html" />
     <Content Include="templates\StickerRanking.html" />
     <Content Include="templates\WebPage.html" />
+    <Content Include="tool\currency\ctynccy.txt.gz" />
+    <Content Include="tool\currency\pli.txt.gz" />
     <Content Include="tool\weather\cityids\097-102.txt.gz" />
     <Content Include="tool\weather\cityids\103-108.txt.gz" />
     <Content Include="tool\weather\cityids\109-114.txt.gz" />
@@ -51,7 +53,16 @@
     <Compile Include="bot\email\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="bot\msg_handler\game_msg.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="bot\msg_handler\global_handler.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\msg_handler\misc.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bot\msg_handler\spec_text.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="db\base.py" />
@@ -75,9 +86,11 @@
     <Compile Include="ext.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="tool\curr_exc\exceptions.py" />
-    <Compile Include="tool\curr_exc\exchange.py" />
-    <Compile Include="tool\curr_exc\__init__.py" />
+    <Compile Include="tool\currency\ctynccy.py" />
+    <Compile Include="tool\currency\exceptions.py" />
+    <Compile Include="tool\currency\exchange.py" />
+    <Compile Include="tool\currency\pli.py" />
+    <Compile Include="tool\currency\__init__.py" />
     <Compile Include="imgur\client.py" />
     <Compile Include="imgur\helpers\error.py" />
     <Compile Include="imgur\helpers\format.py" />
@@ -144,7 +157,7 @@
   <ItemGroup>
     <Folder Include="bot\" />
     <Folder Include="bot\email\" />
-    <Folder Include="tool\curr_exc\" />
+    <Folder Include="C:\Users\RaenonX\OneDrive\SkyDrive\Programming Projects\LineBot\tool\currency\" />
     <Folder Include="db\" />
     <Folder Include="imgur\" />
     <Folder Include="imgur\helpers\" />
@@ -154,6 +167,7 @@
     <Folder Include="templates\" />
     <Folder Include="static\" />
     <Folder Include="tool\" />
+    <Folder Include="tool\currency\" />
     <Folder Include="tool\weather\" />
     <Folder Include="tool\weather\cityids\" />
   </ItemGroup>

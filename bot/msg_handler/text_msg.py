@@ -8,77 +8,36 @@ import re
 from flask import request, url_for
 import pymongo
 import ast
-from linebot.models import TextSendMessage
 
 import tool
 from error import error
 import bot, db, ext
 
-class special_text_handler(object):
-    def __init__(self, mongo_db_uri, line_api_wrapper, weather_reporter):
-        self._line_api_wrapper = line_api_wrapper
-        self._weather_reporter = weather_reporter
-        self._weather_config = db.weather_report_config(mongo_db_uri)
-        self._system_stats = db.system_statistics(mongo_db_uri)
+from .misc import *
 
-        self._special_keyword = {
-            u'天氣': (self._handle_text_spec_weather, (False,)),
-            u'詳細天氣': (self._handle_text_spec_weather, (True,))
-        }
-
-    def handle_text(self, event):
-        """Return replied or not."""
-        token = event.reply_token
-        msg_text = event.message.text
-
-        uid = bot.line_api_wrapper.source_user_id(event.source)
-
-        spec = self._special_keyword.get(msg_text, None)
-        
-        if spec is not None:
-            spec_func, spec_param = spec
-            rep_text = spec_func(*(spec_param + (uid,)))
-
-            if isinstance(rep_text, (str, unicode)):
-                self._line_api_wrapper.reply_message_text(token, rep_text)
-            else:
-                self._line_api_wrapper.reply_message(token, rep_text)
-
-            return True
-
-        return False
-
-    def _handle_text_spec_weather(self, detailed, uid):
-        self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
-
-        config_data = self._weather_config.get_config(uid) 
-        if config_data is not None and len(config_data.config) > 0:
-            ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
-
-            return u'\n==========\n'.join(ret)
-        else:
-            command_head = bot.msg_handler.text_msg_handler.HEAD + u'天氣查詢 '
-
-            template_title = u'快速天氣查詢'
-            template_title_alt = u'快速天氣查詢樣板，請使用手機查看。'
-            template_actions = { 
-                tool.weather.owm.DEFAULT_TAICHUNG.name: command_head + str(tool.weather.owm.DEFAULT_TAICHUNG.id),
-                tool.weather.owm.DEFAULT_TAIPEI.name: command_head + str(tool.weather.owm.DEFAULT_TAIPEI.id),
-                tool.weather.owm.DEFAULT_KAOHSIUNG.name: command_head + str(tool.weather.owm.DEFAULT_KAOHSIUNG.id),
-                tool.weather.owm.DEFAULT_HONG_KONG.name: command_head + str(tool.weather.owm.DEFAULT_HONG_KONG.id),
-                tool.weather.owm.DEFAULT_KUALA_LUMPER.name: command_head + str(tool.weather.owm.DEFAULT_KUALA_LUMPER.id),
-                tool.weather.owm.DEFAULT_MACAU.name: command_head + str(tool.weather.owm.DEFAULT_MACAU.id)
-            }
-
-            if detailed:
-                template_actions = { k: v + (u'詳' if detailed else u'簡') for k, v in template_actions.iteritems() }
-
-            return bot.line_api_wrapper.wrap_template_with_action(template_actions, template_title_alt, template_title)
+# 收參數
+# 檢查
+# 打包
+# 執行
+# 輸出
+# 
+# pack_result (message, success, param)
+# exec_result (message)
+# 
+# if type == CH:
+# 	pack_result = pack_func_CH(param) -> check in pack
+# elif type == EN:
+# 	pack_result = pack_func_EN(param) -> check in pack
+# else:
+# 	raise Error
+# 
+# if not pack_result.success:
+# 	return pack_result.message
+# 
+# exec_result = exec_func(pack_result.param)
+# return exec_result.message
 
 class text_msg_handler(object):
-    # TODO: Check and modify all codes that will create shortcut action (see references of line_api_wrapper.wrap_template_with_action)
-    # TODO: https://pypi.python.org/pypi/economics/
-
     HEAD = u'小水母 '
     REMOTE_SPLITTER = u'\n'
 
@@ -108,6 +67,8 @@ class text_msg_handler(object):
         self._weather_config = db.weather_report_config(mongo_db_uri)
         self._weather_id_reg = tool.weather.weather_reporter.CITY_ID_REGISTRY
         self._sticker_dl = tool.line_sticker_downloader(file_tmp_path)
+        self._pli = tool.currency.pypli()
+        self._ctyccy = tool.currency.countries_and_currencies()
         
         self._pymongo_client = None
         
@@ -283,30 +244,25 @@ class text_msg_handler(object):
 
         return result_data, expr
 
+    def _reg_mongo(self):
+        if self._pymongo_client is None:
+            self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
+
     def _S(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
-        regex_list = [ur'小水母 DB ?資料庫(.+)(?<! ) ?主指令(.+)(?<! ) ?主參數(.+)(?<! ) ?參數(.+)(?<! )']
+        regex_list = [ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
         if regex_result is None:
             return
 
-        if self._pymongo_client is None:
-            self._pymongo_client = pymongo.MongoClient(self._mongo_uri)
+        self._reg_mongo()
 
         if regex_result.match_at == 0:
-            db_name = regex_result.group(1)
-            main_cmd = regex_result.group(2)
-            main_prm = regex_result.group(3)
-            prm_dict = regex_result.group(4)
-
-            try:
-                prm_dict = ast.literal_eval(prm_dict)
-            except ValueError as ex:
-                return error.main.miscellaneous(u'參數4字串型別分析失敗。\n{}\n\n訊息: {}'.format(prm_dict, ex.message))
-
-            if not isinstance(prm_dict, dict):
-                return error.main.miscellaneous(u'輸入參數必須是合法dictionary型別。{}'.format(type(prm_dict)))
+            db_name = param_checker.conv_unicode(regex_result.group(1))
+            main_cmd = param_checker.conv_unicode(regex_result.group(2))
+            main_prm = param_checker.conv_unicode(regex_result.group(3))
+            prm_dict = param_checker.check_dict(regex_result.group(4))
 
             text = u'目標資料庫:\n{}\n'.format(db_name)
             text += u'資料庫主指令:\n{}\n'.format(main_cmd)
@@ -326,9 +282,9 @@ class text_msg_handler(object):
     
     def _A(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = [ur'小水母 置頂 ?(\s|附加(.+)(?<! ))? ?(收到 ?(.+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?(.+)(?<! )|回圖 ?(https://.+)|回貼 ?(\d+))']
+            regex_list = [ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
         else:
-            regex_list = [ur'小水母 記住 ?(\s|附加(.+)(?<! ))? ?(收到 ?(.+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?(.+)(?<! )|回圖 ?(https://.+)|回貼 ?(\d+))']
+            regex_list = [ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -400,9 +356,9 @@ class text_msg_handler(object):
     
     def _D(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|.+)']
+            regex_list = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
         else:
-            regex_list = [ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|.+)']
+            regex_list = [ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -454,7 +410,7 @@ class text_msg_handler(object):
                       ur'小水母 找 ?ID範圍 ?(\d+)(到|~)(\d+)',
                       ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
                       ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
-                      ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|.+)']
+                      ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -484,7 +440,7 @@ class text_msg_handler(object):
                       ur'小水母 詳細找 ?ID範圍 ?(\d+)(到|~)(\d+)',
                       ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
                       ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的', 
-                      ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|.+)']
+                      ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -509,7 +465,7 @@ class text_msg_handler(object):
         return text
     
     def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|.+)到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)', 
+        regex_list = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)', 
                       ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
@@ -605,8 +561,8 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'X2', regex_result.match_at, regex_result.regex))
         
     def _E(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|.+)跟(.+)(無|有)關', 
-                      ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|.+)(不)?置頂']
+        regex_list = [ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)跟((?:.|\n)+)(無|有)關', 
+                      ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(不)?置頂']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -972,7 +928,7 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'SHA', regex_result.match_at, regex_result.regex))
     
     def _O(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = [ur'小水母 查(\w+)']
+        regex_list = [ur'小水母 查 ?(\w+)']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -985,14 +941,14 @@ class text_msg_handler(object):
             if not self._oxford_dict.enabled:
                 return error.oxford_api.disabled()
             else:
-                return bot.oxford_api_wrapper.json_to_string(self._oxford_dict.get_data_json(voc))
+                return bot.oxford_api_wrapper.json_to_string(voc, self._oxford_dict.get_data_json(voc))
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'O', regex_result.match_at, regex_result.regex))
     
     def _RD(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = [ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', 
-                      ur'小水母 抽 ?(.+)', 
-                      ur'小水母 抽 ?([\d-]+)到([\d-]+)']
+                      ur'小水母 抽 ?((?:.|\n)+) ?((\d{1,6})次)?', 
+                      ur'小水母 抽 ?(\d+)(到|~)(\d+)']
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1008,9 +964,13 @@ class text_msg_handler(object):
 
             return tool.random_drawer.draw_probability_string(probability, True, scout_count, 3)
         elif regex_result.match_at == 1:
-            texts = regex_result.group(1)
+            times = ext.string_to_int(regex_result.group(2))
+            texts = regex_result.group(3)
 
-            return tool.random_gen.random_drawer.draw_text_string(texts.split(self._array_separator))
+            if times is None:
+                times = 1
+
+            return tool.random_gen.random_drawer.draw_text_string(texts.split(self._array_separator), times)
         elif regex_result.match_at == 2:
             start_index = ext.string_to_int(regex_result.group(1))
             end_index = ext.string_to_int(regex_result.group(2))
@@ -1091,7 +1051,7 @@ class text_msg_handler(object):
     def _T(self, src, execute_in_gid, group_config_type, executor_permission, text):
         from urllib import quote_plus
 
-        regex_list = [ur'小水母 編碼(.+)']
+        regex_list = [ur'小水母 編碼((?:.|\n)+)']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1105,7 +1065,6 @@ class text_msg_handler(object):
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'T', regex_result.match_at, regex_result.regex))
     
-    # + CPI
     def _C(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = [ur'小水母 匯率(可用)?', 
                       ur'小水母 匯率([A-Z ]{3,})', 
@@ -1121,33 +1080,57 @@ class text_msg_handler(object):
             is_requesting_available_currencies = regex_result.group(1) is not None
 
             if is_requesting_available_currencies:
-                return tool.curr_exc.oxr.available_currencies_str(self._oxr_client.get_available_currencies_dict())
+                return tool.currency.oxr.available_currencies_str(self._oxr_client.get_available_currencies_dict())
             else:
-                return tool.curr_exc.oxr.latest_str(self._oxr_client.get_latest_dict())
+                return tool.currency.oxr.latest_str(self._oxr_client.get_latest_dict())
         elif regex_result.match_at == 1:
             currencies = regex_result.group(1)
 
-            return tool.curr_exc.oxr.latest_str(self._oxr_client.get_latest_dict(currencies))
+            return tool.currency.oxr.latest_str(self._oxr_client.get_latest_dict(currencies))
         elif regex_result.match_at == 2:
             historical_date = regex_result.group(2) + regex_result.group(3) + regex_result.group(4)
             currencies = regex_result.group(6)
 
             if currencies is not None:
-                return tool.curr_exc.oxr.historical_str(self._oxr_client.get_historical_dict(historical_date, currencies))
+                return tool.currency.oxr.historical_str(self._oxr_client.get_historical_dict(historical_date, currencies))
             else:
-                return tool.curr_exc.oxr.historical_str(self._oxr_client.get_historical_dict(historical_date))
+                return tool.currency.oxr.historical_str(self._oxr_client.get_historical_dict(historical_date))
         elif regex_result.match_at == 3:
             source_currency = regex_result.group(1)
             amount = regex_result.group(2)
             target_currency = regex_result.group(3)
 
-            return self._oxr_client.convert(source_currency, target_currency, amount).formatted_string
+            ret = []
+
+            conv_result = self._oxr_client.convert(source_currency, target_currency, amount)
+            ret.append(conv_result.formatted_string)
+            ret.append(u'')
+            ret.append(u'等物價水平換算:')
+
+            country_entries_source = self._ctyccy.get_country_entry(currency_codes=source_currency)
+            country_entries_target = self._ctyccy.get_country_entry(currency_codes=target_currency)
+            plis_source = self._pli.get_pli(country_codes=[ce_s.get_data(tool.currency.country_entry_column.CountryCode) for ce_s in country_entries_source])
+            plis_target = self._pli.get_pli(country_codes=[ce_t.get_data(tool.currency.country_entry_column.CountryCode) for ce_t in country_entries_target])
+
+            for pli_s in plis_source:
+                for pli_t in plis_target:
+                    ret.append(u'於{} ({})換算至{} ({})'.format(pli_s.get_data(tool.currency.pli_category.CountryName), source_currency, pli_t.get_data(tool.currency.pli_category.CountryName), target_currency))
+                    cat_to_calc = [tool.currency.pli_category.Health, tool.currency.pli_category.Transport, tool.currency.pli_category.Education]
+
+                    for cat in cat_to_calc:
+                        pli_comp = pli_t.get_data(cat) / pli_s.get_data(cat)
+                        actual_amount = amount * conv_result.result * pli_comp
+                        
+                        ret.append(u'{}: 約{} {}'.format(unicode(cat), target_currency, actual_amount))
+                    ret.append(u'')
+
+            return u'\n'.join(ret)
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'T', regex_result.match_at, regex_result.regex))
              
     def _FX(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = [ur'小水母 解因式分解 ?([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
-                      ur'小水母 解方程式 ?(變數(.+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
+                      ur'小水母 解方程式 ?(變數((?:.|\n)+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
 
@@ -1200,7 +1183,7 @@ class text_msg_handler(object):
             search_desc = u'搜尋字詞: {} (共{}筆結果)'.format(location_keyword, search_result_count)
             if len(search_result) > 0:
                 result_arr = [search_desc] + [u'{} - {}'.format(id, u'{}, {}'.format(city_name, country_code)) for id, city_name, country_code in search_result]
-                action_dict = { str(id): text_msg_handler.HEAD + u'查詢' + str(id) for id, city_name, country_code in search_result_simp }
+                action_dict = { str(id): text_msg_handler.HEAD + u'天氣查詢ID ' + str(id) for id, city_name, country_code in search_result_simp }
                 return [bot.line_api_wrapper.wrap_template_with_action(action_dict, u'搜尋結果快速查詢樣板', u'快速查詢樣板，請參考搜尋結果點選'),
                         bot.line_api_wrapper.wrap_text_message(u'\n'.join(result_arr), self._webpage_generator)]
             else:
@@ -1211,11 +1194,11 @@ class text_msg_handler(object):
             if isinstance(station_ids, int):
                 station_ids = [station_ids]
 
-            hr_range = regex_result.group(5)
+            hr_range = ext.string_to_int(regex_result.group(5))
             if hr_range is None:
                 hr_range = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_DATA_RANGE_HR)
 
-            hr_freq = regex_result.group(7)
+            hr_freq = ext.string_to_int(regex_result.group(7))
             if hr_freq is None:
                 hr_freq = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_INTERVAL_HR)
 
@@ -1243,7 +1226,7 @@ class text_msg_handler(object):
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'W', regex_result.match_at, regex_result.regex))
              
-    def _DL(self, src, execute_in_gid, group_config_type, executor_permission, text):
+    def _DL(self, src, execute_in_gid, group_config_type, executor_permission, text): 
         regex_list = [ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?']
         
         regex_result = tool.regex_finder.find_match(regex_list, text)
@@ -1325,141 +1308,47 @@ class text_msg_handler(object):
     def can_try_handle(full_text):
         return full_text.startswith(text_msg_handler.HEAD) or bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
 
-class game_msg_handler(object):
-    HEAD = u'小遊戲 '
-    SPLITTER = u'\n'
+# UNDONE
+class param_pack(object):
+    class func_S_type(ext.EnumWithName):
+        DB_CONTROL = 1, '控制資料庫'
 
-    def __init__(self, mongo_db_uri, line_api_wrapper):
-        self._rps_holder = db.rps_holder(mongo_db_uri)
-        self._line_api_wrapper = line_api_wrapper
-        
-    def handle_text(self, event, user_permission):
-        """Return whether message has been replied"""
-        token = event.reply_token
-        text = unicode(event.message.text)
-        src = event.source
+    class func_S(object):
+        pass
 
-        src_uid = bot.line_api_wrapper.source_user_id(src)
+    class func_A(object):
+        pass
 
-        if user_permission == bot.permission.RESTRICTED:
-            self._line_api_wrapper.reply_message_text(token, error.permission.user_is_resticted())
-            return True
+class param_checker(object):
+    @staticmethod
+    def check_dict(obj):
+        try:
+            obj = ast.literal_eval(obj)
 
-        cmd_data = None
-        for cmd_kw, cmd_obj in bot.game_cmd_dict.iteritems():
-            if text.startswith(game_msg_handler.HEAD + cmd_kw):
-                cmd_data = cmd_obj
-                break
+            if not isinstance(obj, dict):
+                return param_check_result(error.main.miscellaneous(u'輸入參數必須是合法dictionary型別。({})'.format(type(obj))), False)
 
-        if cmd_data is None:
-            print 'Called an not existed command.'
-            return False
-
-        cmd_function = getattr(self, '_{}'.format(cmd_data.function_code))
-
-        handle_result = cmd_function(src, user_permission, text)
-        if handle_result is None:
-            return self._line_api_wrapper.reply_message_text(token, error.sys_command.syntax_error(cmd_data.function_code))
-        else:
-            if isinstance(handle_result, (str, unicode)):
-                self._line_api_wrapper.reply_message_text(token, handle_result)
-                return True
-            else:
-                self._line_api_wrapper.reply_message(token, handle_result)
-                return True
-
-        return False
-    
-    def _RPS(self, src, executor_permission, text):
-        regex_list = [ur'小遊戲 猜拳(狀況|啟用|停用|重設|註冊|結束)',
-                      ur'小遊戲 猜拳開始 ?(\d+) (\d+) (\d+)',
-                      ur'小遊戲 猜拳代表 ?(剪刀|石頭|布) ?((貼圖) ?(\d+)|(\w+))']
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-        
-        executor_cid = bot.line_api_wrapper.source_channel_id(src)
-        executor_uid = bot.line_api_wrapper.source_user_id(src)
-
-        if regex_result.match_at == 0:
-            action = regex_result.group(1)
-
-            if action == u'狀況':
-                return self._rps_holder.game_statistics(executor_cid)
-            elif action == u'啟用':
-                return self._rps_holder.set_enabled(executor_cid, True)
-            elif action == u'停用':
-                return self._rps_holder.set_enabled(executor_cid, True)
-            elif action == u'重設':
-                return self._rps_holder.reset_statistics(executor_cid)
-            elif action == u'結束':
-                return self._rps_holder.delete_game(executor_cid)
-            elif action == u'註冊':
-                try:
-                    player_name = self._line_api_wrapper.profile_name(executor_uid)
-                except bot.UserProfileNotFoundError:
-                    return error.line_bot_api.unable_to_receive_user_id()
-
-                if bot.line_api_wrapper.is_valid_user_id(executor_uid):
-                    return self._rps_holder.register_player(executor_cid, executor_uid, player_name)
-                else:
-                    return error.line_bot_api.unable_to_receive_user_id()
-            else:
-                return error.sys_command.action_not_implemented(u'RPS', regex_result.match_at, action)
-        elif regex_result.match_at == 1:
-            scissor = regex_result.group(1)
-            rock = regex_result.group(2)
-            paper = regex_result.group(3)
-
-            try:
-                creator_name = self._line_api_wrapper.profile_name(executor_uid)
-            except bot.UserProfileNotFoundError:
-                return error.line_bot_api.unable_to_receive_user_id()
-
-            return self._rps_holder.create_game(executor_cid, executor_uid, creator_name, rock, paper, scissor)
-        elif regex_result.match_at == 2:
-            repr_dict = { u'剪刀': db.battle_item.SCISSOR, u'石頭': db.battle_item.ROCK, u'布': db.battle_item.PAPER }
-            repr = repr_dict.get(regex_result.group(1))
-            if repr is None:
-                return error.sys_command.action_not_implemented(u'RPS', regex_result.match_at, repr)
-
-            is_sticker = regex_result.group(3) is not None
-
-            if is_sticker:
-                repr_content = regex_result.group(4)
-            else:
-                repr_content = regex_result.group(5)
-                
-            return self._rps_holder.register_battleitem(executor_cid, repr_content, is_sticker, repr)
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'RPS', regex_result.match_at, regex_result.regex))
+            return param_check_result(obj, True)
+        except ValueError as ex:
+            return param_check_result(error.main.miscellaneous(u'參數4字串型別分析失敗。\n{}\n\n訊息: {}'.format(prm_dict, ex.message)), False)
 
     @staticmethod
-    def can_try_handle(full_text):
-        return full_text.startswith(game_msg_handler.HEAD)
- 
-def split(text, splitter, size):
-    list = []
+    def conv_unicode(obj):
+        try:
+            return param_check_result(unicode(obj), True)
+        except Exception as ex:
+            return param_check_result(u'{} - {}'.format(type(ex), ex.message), False)
 
-    if text is not None:
-        for i in range(size):
-            if splitter not in text or i == size - 1:
-                list.append(text)
-                break
-            list.append(text[0:text.index(splitter)])
-            text = text[text.index(splitter)+len(splitter):]
 
-    while len(list) < size:
-        list.append(None)
-    
-    return list
+class param_check_result(object):
+    def __init__(self, ret, success):
+        self._ret = ret
+        self._success = success
 
-class ActionNotImplemented(Exception):
-    def __init__(self, *args):
-        return super(ActionNotImplemented, self).__init__(*args)
+    @property
+    def ret(self):
+        return self._ret
 
-class RegexNotImplemented(Exception):
-    def __init__(self, *args):
-        return super(RegexNotImplemented, self).__init__(*args)
+    @property
+    def success(self):
+        return self._success

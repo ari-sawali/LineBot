@@ -3,6 +3,8 @@
 import random
 import string
 import scipy.special
+from scipy.stats import norm
+from math import sqrt
 
 class random_drawer(object):
     @staticmethod
@@ -22,9 +24,9 @@ class random_drawer(object):
         return random.choice(item_list)
 
     @staticmethod
-    def draw_text_string(text_list):
-        result = random_drawer.draw_from_list(text_list)
-        return u'抽選項目【{}】\n抽選結果【{}】'.format(u'、'.join(text_list), result)
+    def draw_text_string(text_list, count=1):
+        results = [random_drawer.draw_from_list(text_list) for i in range(count)]
+        return u'抽選項目【{}】\n抽選結果:\n{}'.format(u'、'.join(text_list), u'\n'.join([u'{}. {}'.format(i, result) for i, result in enumerate(results, start=1)]))
 
     @staticmethod
     def draw_probability(probability, is_value=True):
@@ -35,14 +37,20 @@ class random_drawer(object):
     @staticmethod
     def draw_probability_string(probability, is_value=True, count=1, prediction_count=2):
         probability = float(probability)
-        count = int(count)
         if is_value:
             probability /= 100.0
+
+        count = int(count)
         result_list = {i: random_drawer.draw_probability(probability, False) for i in range(1, count + 1)}
         shot_count = sum(x for x in result_list.values())
         miss_count = count - shot_count
+        
+        variance = count * probability * (1 - probability)
+        sd = sqrt(variance)
+        cdf = norm.cdf((shot_count - probability*count) / sd)
 
-        text = u'抽選機率【{:.2%}】'.format(probability)
+        text = u'機率抽選【{:.2%}、{}次】，期望值【中{:.0f}次】'.format(probability, count, round(probability * count))
+        text += u'\n方差【{}】'.format(variance)
         text += u'\n抽選結果【中{}次 | 失{}次】'.format(shot_count, miss_count)
         text += u'\n中選位置【{}】'.format(u'、'.join([str(key) for key, value in result_list.iteritems() if value]))
         text += u'\n實際中率【{:.2%}】'.format(shot_count / float(len(result_list)))

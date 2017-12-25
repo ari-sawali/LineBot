@@ -107,6 +107,12 @@ def string_to_int(*args):
     except (ValueError, TypeError):
         return None
 
+def to_list(o):
+    if not isinstance(o, list):
+        o = [o]
+
+    return o
+
 def string_to_float(s):
     try:
         return float(s)

@@ -11,6 +11,5 @@ pymongo
 google-api-python-client
 pyowm
 Pillow
-economics
 geopy
-pycountry
+xlrd

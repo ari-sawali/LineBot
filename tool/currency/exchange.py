@@ -167,7 +167,6 @@ class oxr(object):
         return return_str
 
     def convert(self, source, target, amount=1, json_dict=None):
-        """return ['result'] and ['string']"""
         symbol_not_exist = lambda symbol: u'找不到貨幣單位{}的相關資料'.format(symbol)
         available_dict = self.get_available_currencies_dict()
         if amount < 0:
@@ -205,7 +204,7 @@ class oxr(object):
         target_full = available_dict.get(target, u'(無資料)')
         source_full = available_dict.get(source, u'(無資料)')
 
-        return ConvertResult(exchange_amt, u'{} {} ({})\n↓\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
+        return ConvertResult(exchange_amt, u'{} {} ({}) →\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):

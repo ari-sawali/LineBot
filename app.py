@@ -124,7 +124,7 @@ oxr_app_id = os.getenv('OXR_APP_ID', None)
 if oxr_app_id is None:
     print 'app id of open exchange (oxr) is not defined in environment variables.'
     sys.exit(1)
-oxr_client = tool.curr_exc.oxr(oxr_app_id)
+oxr_client = tool.currency.oxr(oxr_app_id)
 
 # Oxford Dictionary Environment initialization
 oxford_dict_obj = bot.oxford_api_wrapper('en')

@@ -433,7 +433,7 @@ class global_msg_handle(object):
             sticker_id = event.message.sticker_id
             package_id = event.message.package_id
 
-            action_dict = { '貼圖包下載 - {}'.format(package_id): text_msg_handler.HEAD + text_msg_handler.SPLITTER + 'DL' + text_msg_handler.SPLITTER + str(package_id) }
+            action_dict = { '貼圖包下載 - {}'.format(package_id): text_msg_handler.HEAD + u'下載貼圖圖包 ' + str(package_id) }
             
             reply_data = [
                 bot.line_api_wrapper.wrap_text_message(u'貼圖圖包ID: {}\n貼圖圖片ID: {}'.format(package_id, sticker_id), self._webpage_generator),
@@ -672,9 +672,10 @@ class global_msg_handle(object):
         else:
             raise NotImplementedError(src_type)
 
-        reply_text = self._weather_reporter.get_data_by_coord(tool.weather.Coordinate(latitude, longitude), op_config, 12)
+        reply_text = self._weather_reporter.get_data_by_coord(tool.weather.Coordinate(latitude, longitude), op_config, 3, 9)
         if reply_text is not None:
             self._system_stats.extend_function_used(db.extend_function_category.REQUEST_WEATHER_REPORT)
+
             self._line_api_wrapper.reply_message_text(token, reply_text)
             return True
 

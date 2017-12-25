@@ -557,12 +557,12 @@ class oxford_api_wrapper(object):
             raise RuntimeError(error.error.main.miscellaneous(u'Oxford dictionary not enabled.').encode('utf-8'))
 
     @staticmethod
-    def json_to_string(json):
+    def json_to_string(voc, json):
         if type(json) is int:
             code = json
 
             if code == 404:
-                text_list = [error.error.oxford_api.no_result()]
+                text_list = [error.error.oxford_api.no_result(voc)]
             else:
                 text_list = [error.error.oxford_api.err_with_status_code(code)]
         else:
