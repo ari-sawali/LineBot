@@ -1364,12 +1364,12 @@ class packer_factory(object):
                               EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))')]
 
     _M = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex='小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+                              CH_regex=ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
           param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
                               EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
 
     _A = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex='小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
+                              CH_regex=ur'小水母 記住 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
           param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
                               EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d)|P\n(https://.+))\n(T\n(.+)|S\n(\d)|P\n(https://.+))(?:\n(.+))?')]
 
