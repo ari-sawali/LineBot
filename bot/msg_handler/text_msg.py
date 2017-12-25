@@ -250,7 +250,7 @@ class text_msg_handler(object):
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
-                return
+                pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
@@ -342,7 +342,7 @@ class text_msg_handler(object):
         if self._A_is_auto_detect(packing_result):
             return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.RCV_CONTENT], False)
         else:
-            return ext.action_result([param_packer.func_A.param_category.RCV_TYPE], True)
+            return ext.action_result(param_dict[param_packer.func_A.param_category.RCV_TYPE], True)
 
     def _A_get_rep_type(self, packing_result):
         param_dict = packing_result.result
