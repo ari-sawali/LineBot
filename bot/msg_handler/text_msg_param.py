@@ -53,7 +53,7 @@ class param_packer_base(object):
 
             return param_packing_result(p_dict, param_packing_result_status.ALL_PASS)
         else:
-            return param_packing_result(p_dict, param_packing_result_status.NO_MATCH)
+            return param_packing_result(None, param_packing_result_status.NO_MATCH)
 
 class param_packing_result_status(ext.EnumWithName):
     ALL_PASS = 1, '全通過'

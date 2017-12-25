@@ -1300,7 +1300,7 @@ class param_packer(object):
                 prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
                             parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
                             parameter(param_packer.func_S.param_category.MAIN_PRM, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.conv_unicode)]
+                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.check_dict)]
             else:
                 raise UndefinedCommandCategoryException()
 
