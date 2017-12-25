@@ -218,11 +218,11 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            if param_validator.validate_https(obj).valid or param_validator.validate_sha224(obj).valid:
+            if param_validator.validate_https(obj, allow_null).valid or param_validator.validate_sha224(obj, allow_null).valid:
                 ret = db.word_type.PICTURE
-            elif param_validator.conv_int(obj).valid:
+            elif param_validator.conv_int(obj, allow_null).valid:
                 ret = db.word_type.STICKER
-            elif param_validator.conv_unicode(obj).valid:
+            elif param_validator.conv_unicode(obj, allow_null).valid:
                 ret = db.word_type.TEXT
             else:
                 return param_validation_result(u'Object cannot be determined to any type. ({})'.format(obj), False)
