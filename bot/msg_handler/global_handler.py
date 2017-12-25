@@ -5,7 +5,10 @@ from linebot.models import (
     TextMessage, StickerMessage, ImageMessage, VideoMessage, AudioMessage, LocationMessage
 )
 
-from .text_msg import text_msg_handler, game_msg_handler, split
+from .text_msg import text_msg_handler
+from .game_msg import game_msg_handler
+from .misc import split
+
 import db, bot, ext, tool, error
 
 class global_msg_handle(object):
