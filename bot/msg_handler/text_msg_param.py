@@ -8,7 +8,7 @@ import ext, db
 import tool
 
 class param_packer_base(object):
-    def __init__(self, CH_regex, EN_regex, command_category, param_objs):
+    def __init__(self, command_category, param_objs, CH_regex=None, EN_regex=None):
         """
         Parameters:
             CH_regex: chinese regex to check.
@@ -18,6 +18,10 @@ class param_packer_base(object):
         """
         self._CH = CH_regex
         self._EN = EN_regex
+
+        if self._CH is None and self._EN is None:
+            raise ValueError('Must specify at least one regex.')
+
         self._cat = command_category
         self._param_objs = param_objs
 

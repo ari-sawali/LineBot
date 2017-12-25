@@ -1296,7 +1296,7 @@ class param_packer(object):
         def __init__(self, CH_regex, EN_regex, command_category):
             prm_objs = self._get_prm_objs(command_category)
 
-            super(param_packer.func_S, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+            super(param_packer.func_S, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_S.command_category.DB_COMMAND:
@@ -1329,7 +1329,7 @@ class param_packer(object):
         def __init__(self, CH_regex, EN_regex, command_category):
             prm_objs = self._get_prm_objs(command_category)
 
-            super(param_packer.func_A, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+            super(param_packer.func_A, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_A.command_category.ADD_PAIR_CH:
