@@ -231,6 +231,6 @@ class ConvertResult(object):
         return self._formatted_string
     
     @property
-    def rate(self)
+    def rate(self):
         return self._rate
         
