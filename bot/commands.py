@@ -34,7 +34,7 @@ class command_object(object):
     @property
     def headers(self):
         """Headers of the command. (list)"""
-        return self._heads
+        return self._headers
 
     @property
     def remotable(self):
