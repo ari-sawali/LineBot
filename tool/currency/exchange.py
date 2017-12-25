@@ -170,13 +170,13 @@ class oxr(object):
         symbol_not_exist = lambda symbol: u'找不到貨幣單位{}的相關資料'.format(symbol)
         available_dict = self.get_available_currencies_dict()
         if amount < 0:
-            return ConvertResult(-1, error.error.main.miscellaneous(u'貨幣轉換基底量需大於0。'))
+            return ConvertResult(-1, -1, error.error.main.miscellaneous(u'貨幣轉換基底量需大於0。'))
 
         if json_dict is None:
             if target not in available_dict:
-                return ConvertResult(-1, error.error.main.miscellaneous(symbol_not_exist(target)))
+                return ConvertResult(-1, -1, error.error.main.miscellaneous(symbol_not_exist(target)))
             elif source not in available_dict:
-                return ConvertResult(-1, error.error.main.miscellaneous(symbol_not_exist(source)))
+                return ConvertResult(-1, -1, error.error.main.miscellaneous(symbol_not_exist(source)))
 
             data_json_dict = self.get_latest_dict(','.join([source, target]))
             timestamp = data_json_dict.get('timestamp', None)
@@ -196,7 +196,7 @@ class oxr(object):
             target_rate = data_dict[target]
             source_rate = data_dict[source]
         except KeyError as e:
-            return ConvertResult(-1, symbol_not_exist(e.message))
+            return ConvertResult(-1, -1, symbol_not_exist(e.message))
 
         exchange_rate = target_rate / float(source_rate)
         exchange_amt = exchange_rate * float(amount)
@@ -204,7 +204,7 @@ class oxr(object):
         target_full = available_dict.get(target, u'(無資料)')
         source_full = available_dict.get(source, u'(無資料)')
 
-        return ConvertResult(exchange_amt, u'{} {} ({}) →\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
+        return ConvertResult(exchange_rate, exchange_amt, u'{} {} ({}) →\n{} {} ({})\n\n根據{} (UTC)時的匯率計算。'.format(amount, source, source_full, exchange_amt, target, target_full, timestamp))
 
     @staticmethod
     def is_legal_symbol_text(symbol_text):
@@ -217,9 +217,10 @@ class oxr(object):
             return False
 
 class ConvertResult(object):
-    def __init__(self, result, formatted_string):
+    def __init__(self, rate, result, formatted_string):
         self._result = result
         self._formatted_string = formatted_string
+        self._rate = rate
 
     @property
     def result(self):
@@ -228,4 +229,8 @@ class ConvertResult(object):
     @property
     def formatted_string(self):
         return self._formatted_string
+    
+    @property
+    def rate(self)
+        return self._rate
         
