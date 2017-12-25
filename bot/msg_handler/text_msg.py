@@ -271,14 +271,30 @@ class text_msg_handler(object):
     
     def _A(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = packer_factory._M
+            packer_list = packer_factory._M
         else:
-            regex_list = packer_factory._A
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
+            packer_list = packer_factory._A
 
-        if regex_result is None:
-            return
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                self._reg_mongo()
+
+                param_dict = packing_result.result
+
+                text = self._S_generate_output_head(param_dict)
+                try:
+                    text += self._S_generate_output_mongo_result(param_dict)
+                except pymongo.errors.OperationFailure as ex:
+                    text += error.mongo_db.op_fail(ex)
+
+                return text
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return packing_result.result
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                return
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
 
         # try to get complete profile
         try:
@@ -1296,6 +1312,11 @@ class param_packer(object):
             OTHER_PRM = 4, '其餘參數'
 
         def __init__(self, CH_regex, EN_regex, command_category):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_S, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+
+        def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_S.command_category.DB_COMMAND:
                 prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
                             parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
@@ -1303,12 +1324,46 @@ class param_packer(object):
                             parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.check_dict)]
             else:
                 raise UndefinedCommandCategoryException()
+    
+    class func_A(param_packer_base):
+        class command_category(ext.EnumWithName):
+            ADD_PAIR = 1, '新增回覆組'
 
-            super(param_packer.func_S, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+        class param_category(ext.EnumWithName):
+            ATTACHMENT_TEXT = 1, '附加回覆語句'
+            ATTACHMENT = 2, '附加回覆內容'
+            RCV_ORG = 3, '接收(原始)'
+            RCV_TXT = 4, '接收(文字)'
+            RCV_STK = 5, '接收(貼圖)'
+            RCV_PIC = 6, '接收(圖片)'
+            REP_ORG = 7, '回覆(原始)'
+            REP_TXT = 8, '回覆(文字)'
+            REP_STK = 9, '回覆(貼圖)'
+            REP_PIC = 10, '回覆(圖片)'
+
+        def __init__(self, CH_regex, EN_regex, command_category):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_A, self).__init__(CH_regex, EN_regex, command_category, prm_objs)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_A.command_category.ADD_PAIR:
+                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT_TEXT, param_validator.conv_unicode), 
+                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.RCV_ORG, param_validator.conv_pair_type_from_org),  
+                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.conv_unicode),  
+                            parameter(param_packer.func_A.param_category.REP_ORG, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_pair_type_from_org), 
+                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_unicode), 
+                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.conv_unicode)]
+            else:
+                raise UndefinedCommandCategoryException()
 
 class packer_factory(object):
     _S = [param_packer.func_S(ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
-                              ur'JC\nS\n(.+)\n(.+)\n(.+)\n(.+)', 
+                              ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))', 
                               param_packer.func_S.command_category.DB_COMMAND)]
 
     _M = [ur'小水母 置頂 ?(\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))']
@@ -1331,8 +1386,8 @@ class packer_factory(object):
           ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的', 
           ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
 
-    _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)', 
-          ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?到([CR]{1}[0-9a-f]{32}|PUBLIC|這裡)']
+    _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?', 
+          ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?']
 
     _X2 = [ur'小水母 清除(於([CR]{1}[0-9a-f]{32})中)?所有的回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340']
 

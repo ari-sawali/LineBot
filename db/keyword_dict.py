@@ -15,17 +15,6 @@ class word_type(ext.EnumWithName):
     STICKER = 1, '貼圖'
     PICTURE = 2, '圖片'
 
-    @staticmethod
-    def determine_by_word(unicode_word):
-        if any(unicode_word == w for w in (u'收到', u'回答')):
-            return word_type.TEXT
-        elif any(unicode_word == w for w in (u'看到', u'回圖')):
-            return word_type.PICTURE
-        elif any(unicode_word == w for w in (u'被貼', u'回貼')):
-            return word_type.STICKER
-        else:
-            raise UnknownFlagError()
-
 class group_dict_manager_range(ext.EnumWithName):
     GROUP_ONLY = 1, '群組'
     GROUP_AND_PUBLIC = 2, '群組+公用'

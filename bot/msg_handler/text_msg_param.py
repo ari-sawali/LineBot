@@ -3,7 +3,7 @@
 import ast
 
 from error import error
-import ext
+import ext, db
 import tool
 
 class param_packer_base(object):
@@ -125,7 +125,7 @@ class param_validator(object):
 
             return param_validation_result(obj, True)
         except ValueError as ex:
-            return param_validation_result(error.main.miscellaneous(u'字串型別分析失敗。\n{}\n\n訊息: {}'.format(prm_dict, ex.message)), False)
+            return param_validation_result(error.main.miscellaneous(u'字串型別分析失敗。\n{}\n\n訊息: {}'.format(obj, ex.message)), False)
 
     @staticmethod
     def conv_unicode(obj):
@@ -133,6 +133,19 @@ class param_validator(object):
             return param_validation_result(unicode(obj), True)
         except Exception as ex:
             return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
+
+    @staticmethod
+    def conv_pair_type_from_org(obj):
+        if any(obj.startswith(w) for w in (u'收到', u'回答', u'T')):
+            ret = db.word_type.TEXT
+        elif any(obj.startswith(w) for w in (u'看到', u'回圖', u'P')):
+            ret = db.word_type.PICTURE
+        elif any(obj.startswith(w) for w in (u'被貼', u'回貼', u'S')):
+            ret = db.word_type.STICKER
+        else:
+            return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
+
+        return param_validation_result(ret, True)
 
 class param_validation_result(object):
     def __init__(self, ret, valid):
