@@ -285,7 +285,7 @@ class text_msg_handler(object):
                     return adder_uid_result.result
 
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                kwd_add_result = self._A_add_kw(kwd_instance, packing_result.result, pinned, adder_uid_result.result)
+                kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, adder_uid_result.result)
 
                 return kwd_add_result.result
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -309,12 +309,22 @@ class text_msg_handler(object):
 
         return ext.action_result(new_profile_uid, True)
 
-    def _A_add_kw(self, kwd_instance, param_dict, pinned, adder_uid):
-        rcv_content = self._A_get_rcv_content(param_dict)
-        rep_content = self._A_get_rep_content(param_dict)
+    def _A_add_kw(self, kwd_instance, packing_result, pinned, adder_uid):
+        param_dict = packing_result.result
+
+        rcv_type_result = self._A_get_rcv_type(packing_result)
+        rcv_content = self._A_get_rcv_content(packing_result)
+        rep_type_result = self._A_get_rep_type(packing_result)
+        rep_content = self._A_get_rep_content(packing_result)
+
+        if not rcv_type_result.success:
+            return rcv_type_result.result
+
+        if not rep_type_result.success:
+            return rep_type_result.result
 
         # create and write
-        result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, param_dict[param_packer.func_A.param_category.RCV_TYPE], param_dict[param_packer.func_A.param_category.REP_TYPE], None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
+        result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, rcv_type_result.result, rep_type_result.result, None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
 
         # check whether success
         if isinstance(result, (str, unicode)):
@@ -324,21 +334,46 @@ class text_msg_handler(object):
         else:
             raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
 
-    def _A_get_rcv_content(self, param_dict):
-        if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
-            return param_dict[param_packer.func_A.param_category.RCV_TXT]
-        elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
-            return param_dict[param_packer.func_A.param_category.RCV_STK]
-        elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
-            return param_dict[param_packer.func_A.param_category.RCV_PIC]
+    def _A_is_auto_detect(self, packing_result):
+        return any(packing_result.command_category == cat for cat in (param_packer.func_A.command_category.ADD_PAIR_AUTO_CH, param_packer.func_A.command_category.ADD_PAIR_AUTO_EN))
 
-    def _A_get_rep_content(self, param_dict):
-        if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
-            return param_dict[param_packer.func_A.param_category.REP_TXT]
-        elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
-            return param_dict[param_packer.func_A.param_category.REP_STK]
-        elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
-            return param_dict[param_packer.func_A.param_category.REP_PIC]
+    def _A_get_rcv_type(self, packing_result):
+        param_dict = packing_result.result
+        if self._A_is_auto_detect(packing_result):
+            return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.RCV_CONTENT], False)
+        else:
+            return ext.action_result([param_packer.func_A.param_category.RCV_TYPE], True)
+
+    def _A_get_rep_type(self, packing_result):
+        param_dict = packing_result.result
+        if self._A_is_auto_detect(packing_result):
+            return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.REP_CONTENT], False)
+        else:
+            return ext.action_result(param_dict[param_packer.func_A.param_category.REP_TYPE], True)
+
+    def _A_get_rcv_content(self, packing_result):
+        param_dict = packing_result.result
+        if self._A_is_auto_detect(packing_result):
+            return param_dict[param_packer.func_A.param_category.RCV_CONTENT]
+        else:
+            if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
+                return param_dict[param_packer.func_A.param_category.RCV_TXT]
+            elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
+                return param_dict[param_packer.func_A.param_category.RCV_STK]
+            elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
+                return param_dict[param_packer.func_A.param_category.RCV_PIC]
+
+    def _A_get_rep_content(self, packing_result):
+        param_dict = packing_result.result
+        if self._A_is_auto_detect(packing_result):
+            return param_dict[param_packer.func_A.param_category.REP_CONTENT]
+        else:
+            if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
+                return param_dict[param_packer.func_A.param_category.REP_TXT]
+            elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
+                return param_dict[param_packer.func_A.param_category.REP_STK]
+            elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
+                return param_dict[param_packer.func_A.param_category.REP_PIC]
         
     def _M(self, src, execute_in_gid, group_config_type, executor_permission, text):
         return self._A(src, execute_in_gid, group_config_type, executor_permission, text, True)

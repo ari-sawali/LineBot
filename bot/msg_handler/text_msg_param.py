@@ -54,11 +54,11 @@ class param_packer_base(object):
                 if validate_result.valid:
                     p_dict[param.field_enum] = validate_result.ret
                 else:
-                    return param_packing_result(validate_result.ret, param_packing_result_status.ERROR_IN_PARAM)
+                    return param_packing_result(validate_result.ret, param_packing_result_status.ERROR_IN_PARAM, self._cat)
 
-            return param_packing_result(p_dict, param_packing_result_status.ALL_PASS)
+            return param_packing_result(p_dict, param_packing_result_status.ALL_PASS, self._cat)
         else:
-            return param_packing_result(None, param_packing_result_status.NO_MATCH)
+            return param_packing_result(None, param_packing_result_status.NO_MATCH, self._cat)
 
 class param_packing_result_status(ext.EnumWithName):
     ALL_PASS = 1, '全通過'
@@ -66,9 +66,14 @@ class param_packing_result_status(ext.EnumWithName):
     NO_MATCH = 3, '無符合'
 
 class param_packing_result(object):
-    def __init__(self, result, status):
+    def __init__(self, result, status, command_category):
         self._result = result
         self._status = status
+        self._cmd_cat = command_category
+
+    @property
+    def command_category(self):
+        return self._cmd_cat
 
     @property
     def result(self):
@@ -217,23 +222,24 @@ class param_validator(object):
                 ret = db.word_type.PICTURE
             elif param_validator.conv_int(obj).valid:
                 ret = db.word_type.STICKER
-            else:
+            elif param_validator.conv_unicode(obj).valid:
                 ret = db.word_type.TEXT
+            else:
+                return param_validation_result(u'Object cannot be determined to any type. ({})'.format(obj), False)
 
             return param_validation_result(ret, True)
 
-class param_validation_result(object):
+class param_validation_result(ext.action_result):
     def __init__(self, ret, valid):
-        self._ret = ret
-        self._valid = valid
+        super(param_validation_result, self).__init__(ret, valid)
 
     @property
     def ret(self):
-        return self._ret
+        return self._result
 
     @property
     def valid(self):
-        return self._valid
+        return self._success
 
 class UndefinedCommandCategoryException(Exception):
     def __init__(self, *args):
