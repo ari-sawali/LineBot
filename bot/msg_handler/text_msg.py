@@ -947,7 +947,7 @@ class text_msg_handler(object):
     
     def _RD(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = [ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', 
-                      ur'小水母 抽 ?((?:.|\n)+) ?((\d{1,6})次)?', 
+                      ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', 
                       ur'小水母 抽 ?(\d+)(到|~)(\d+)']
 
         regex_result = tool.regex_finder.find_match(regex_list, text)
@@ -1119,7 +1119,7 @@ class text_msg_handler(object):
 
                     for cat in cat_to_calc:
                         pli_comp = pli_t.get_data(cat) / pli_s.get_data(cat)
-                        actual_amount = amount * conv_result.result * pli_comp
+                        actual_amount = float(amount) * conv_result.result * pli_comp
                         
                         ret.append(u'{}: 約{} {}'.format(unicode(cat), target_currency, actual_amount))
                     ret.append(u'')
