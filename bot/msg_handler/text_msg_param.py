@@ -128,12 +128,6 @@ class param_validator(object):
         param_check_result. Ret of result may be an error message, or processed parameter.
     """
 
-    def __new__(cls):
-        instance = super(param_validator, cls).__new__()
-        instance.ARRAY_SEPARATOR = bot.config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
-
-        return instance
-
     @staticmethod
     def base_null(obj, allow_null):
         if allow_null and obj is None:
@@ -314,6 +308,8 @@ class param_validator(object):
                 return base
             
             return param_validation_result(obj, bot.line_api_wrapper.is_valid_room_group_id(obj, True, True))
+
+setattr(param_validator, 'ARRAY_SEPARATOR', bot.config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR))
 
 class param_validation_result(ext.action_result):
     def __init__(self, ret, valid):
