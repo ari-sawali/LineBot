@@ -1125,7 +1125,7 @@ class text_msg_handler(object):
             conv_result = self._oxr_client.convert(source_currency, target_currency, amount)
             ret.append(conv_result.formatted_string)
             ret.append(u'')
-            ret.append(u'等物價水平換算(使用指令PLI以獲得完整資訊):')
+            ret.append(u'物價水平(PLI)補正計算(使用指令PLI可獲得完整資訊):')
 
             country_entries_source = self._ctyccy.get_country_entry(currency_codes=source_currency)
             country_entries_target = self._ctyccy.get_country_entry(currency_codes=target_currency)
@@ -1134,7 +1134,7 @@ class text_msg_handler(object):
 
             for pli_s in plis_source:
                 for pli_t in plis_target:
-                    ret.append(u'於{} ({})換算至{} ({})'.format(pli_s.get_data(tool.currency.pli_category.CountryName), source_currency, pli_t.get_data(tool.currency.pli_category.CountryName), target_currency))
+                    ret.append(u'於{} (使用{})換算至{} (使用{})'.format(pli_s.get_data(tool.currency.pli_category.CountryName), source_currency, pli_t.get_data(tool.currency.pli_category.CountryName), target_currency))
                     cat_to_calc = [tool.currency.pli_category.Health, tool.currency.pli_category.Transport, tool.currency.pli_category.Education]
                     
                     for cat in cat_to_calc:
@@ -1142,7 +1142,7 @@ class text_msg_handler(object):
                         actual_amount = conv_result.result * pli_comp
                         actual_amount_trans = (1 / conv_result.rate) * actual_amount
                         
-                        ret.append(u'{}: 約{} {:.2f} ({} {:.2f})'.format(unicode(cat), target_currency, actual_amount, source_currency, actual_amount_trans))
+                        ret.append(u'{}: 約{} {:.2f} ({} {:.2f})'.format(unicode(cat), source_currency, actual_amount_trans, target_currency, actual_amount))
 
             return u'\n'.join(ret)
         else:
