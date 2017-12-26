@@ -479,7 +479,7 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 query_result = self._get_query_result(packing_result, execute_in_gid, kwd_instance, False)
 
-                return self._I_generate_output(query_result)
+                return self._I_generate_output(kwd_instance, query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
@@ -489,7 +489,7 @@ class text_msg_handler(object):
 
         regex_list = packer_factory._I
 
-    def _I_generate_output(self, query_result):
+    def _I_generate_output(self, kwd_instance, query_result):
         if query_result.success:
             max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
             
