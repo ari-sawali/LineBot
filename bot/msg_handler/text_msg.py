@@ -1539,8 +1539,8 @@ class packer_factory(object):
                               CH_regex=ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
                               EN_regex=ur'JC\nQ\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
           param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
-                              CH_regex=ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)',
-                              EN_regex=ur'JC\nQ\n((ID\n)(\d{1}[\d\s]*)|(.+))')]
+                              CH_regex=ur'小水母 找 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
+                              EN_regex=ur'JC\nQ\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _I = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
                               CH_regex=ur'小水母 詳細找 ?(?:(全部)|(可以用的))',
@@ -1555,8 +1555,8 @@ class packer_factory(object):
                               CH_regex=ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
                               EN_regex=ur'JC\nI\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
           param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
-                              CH_regex=ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)',
-                              EN_regex=ur'JC\nI\n((ID\n)(\d{1}[\d\s]*)|(.+))')]
+                              CH_regex=ur'小水母 詳細找 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
+                              EN_regex=ur'JC\nI\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?', 
           ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?']
