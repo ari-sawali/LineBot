@@ -28,7 +28,7 @@ class text_msg_handler(object):
         self._flask_app = flask_app
         self._config_manager = config_manager
 
-        self._array_separator = self._config_manager.get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
+        self._array_separator = bot.param_validator.ARRAY_SEPARATOR
 
         self._system_data = system_data
         self._system_config = db.system_config(mongo_db_uri)

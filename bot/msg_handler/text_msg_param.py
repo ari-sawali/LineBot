@@ -128,9 +128,7 @@ class param_validator(object):
         param_check_result. Ret of result may be an error message, or processed parameter.
     """
 
-    from bot import config_manager
-
-    ARRAY_SEPARATOR = config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
+    ARRAY_SEPARATOR = "  "
 
     @staticmethod
     def base_null(obj, allow_null):

@@ -14,7 +14,6 @@ class config_category(ext.EnumWithName):
 class config_category_kw_dict(ext.EnumWithName):
     CREATE_DUPLICATE = 0, 'PossibleDuplicateCDSeconds'
     REPEAT_CALL = 1, 'RepeatCallCDSeconds'
-    ARRAY_SEPARATOR = 2, 'InLineArraySeparator'
     MAX_QUERY_OUTPUT_COUNT = 3, 'MaxQueryOutputCount'
     MAX_SIMPLE_STRING_LENGTH = 4, 'MaxSimpleStringLength'
     MAX_INFO_OUTPUT_COUNT = 5, 'MaxInfoOutputCount'
