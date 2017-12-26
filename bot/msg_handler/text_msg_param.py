@@ -129,9 +129,10 @@ class param_validator(object):
     """
 
     def __new__(cls):
-        cls.ARRAY_SEPARATOR = bot.config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
+        instance = super(param_validator, cls).__new__()
+        instance.ARRAY_SEPARATOR = bot.config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
 
-        super(param_validator, cls).__new__()
+        return instance
 
     @staticmethod
     def base_null(obj, allow_null):
