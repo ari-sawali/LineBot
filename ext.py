@@ -104,12 +104,8 @@ def string_to_float(s):
 
 def to_int(obj):
     """Return None if items cannot convert to int, else return converted object"""
-    if isinstance(to_int, (list, tuple)):
-        return [int(i) for i in obj]
-    else:
-        return int(obj)
     try:
-        if isinstance(to_int, (list, tuple)):
+        if isinstance(obj, (list, tuple)):
             return [int(i) for i in obj]
         else:
             return int(obj)
