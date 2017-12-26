@@ -450,8 +450,7 @@ class global_msg_handle(object):
 
     def _handle_sticker_auto_reply(self, event, config):
         """Return whether message has been replied. THIS WILL LOG MESSAGE ACTIVITY INSIDE METHOD IF MESSAGE HAS BEEN REPLIED."""
-        full_text = event.message.sticker_id
-        reply_data = self._get_kwd_instance(event.source, config).get_reply_data(full_text, db.word_type.STICKER)
+        reply_data = self._get_kwd_instance(event.source, config).get_reply_data(unicode(event.message.sticker_id), db.word_type.STICKER)
         if reply_data is not None:
             self._handle_auto_reply(event, reply_data)
             return True
