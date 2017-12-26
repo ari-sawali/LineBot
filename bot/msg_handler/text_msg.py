@@ -180,7 +180,7 @@ class text_msg_handler(object):
             result_data = kwd_instance.search_pair_by_index(prm_dict[param_packer.func_Q.param_category.START_ID], 
                                                             prm_dict[param_packer.func_Q.param_category.END_ID])
         elif cmd_cat == param_packer.func_Q.command_category.BY_GID:
-            expr = u'搜尋範圍: 群組ID {} 內可用的回覆組'.format(prm_dict[param_packer.func_Q.param_category.GID])
+            expr = u'搜尋範圍: 群組ID {} 內專屬的回覆組'.format(prm_dict[param_packer.func_Q.param_category.GID])
             result_data = self._kwd_global.get_pairs_by_group_id(prm_dict[param_packer.func_Q.param_category.GID], True)
         elif cmd_cat == param_packer.func_Q.command_category.BY_UID:
             get_name_result = self._get_user_name(prm_dict[param_packer.func_Q.param_category.UID])
