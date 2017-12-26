@@ -129,11 +129,8 @@ class text_msg_handler(object):
     def _get_cmd_data(self, text):
         for cmd_obj in bot.sys_cmd_dict.itervalues():
             for header in cmd_obj.headers:
-                print text.startswith(text_msg_handler.EN_HEAD + header)
-                print len(text.encode('utf-8'))
-                print len(text_msg_handler.EN_HEAD + header)
-                print text[3]
-                print (text_msg_handler.EN_HEAD + header)[3].encode('utf-8')
+                print repr(text)
+                print repr((text_msg_handler.EN_HEAD + header))
                 if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
                     return cmd_obj
 
