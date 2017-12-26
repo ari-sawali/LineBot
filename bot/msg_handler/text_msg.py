@@ -54,6 +54,7 @@ class text_msg_handler(object):
         
         self._pymongo_client = None
         
+    # TODO: Modulize this
     def handle_text(self, event, user_permission, group_config_type):
         """Return whether message has been replied"""
         token = event.reply_token
@@ -293,7 +294,7 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
-                return self._A_generate_output(kwd_add_result.result)
+                return self._A_generate_output(kwd_add_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
@@ -320,13 +321,16 @@ class text_msg_handler(object):
 
         return ext.action_result(result, isinstance(result, db.pair_data))
 
-    def _A_generate_output(self, result):
-        if isinstance(result, (str, unicode)):
-            return result
-        elif isinstance(result, db.pair_data):
-            return u'回覆組新增成功。\n' + result.basic_text(True)
+    def _A_generate_output(self, kwd_add_result):
+        if kwd_add_result.success:
+            if isinstance(result, (str, unicode)):
+                return result
+            elif isinstance(result, db.pair_data):
+                return u'回覆組新增成功。\n' + result.basic_text(True)
+            else:
+                raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
         else:
-            raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
+            return u'回覆組新增失敗。\n\n{}'.format(kwd_add_result.result)
 
     def _A_is_auto_detect(self, packing_result):
         return any(packing_result.command_category == cat for cat in (param_packer.func_A.command_category.ADD_PAIR_AUTO_CH, param_packer.func_A.command_category.ADD_PAIR_AUTO_EN))
