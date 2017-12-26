@@ -323,12 +323,12 @@ class text_msg_handler(object):
 
     def _A_generate_output(self, kwd_add_result):
         if kwd_add_result.success:
-            if isinstance(result, (str, unicode)):
+            if isinstance(kwd_add_result.result, (str, unicode)):
                 return result
-            elif isinstance(result, db.pair_data):
-                return u'回覆組新增成功。\n' + result.basic_text(True)
+            elif isinstance(kwd_add_result.result, db.pair_data):
+                return u'回覆組新增成功。\n' + kwd_add_result.result.basic_text(True)
             else:
-                raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
+                raise ValueError('Unhandled type of return result. ({} - {})'.format(type(kwd_add_result.result), kwd_add_result.result))
         else:
             return u'回覆組新增失敗。\n\n{}'.format(kwd_add_result.result)
 

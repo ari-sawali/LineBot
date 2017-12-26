@@ -214,7 +214,7 @@ class param_validator(object):
         new_int = ext.to_int(obj)
 
         if new_int is not None:
-            return param_validation_result(new_int, False)
+            return param_validation_result(new_int, True)
         else:
             return param_validation_result(error.sys_command.must_int(obj), False)
 
