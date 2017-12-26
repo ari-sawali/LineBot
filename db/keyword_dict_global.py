@@ -18,7 +18,7 @@ class word_dict_global(db_base):
         """Return inserted sequence id(s) Empty array if nothing cloned."""
         if isinstance(ids, (int, long)):
             ids = [ids]
-
+             
         ids = [int(id) for id in ids]
 
         if target_gid == bot.remote.PUBLIC_TOKEN():
@@ -100,5 +100,18 @@ class word_dict_global(db_base):
 
     def get_pairs_by_group_id(self, gid, including_disabled=False, including_pinned=True):
         """Return EMPTY LIST when nothing found"""
-        find_cursor = self.find({ pair_data.AFFILIATED_GROUP: gid })
+        if gid == bot.remote.PUBLIC_TOKEN():
+            filter_dict = { pair_data.AFFILIATED_GROUP: PUBLIC_GROUP_ID }
+        elif gid == bot.remote.GLOBAL_TOKEN():
+            filter_dict = {}
+        else:
+            filter_dict = { pair_data.AFFILIATED_GROUP: gid }
+
+        if not including_pinned:
+            filter_dict[pair_data.PROPERTIES + '.' + pair_data.PINNED] = False
+
+        if not including_disabled:
+            filter_dict[pair_data.PROPERTIES + '.' + pair_data.DISABLED] = False
+
+        find_cursor = self.find(filter_dict)
         return list(find_cursor)

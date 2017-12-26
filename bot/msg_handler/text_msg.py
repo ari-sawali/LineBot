@@ -162,10 +162,11 @@ class text_msg_handler(object):
 
             if action == u'可以用的':
                 expr = u'搜尋範圍: 本頻道( {} )可用的回覆組'.format(execute_in_gid)
+
                 result_data = kwd_instance.search_all_available_pair()
             elif action == u'全部':
                 expr = u'搜尋範圍: 全域回覆組'
-                result_data = self._get_kwd_instance(src, group_config_type, bot.remote.GLOBAL_TOKEN()).search_all_available_pair()
+                result_data = self._kwd_global.get_pairs_by_group_id(bot.remote.GLOBAL_TOKEN(), True)
             else:
                 result_data = error.sys_command.action_not_implemented(u'Q/I', regex_result.match_at, action)
         elif regex_result.match_at == 1:
@@ -237,6 +238,16 @@ class text_msg_handler(object):
             return ext.action_result(error.line_bot_api.illegal_user_id(uid), False)
 
         return ext.action_result(uid, True)
+
+    def _replace_newline(self, text):
+        if isinstance(text, unicode):
+            return text.replace(u'\\n', u'\n')
+        elif isinstance(text, str):
+            return text.replace('\\n', '\n')
+        elif isinstance(text, list):
+            return [t.replace(u'\\n', u'\n') for t in text]
+        else:
+            return text
 
     def _reg_mongo(self):
         if self._pymongo_client is None:
@@ -353,11 +364,18 @@ class text_msg_handler(object):
 
     def _A_get_rcv_content(self, packing_result):
         param_dict = packing_result.result
+        cmd_cat = packing_result.command_category
+
         if self._A_is_auto_detect(packing_result):
             return param_dict[param_packer.func_A.param_category.RCV_CONTENT]
         else:
             if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
-                return param_dict[param_packer.func_A.param_category.RCV_TXT]
+                t = param_dict[param_packer.func_A.param_category.RCV_TXT]
+
+                if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
+                    t = self._replace_newline(t)
+
+                return t
             elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
                 return param_dict[param_packer.func_A.param_category.RCV_STK]
             elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
@@ -365,11 +383,18 @@ class text_msg_handler(object):
 
     def _A_get_rep_content(self, packing_result):
         param_dict = packing_result.result
+        cmd_cat = packing_result.command_category
+
         if self._A_is_auto_detect(packing_result):
             return param_dict[param_packer.func_A.param_category.REP_CONTENT]
         else:
             if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
-                return param_dict[param_packer.func_A.param_category.REP_TXT]
+                t = param_dict[param_packer.func_A.param_category.REP_TXT]
+
+                if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
+                    t = self._replace_newline(t)
+
+                return t
             elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
                 return param_dict[param_packer.func_A.param_category.REP_STK]
             elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
@@ -405,10 +430,10 @@ class text_msg_handler(object):
     def _D_del_kw(self, kwd_instance, packing_result, pinned, exceutor_uid):
         param_dict = packing_result.result
 
-        func_dict = { True: kwd_instance.disable_keyword_by_id,
-                      False: kwd_instance.disable_keyword }
-
-        disabled_ids = func_dict[param_dict[param_packer.func_D.param_category.ID]](param_dict[param_packer.func_D.param_category.TXT], del_profile_uid, pinned)
+        if param_dict[param_packer.func_D.param_category.IS_ID]:
+            disabled_ids = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], del_profile_uid, pinned)
+        else:
+            disabled_ids = kwd_instance.disable_keyword_by_id(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), del_profile_uid, pinned)
 
         return ext.action_result(disabled_ids, len(disabled_ids) > 0)
 
@@ -1398,8 +1423,9 @@ class param_packer(object):
             DEL_PAIR = 1, '刪除回覆組'
 
         class param_category(ext.EnumWithName):
-            ID = 1, 'ID依據'
-            TXT = 2, '文字依據'
+            IS_ID = 1, '根據ID?'
+            ID = 2, 'ID'
+            WORD = 3, '關鍵字'
 
         def __init__(self, command_category, CH_regex=None, EN_regex=None):
             prm_objs = self._get_prm_objs(command_category)
@@ -1408,8 +1434,53 @@ class param_packer(object):
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_D.command_category.DEL_PAIR:
-                prm_objs = [parameter(param_packer.func_D.param_category.ID, param_validator.is_null, True),  
-                            parameter(param_packer.func_D.param_category.TXT, param_validator.conv_unicode)]
+                prm_objs = [parameter(param_packer.func_D.param_category.IS_ID, param_validator.is_null, True),  
+                            parameter(param_packer.func_D.param_category.ID, param_validator.conv_int_arr, True),  
+                            parameter(param_packer.func_D.param_category.WORD, param_validator.conv_unicode_arr, True)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+    
+    class func_Q(param_packer_base):
+        class command_category(ext.EnumWithName):
+            BY_AVAILABLE = 1, '根據可用範圍'
+            BY_ID_RANGE = 2, '根據ID範圍'
+            BY_UID = 3, '根據製作者'
+            BY_GID = 4, '根據群組'
+            BY_KEY = 5, '根據關鍵'
+
+        class param_category(ext.EnumWithName):
+            AVAILABLE = 1, '可用的'
+            GLOBAL = 2, '全域'
+            START_ID = 3, '起始ID'
+            END_ID = 4, '終止ID'
+            UID = 5, '製作者ID'
+            GID = 6, '群組ID'
+            IS_ID = 7, '根據ID?'
+            KEYWORD = 8, '關鍵字'
+            ID = 9, 'ID'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_Q, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_Q.command_category.BY_AVAILABLE:
+                prm_objs = [parameter(param_packer.func_Q.param_category.GLOBAL, param_validator.is_null, True),
+                            parameter(param_packer.func_Q.param_category.AVAILABLE, param_validator.is_null, True)]
+            elif command_category == param_packer.func_Q.command_category.BY_ID_RANGE:
+                prm_objs = [parameter(param_packer.func_Q.param_category.START_ID, param_validator.conv_int),  
+                            parameter(param_packer.func_Q.param_category.END_ID, param_validator.conv_int)]
+            elif command_category == param_packer.func_Q.command_category.BY_UID:
+                prm_objs = [parameter(param_packer.func_Q.param_category.UID, param_validator.line_bot_api.validate_uid)]
+            elif command_category == param_packer.func_Q.command_category.BY_GID:
+                prm_objs = [parameter(param_packer.func_Q.param_category.GID, param_validator.line_bot_api.validate_gid_public_global)]
+            elif command_category == param_packer.func_Q.command_category.BY_KEY:
+                prm_objs = [parameter(param_packer.func_Q.param_category.IS_ID, param_validator.is_null, True),  
+                            parameter(param_packer.func_Q.param_category.ID, param_validator.conv_int_arr, True),  
+                            parameter(param_packer.func_Q.param_category.KEYWORD, param_validator.conv_unicode_arr, True)]
             else:
                 raise UndefinedCommandCategoryException()
 
@@ -1439,24 +1510,44 @@ class packer_factory(object):
                               EN_regex=ur'JC\nAA\n(.+)\n(.+)(?:\n(.+))?')]
 
     _R = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記置頂的 ?(ID ?)?(\d{1}[\d\s]*|(?:.|\n)+)', 
-                              EN_regex=ur'JC\nR\n(ID\n)?(.+)')]
+                              CH_regex=ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
+                              EN_regex=ur'JC\nR\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _D = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記 ?(ID ?)?(\d{1}[\d\s]*|(?:.|\n)+)', 
-                              EN_regex=ur'JC\nD\n(ID\n)?(.+)')]
+                              CH_regex=ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
+                              EN_regex=ur'JC\nD\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
-    _Q = [ur'小水母 找 ?(可以用的|全部)',
-          ur'小水母 找 ?ID範圍 ?(\d+)(到|~)(\d+)',
-          ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
-          ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
-          ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+    _Q = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
+                              CH_regex=ur'小水母 找 ?(?:(全部)|(可以用的))',
+                              EN_regex=ur'JC\n(?:(Q\nALL)|(Q))'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_ID_RANGE,
+                              CH_regex=ur'小水母 找 ?ID範圍 ?(\d+)(?:到|~)(\d+)',
+                              EN_regex=ur'JC\nQ\nID\n(\d+)\n(\d+)'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_UID,
+                              CH_regex=ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
+                              EN_regex=ur'JC\nQ\nUID\n([U]{1}[0-9a-f]{32})'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_GID,
+                              CH_regex=ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
+                              EN_regex=ur'JC\nQ\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
+                              CH_regex=ur'小水母 找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)',
+                              EN_regex=ur'JC\nQ\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
-    _I = [ur'小水母 詳細找 ?(可以用的|全部)',
-          ur'小水母 詳細找 ?ID範圍 ?(\d+)(到|~)(\d+)',
-          ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
-          ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的', 
-          ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+    _I = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
+                              CH_regex=ur'小水母 詳細找 ?(?:(全部)|(可以用的))',
+                              EN_regex=ur'JC\n(?:(I\nALL)|(I))'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_ID_RANGE,
+                              CH_regex=ur'小水母 詳細找 ?ID範圍 ?(\d+)(?:到|~)(\d+)',
+                              EN_regex=ur'JC\nI\nID\n(\d+)\n(\d+)'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_UID,
+                              CH_regex=ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
+                              EN_regex=ur'JC\nI\nUID\n([U]{1}[0-9a-f]{32})'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_GID,
+                              CH_regex=ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
+                              EN_regex=ur'JC\nI\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
+          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
+                              CH_regex=ur'小水母 詳細找 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)',
+                              EN_regex=ur'JC\nI\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?', 
           ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?']

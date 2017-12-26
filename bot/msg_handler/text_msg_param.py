@@ -4,8 +4,8 @@ import ast
 import re
 
 from error import error
-import ext, db
-import tool
+import ext
+import tool, db, bot
 
 class param_packer_base(object):
     def __init__(self, command_category, param_objs, CH_regex=None, EN_regex=None):
@@ -127,6 +127,9 @@ class param_validator(object):
     Returns:
         param_check_result. Ret of result may be an error message, or processed parameter.
     """
+
+    ARRAY_SEPARATOR = bot.config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
+
     @staticmethod
     def base_null(obj, allow_null):
         if allow_null and obj is None:
@@ -156,6 +159,17 @@ class param_validator(object):
 
         try:
             return param_validation_result(unicode(obj), True)
+        except Exception as ex:
+            return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
+
+    @staticmethod
+    def conv_unicode_arr(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        try:
+            return param_validation_result([unicode(o) for o in ext.to_list(obj.split(param_validator.ARRAY_SEPARATOR))], True)
         except Exception as ex:
             return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
 
@@ -200,7 +214,7 @@ class param_validator(object):
         if base is not None:
             return base
 
-        new_int = ext.to_int(ext.to_list(obj))
+        new_int = ext.to_int(ext.to_list(obj.split(param_validator.ARRAY_SEPARATOR)))
 
         if new_int is not None:
             return param_validation_result(new_int, False)
@@ -249,6 +263,23 @@ class param_validator(object):
                 return param_validation_result(u'Object cannot be determined to any type. ({})'.format(obj), False)
 
             return param_validation_result(ret, True)
+
+    class line_bot_api(object):
+        @staticmethod
+        def validate_uid(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            return param_validation_result(obj, bot.line_api_wrapper.is_valid_user_id(obj))
+
+        @staticmethod
+        def validate_gid_public_global(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+            
+            return param_validation_result(obj, bot.line_api_wrapper.is_valid_room_group_id(obj, True, True))
 
 class param_validation_result(ext.action_result):
     def __init__(self, ret, valid):
