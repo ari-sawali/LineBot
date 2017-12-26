@@ -423,10 +423,14 @@ class text_msg_handler(object):
     def _D_del_kw(self, kwd_instance, packing_result, pinned, executor_uid):
         param_dict = packing_result.result
 
+        print param_dict[param_packer.func_D.param_category.IS_ID]
+
         if param_dict[param_packer.func_D.param_category.IS_ID]:
             disabled_ids = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
         else:
-            disabled_ids = kwd_instance.disable_keyword_by_id(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
+            disabled_ids = kwd_instance.disable_keyword(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
+
+        print disabled_ids
 
         return ext.action_result(disabled_ids, len(disabled_ids) > 0)
 
