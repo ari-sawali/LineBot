@@ -16,6 +16,8 @@ from .misc import *
 from .text_msg_param import *
 
 class text_msg_handler(object):
+    # TODO: Modulize each command
+
     CH_HEAD = u'小水母 '
     EN_HEAD = u'JC\n'
 
@@ -155,75 +157,47 @@ class text_msg_handler(object):
 
         return kwd_instance
 
-    def _get_query_result(self, src, group_config_type, execute_in_gid, regex_result, kwd_instance, exact_same):
-        expr = None
-        if regex_result.match_at == 0:
-            action = regex_result.group(1)
+    def _get_query_result(self, pack_result, execute_in_gid, kwd_instance, exact_same):
+        cmd_cat = pack_result.command_category
+        prm_dict = pack_result.result
 
-            if action == u'可以用的':
+        if cmd_cat == param_packer.func_Q.command_category.BY_AVAILABLE:
+            if prm_dict[param_packer.func_Q.param_category.GLOBAL]:
                 expr = u'搜尋範圍: 本頻道( {} )可用的回覆組'.format(execute_in_gid)
-
-                result_data = kwd_instance.search_all_available_pair()
-            elif action == u'全部':
-                expr = u'搜尋範圍: 全域回覆組'
                 result_data = self._kwd_global.get_pairs_by_group_id(bot.remote.GLOBAL_TOKEN(), True)
+            elif prm_dict[param_packer.func_Q.param_category.AVAILABLE]:
+                expr = u'搜尋範圍: 全域回覆組'
+                result_data = kwd_instance.search_all_available_pair()
             else:
-                result_data = error.sys_command.action_not_implemented(u'Q/I', regex_result.match_at, action)
-        elif regex_result.match_at == 1:
-            start_id = ext.to_int(regex_result.group(1))
-            end_id = ext.to_int(regex_result.group(3))
+                raise UndefinedParameterException()
+        elif cmd_cat == param_packer.func_Q.command_category.BY_ID_RANGE:
+            expr = u'搜尋範圍: ID介於【{}】~【{}】之間的回覆組'.format(prm_dict[param_packer.func_Q.param_category.START_ID], 
+                                                                     prm_dict[param_packer.func_Q.param_category.END_ID])
+            result_data = kwd_instance.search_pair_by_index(prm_dict[param_packer.func_Q.param_category.START_ID], 
+                                                            prm_dict[param_packer.func_Q.param_category.END_ID])
+        elif cmd_cat == param_packer.func_Q.command_category.BY_GID:
+            expr = u'搜尋範圍: 群組ID {} 內可用的回覆組'.format(prm_dict[param_packer.func_Q.param_category.GID])
+            result_data = self._kwd_global.get_pairs_by_group_id(prm_dict[param_packer.func_Q.param_category.GID], True)
+        elif cmd_cat == param_packer.func_Q.command_category.BY_UID:
+            get_name_result = self._get_user_name(prm_dict[param_packer.func_Q.param_category.UID])
 
-            if start_id is None:
-                result_data = error.main.invalid_thing_with_correct_format(u'參數1', u'正整數(代表起始ID)', regex_result.group(1))
-            elif end_id is None:
-                result_data = error.main.invalid_thing_with_correct_format(u'參數3', u'正整數(代表終止ID)', regex_result.group(3))
-            elif end_id - start_id < 0:
-                result_data = error.main.miscellaneous(u'起始數字不得大於終止數字。')
+            expr = u'搜尋範圍: 由 {} ({}) 製作的回覆組'.format(get_name_result.result, prm_dict[param_packer.func_Q.param_category.UID])
+            result_data = kwd_instance.search_pair_by_creator(prm_dict[param_packer.func_Q.param_category.UID])
+        elif cmd_cat == param_packer.func_Q.command_category.BY_KEY:
+            if prm_dict[param_packer.func_Q.param_category.IS_ID]:
+                search_source = prm_dict[param_packer.func_Q.param_category.ID]
+
+                expr = u'搜尋範圍: ID為【{}】的回覆組'.format(u'、'.join([str(id) for id in search_source]))
+                result_data = kwd_instance.search_pair_by_index(search_source)
             else:
-                expr = u'搜尋範圍: ID介於【{}】~【{}】之間的回覆組'.format(start_id, end_id)
-                result_data = kwd_instance.search_pair_by_index(start_id, end_id)
-        elif regex_result.match_at == 2:
-            uid = regex_result.group(1)
+                search_source = prm_dict[param_packer.func_Q.param_category.KEYWORD]
 
-            if not bot.line_api_wrapper.is_valid_user_id(uid):
-                result_data = error.line_bot_api.illegal_user_id(uid)
-            else:
-                try:
-                    user_name = self._line_api_wrapper.profile_name(uid, src)
-                except bot.UserProfileNotFoundError:
-                    user_name = error.main.line_account_data_not_found()
-
-                expr = u'搜尋範圍: 由 {} ({}) 製作的回覆組'.format(user_name, uid)
-                result_data = kwd_instance.search_pair_by_creator(uid)
-        elif regex_result.match_at == 3:
-            gid = regex_result.group(1)
-
-            if not bot.line_api_wrapper.is_valid_room_group_id(gid, True, True):
-                result_data = error.line_bot_api.illegal_room_group_id(gid)
-            else:
-                expr = u'搜尋範圍: 群組ID {} 內可用的回覆組'.format(gid)
-                result_data = self._kwd_global.get_pairs_by_group_id(gid, True)
-        elif regex_result.match_at == 4:
-            is_ids = regex_result.group(2) is not None
-
-            if is_ids:
-                index_source = ext.to_int(regex_result.group(3).split(self._array_separator))
-            else:
-                index_source = regex_result.group(1)
-
-            if index_source is None:
-                result_data = error.main.invalid_thing_with_correct_format(u'參數1', u'正整數、正整數陣列(代表ID)或字串、字串陣列(代表關鍵字)', regex_result.group(1))
-            else:
-                if is_ids:
-                    expr = u'搜尋範圍: ID為【{}】的回覆組'.format(u'、'.join([str(id) for id in index_source]))
-                    result_data = kwd_instance.search_pair_by_index(index_source)
-                else:
-                    expr = u'搜尋範圍: 關鍵字 或 回覆 {}【{}】的回覆組'.format(u'為' if exact_same else u'含', index_source)
-                    result_data = kwd_instance.search_pair_by_keyword(index_source, exact_same)
+                expr = u'搜尋範圍: 關鍵字 或 回覆 {}【{}】的回覆組'.format(u'為' if exact_same else u'含', search_source)
+                result_data = kwd_instance.search_pair_by_keyword(search_source, exact_same)
         else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'Q/I', regex_result.match_at, regex_result.regex))
+            raise UndefinedCommandCategoryException()
 
-        return result_data, expr
+        return ext.action_result([expr, result_data], True)
 
     def _get_executor_uid(self, src):
         # try to get complete profile
@@ -238,6 +212,12 @@ class text_msg_handler(object):
             return ext.action_result(error.line_bot_api.illegal_user_id(uid), False)
 
         return ext.action_result(uid, True)
+
+    def _get_user_name(self, uid):
+        try:
+            return ext.action_result(self._line_api_wrapper.profile_name(uid), True)
+        except bot.UserProfileNotFoundError:
+            return ext.action_result(error.main.line_account_data_not_found(), False)
 
     def _replace_newline(self, text):
         if isinstance(text, unicode):
@@ -449,67 +429,72 @@ class text_msg_handler(object):
         return self._D(src, execute_in_gid, group_config_type, executor_permission, text, True)
     
     def _Q(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._Q
+        packer_list = packer_factory._Q
 
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
-                get_uid_result = self._get_executor_uid(src)
-                if not get_uid_result.success:
-                    return get_uid_result.result
-
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                kwd_del_result = self._D_del_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
+                query_result = self._get_query_result(packer, execute_in_gid, kwd_instance, False)
 
-                return self._D_generate_output(kwd_del_result)
+                return self._Q_generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-        
 
+    def _Q_generate_output(self, query_result):
+        if query_result.success:
+            max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_QUERY_OUTPUT_COUNT)
+            str_length = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_SIMPLE_STRING_LENGTH)
 
-        # create query result
-        query_result = self._get_query_result(src, group_config_type, execute_in_gid, regex_result, kwd_instance, False)
-        if isinstance(query_result[0], (str, unicode)):
-            return query_result
+            title, data = query_result.result
 
-        # process output
-        max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_QUERY_OUTPUT_COUNT)
-        str_length = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_SIMPLE_STRING_LENGTH)
-        output = db.keyword_dict.group_dict_manager.list_keyword(query_result[0], max_count, query_result[1], error.main.no_result(), str_length)
+            output = db.keyword_dict.group_dict_manager.list_keyword(data, max_count, title, error.main.no_result(), str_length)
 
-        text = output.limited
-        if output.has_result:
-            text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
-        return text
+            text = output.limited
+            if output.has_result:
+                text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
+            return text
+        else:
+            return unicode(query_result.result)
     
     def _I(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._I
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                query_result = self._get_query_result(packer, execute_in_gid, kwd_instance, False)
+
+                return self._I_generate_output(query_result)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return packing_result.result
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
         regex_list = packer_factory._I
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
 
-        if regex_result is None:
-            return
-        
-        # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
 
-        # create query result
-        query_result = self._get_query_result(src, group_config_type, execute_in_gid, regex_result, kwd_instance, True)
-        if isinstance(query_result[0], (str, unicode)):
-            return query_result
-        
-        # process output
-        max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
-        output = db.keyword_dict.group_dict_manager.list_keyword_info(query_result[0], kwd_instance, self._line_api_wrapper, max_count, query_result[1].replace('\n', ''), error.main.no_result())
+    def _I_generate_output(self, query_result):
+        if query_result.success:
+            max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
+            
+            title, data = query_result.result
 
-        text = output.limited
-        if output.has_result:
-            text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
-        return text
+            output = db.keyword_dict.group_dict_manager.list_keyword_info(data, kwd_instance, self._line_api_wrapper, max_count, title.replace('\n', ''),  error.main.no_result())
+
+            text = output.limited
+            if output.has_result:
+                text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
+            return text
+        else:
+            return unicode(query_result.result)
     
     def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._X
@@ -1492,7 +1477,7 @@ class param_packer(object):
             elif command_category == param_packer.func_Q.command_category.BY_KEY:
                 prm_objs = [parameter(param_packer.func_Q.param_category.IS_ID, param_validator.is_null, True),  
                             parameter(param_packer.func_Q.param_category.ID, param_validator.conv_int_arr, True),  
-                            parameter(param_packer.func_Q.param_category.KEYWORD, param_validator.conv_unicode_arr, True)]
+                            parameter(param_packer.func_Q.param_category.KEYWORD, param_validator.conv_unicode, True)]
             else:
                 raise UndefinedCommandCategoryException()
 
@@ -1613,5 +1598,3 @@ class packer_factory(object):
 
     _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
             ur'小水母 貼圖(\d+)']
-
-

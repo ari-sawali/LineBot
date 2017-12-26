@@ -238,31 +238,34 @@ def handle_follow(event):
 
 @handler.add(JoinEvent)
 def handle_join(event):
-    reply_token = event.reply_token
-    cid = bot.line_api_wrapper.source_channel_id(event.source)
-    
-    if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
-        group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
-        group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.HEAD + u'群組的資料' }
+    try:
+        reply_token = event.reply_token
+        cid = bot.line_api_wrapper.source_channel_id(event.source)
+        
+        if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
+            group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
+            group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.HEAD + u'群組的資料' }
 
-        template_alt_text = '群組資料查閱快捷樣板'
-        template_title = '相關指令'
+            template_alt_text = '群組資料查閱快捷樣板'
+            template_title = '相關指令'
 
-        if group_data is None:
-            activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
-            
-            group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.CH_HEAD + u'啟用公用資料庫' + activation_token
-            group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
-            line_api.reply_message(reply_token, 
-                                   [bot.line_api_wrapper.introduction_template(),
-                                    bot.line_api_wrapper.wrap_text_message('群組資料註冊{}。'.format('成功' if activation_token is not None else '失敗'), webpage_generator),
-                                    group_template])
-        else:
-            group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
-            line_api.reply_message(reply_token, 
-                                   [bot.line_api_wrapper.introduction_template(),
-                                    bot.line_api_wrapper.wrap_text_message('群組資料已存在。', webpage_generator),
-                                    group_template])
+            if group_data is None:
+                activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
+                
+                group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.CH_HEAD + u'啟用公用資料庫' + activation_token
+                group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
+                line_api.reply_message(reply_token, 
+                                       [bot.line_api_wrapper.introduction_template(),
+                                        bot.line_api_wrapper.wrap_text_message('群組資料註冊{}。'.format('成功' if activation_token is not None else '失敗'), webpage_generator),
+                                        group_template])
+            else:
+                group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)
+                line_api.reply_message(reply_token, 
+                                       [bot.line_api_wrapper.introduction_template(),
+                                        bot.line_api_wrapper.wrap_text_message('群組資料已存在。', webpage_generator),
+                                        group_template])
+    except Exception as ex:
+        handle_error(event, ex)
 
 
 def handle_error(event, exception_instance):

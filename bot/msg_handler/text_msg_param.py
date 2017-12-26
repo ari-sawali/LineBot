@@ -307,6 +307,10 @@ class UndefinedCommandCategoryException(Exception):
     def __init__(self, *args):
         return super(UndefinedCommandCategoryException, self).__init__(*args)
 
+class UndefinedParameterException(Exception):
+    def __init__(self, *args):
+        return super(UndefinedPackedStatusException, self).__init__(*args)
+
 class UndefinedPackedStatusException(Exception):
     def __init__(self, *args):
         return super(UndefinedPackedStatusException, self).__init__(*args)

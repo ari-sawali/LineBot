@@ -31,7 +31,7 @@ class random_drawer(object):
 
         return u'抽選項目【{}】\n統計次數:\n{}\n抽選結果:\n{}'.format(
             u'、'.join(text_list), 
-            u'\n'.join([u'{}: {}次'.format(item, count) for item, count in Counter(results)]),
+            u'\n'.join([u'{}: {}次'.format(item, count) for item, count in Counter(results).iteritems()]),
             u'\n'.join([u'{}. {}'.format(i, result) for i, result in enumerate(results, start=1)]))
 
     @staticmethod
