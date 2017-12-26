@@ -259,12 +259,12 @@ class param_validator(object):
             return param_validation_result(error.sys_command.must_int(obj), False)
 
     @staticmethod
-    def is_null(obj, allow_null):
+    def is_not_null(obj, allow_null):
         base = param_validator.base_null(obj, allow_null)
         if base is not None:
             return base
 
-        return param_validation_result(obj is None, True)
+        return param_validation_result(obj is not None, True)
 
     class keyword_dict(object):
         @staticmethod
@@ -336,7 +336,7 @@ class UndefinedCommandCategoryException(Exception):
 
 class UndefinedParameterException(Exception):
     def __init__(self, *args):
-        return super(UndefinedPackedStatusException, self).__init__(*args)
+        return super(UndefinedParameterException, self).__init__(*args)
 
 class UndefinedPackedStatusException(Exception):
     def __init__(self, *args):

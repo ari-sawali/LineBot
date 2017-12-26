@@ -166,6 +166,9 @@ class text_msg_handler(object):
         prm_dict = pack_result.result
 
         if cmd_cat == param_packer.func_Q.command_category.BY_AVAILABLE:
+            print prm_dict[param_packer.func_Q.param_category.GLOBAL]
+            print prm_dict[param_packer.func_Q.param_category.AVAILABLE]
+
             if prm_dict[param_packer.func_Q.param_category.GLOBAL]:
                 expr = u'搜尋範圍: 本頻道( {} )可用的回覆組'.format(execute_in_gid)
                 result_data = self._kwd_global.get_pairs_by_group_id(bot.remote.GLOBAL_TOKEN(), True)
@@ -173,7 +176,7 @@ class text_msg_handler(object):
                 expr = u'搜尋範圍: 全域回覆組'
                 result_data = kwd_instance.search_all_available_pair()
             else:
-                raise UndefinedParameterException()
+                return ext.action_result(UndefinedParameterException(), False)
         elif cmd_cat == param_packer.func_Q.command_category.BY_ID_RANGE:
             expr = u'搜尋範圍: ID介於【{}】~【{}】之間的回覆組'.format(prm_dict[param_packer.func_Q.param_category.START_ID], 
                                                                      prm_dict[param_packer.func_Q.param_category.END_ID])
@@ -1437,7 +1440,7 @@ class param_packer(object):
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_D.command_category.DEL_PAIR:
-                prm_objs = [parameter(param_packer.func_D.param_category.IS_ID, param_validator.is_null, True),  
+                prm_objs = [parameter(param_packer.func_D.param_category.IS_ID, param_validator.is_not_null, True),  
                             parameter(param_packer.func_D.param_category.ID, param_validator.conv_int_arr, True),  
                             parameter(param_packer.func_D.param_category.WORD, param_validator.conv_unicode_arr, True)]
             else:
@@ -1471,8 +1474,8 @@ class param_packer(object):
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_Q.command_category.BY_AVAILABLE:
-                prm_objs = [parameter(param_packer.func_Q.param_category.GLOBAL, param_validator.is_null, True),
-                            parameter(param_packer.func_Q.param_category.AVAILABLE, param_validator.is_null, True)]
+                prm_objs = [parameter(param_packer.func_Q.param_category.GLOBAL, param_validator.is_not_null, True),
+                            parameter(param_packer.func_Q.param_category.AVAILABLE, param_validator.is_not_null, True)]
             elif command_category == param_packer.func_Q.command_category.BY_ID_RANGE:
                 prm_objs = [parameter(param_packer.func_Q.param_category.START_ID, param_validator.conv_int),  
                             parameter(param_packer.func_Q.param_category.END_ID, param_validator.conv_int)]
@@ -1481,7 +1484,7 @@ class param_packer(object):
             elif command_category == param_packer.func_Q.command_category.BY_GID:
                 prm_objs = [parameter(param_packer.func_Q.param_category.GID, param_validator.line_bot_api.validate_gid_public_global)]
             elif command_category == param_packer.func_Q.command_category.BY_KEY:
-                prm_objs = [parameter(param_packer.func_Q.param_category.IS_ID, param_validator.is_null, True),  
+                prm_objs = [parameter(param_packer.func_Q.param_category.IS_ID, param_validator.is_not_null, True),  
                             parameter(param_packer.func_Q.param_category.ID, param_validator.conv_int_arr, True),  
                             parameter(param_packer.func_Q.param_category.KEYWORD, param_validator.conv_unicode, True)]
             else:
