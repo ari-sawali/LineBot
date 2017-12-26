@@ -255,7 +255,7 @@ class text_msg_handler(object):
 
                 return text
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return packing_result.result
+                return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -296,7 +296,7 @@ class text_msg_handler(object):
 
                 return self._A_generate_output(kwd_add_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return packing_result.result
+                return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -408,7 +408,7 @@ class text_msg_handler(object):
 
                 return self._D_generate_output(kwd_del_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return packing_result.result
+                return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -446,7 +446,7 @@ class text_msg_handler(object):
 
                 return self._Q_generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return packing_result.result
+                return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -479,7 +479,7 @@ class text_msg_handler(object):
 
                 return self._I_generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return packing_result.result
+                return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
