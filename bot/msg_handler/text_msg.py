@@ -129,10 +129,9 @@ class text_msg_handler(object):
     def _get_cmd_data(self, text):
         for cmd_obj in bot.sys_cmd_dict.itervalues():
             for header in cmd_obj.headers:
-                if u'Q' in header:
-                    print repr(text)
-                    print repr((text_msg_handler.EN_HEAD + header))
-                if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
+                s = text.split(u'\n')
+                match_en = s[0] == text_msg_handler.EN_HEAD and s[1] == header.replace(u'\n', u'')
+                if text.startswith(text_msg_handler.CH_HEAD + header) or match_en:
                     return cmd_obj
 
     def _get_kwd_instance(self, src, config, execute_remote_gid=None):
