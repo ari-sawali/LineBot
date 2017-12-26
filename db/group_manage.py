@@ -141,8 +141,11 @@ class group_manager(db_base):
                 self._set_cache_config(gid, group.config_type)
                 return cfg_type
             else:
-                self.new_data(gid)
-                return self.get_group_config_type(gid)
+                add = self.new_data(gid)
+                if add is not None:
+                    return self.get_group_config_type(gid)
+                else:
+                    return config_type.GROUP_DATABASE_ONLY
 
     def get_user_permission(self, gid, uid):
         if uid == self._ADMIN_UID:

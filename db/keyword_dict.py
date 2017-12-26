@@ -132,8 +132,8 @@ class group_dict_manager(db_base):
 
         super(group_dict_manager, self).__init__(mongo_db_uri, group_dict_manager.WORD_DICT_DB_NAME, group_dict_manager.WORD_DICT_DB_NAME, True)
 
-    def clone_instance(self, mongo_db_uri, group_id, avaiilable_range=group_dict_manager_range.GROUP_ONLY):
-        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, avaiilable_range)
+    def clone_instance(self, mongo_db_uri, group_id, available_range=group_dict_manager_range.GROUP_ONLY):
+        return group_dict_manager(mongo_db_uri, self._duplicate_cd_secs, self._repeat_call_cd_secs, group_id, available_range)
 
     @property
     def is_public(self):

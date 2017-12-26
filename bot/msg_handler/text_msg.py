@@ -135,7 +135,7 @@ class text_msg_handler(object):
     def _get_kwd_instance(self, src, config, execute_remote_gid=None):
         cid = bot.line_api_wrapper.source_channel_id(src)
 
-        if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid):
+        if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid, True, True):
             config = self._group_manager.get_group_config_type(execute_remote_gid)
         else:
             config = self._group_manager.get_group_config_type(cid)
@@ -148,6 +148,8 @@ class text_msg_handler(object):
 
         if execute_remote_gid == bot.remote.GLOBAL_TOKEN():
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
+        elif execute_remote_gid == bot.remote.PUBLIC_TOKEN():
+            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID)
         elif execute_remote_gid == cid:
             kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, execute_remote_gid, manager_range)
         else:
