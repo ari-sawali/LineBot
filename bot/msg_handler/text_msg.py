@@ -129,10 +129,12 @@ class text_msg_handler(object):
     def _get_cmd_data(self, text):
         for cmd_obj in bot.sys_cmd_dict.itervalues():
             for header in cmd_obj.headers:
-                s = text.split(u'\n')
-                match_en = s[0] == text_msg_handler.EN_HEAD.replace(u'\n', u'') and s[1] == header.replace(u'\n', u'')
-                if text.startswith(text_msg_handler.CH_HEAD + header) or match_en:
+                if text.startswith(text_msg_handler.CH_HEAD + header) or self._get_cmd_data_match_en(text, header):
                     return cmd_obj
+
+    def _get_cmd_data_match_en(self, text, header):
+        s = text.split(u'\n')
+        return s[0] == text_msg_handler.EN_HEAD.replace(u'\n', u'') and s[1] == header.replace(u'\n', u'')
 
     def _get_kwd_instance(self, src, config, execute_remote_gid=None):
         cid = bot.line_api_wrapper.source_channel_id(src)
