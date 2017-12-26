@@ -133,7 +133,7 @@ class error(object):
 
         @staticmethod
         def must_int(obj):
-            return u'必須是整數或整數陣列。({})'.format(obj)
+            return u'必須是整數或整數陣列。({} - {})'.format(type(obj), obj)
 
         @staticmethod
         def must_sha(obj):
