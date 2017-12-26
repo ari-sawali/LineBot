@@ -129,8 +129,9 @@ class text_msg_handler(object):
     def _get_cmd_data(self, text):
         for cmd_obj in bot.sys_cmd_dict.itervalues():
             for header in cmd_obj.headers:
-                print repr(text)
-                print repr((text_msg_handler.EN_HEAD + header))
+                if u'Q' in header:
+                    print repr(text)
+                    print repr((text_msg_handler.EN_HEAD + header))
                 if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
                     return cmd_obj
 
