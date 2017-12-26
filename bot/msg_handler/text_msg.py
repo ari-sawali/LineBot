@@ -392,9 +392,9 @@ class text_msg_handler(object):
     
     def _D(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
-            regex_list = packer_factory._R
+            packer_list = packer_factory._R
         else:
-            regex_list = packer_factory._D
+            packer_list = packer_factory._D
 
         for packer in packer_list:
             packing_result = packer.pack(text)
@@ -502,6 +502,10 @@ class text_msg_handler(object):
         else:
             return unicode(query_result.result)
     
+    ####################
+    ### UNDONE BELOW ###
+    ####################
+
     def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._X
         
