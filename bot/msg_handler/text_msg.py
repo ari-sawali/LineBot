@@ -1523,11 +1523,11 @@ class packer_factory(object):
                               EN_regex=ur'JC\nAA\n(.+)\n(.+)(?:\n(.+))?')]
 
     _R = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
+                              CH_regex=ur'小水母 忘記置頂的 ?(?:(ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
                               EN_regex=ur'JC\nR\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _D = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
+                              CH_regex=ur'小水母 忘記 ?(?:(ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)', 
                               EN_regex=ur'JC\nD\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _Q = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
