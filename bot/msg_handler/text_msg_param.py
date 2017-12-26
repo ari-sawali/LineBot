@@ -7,10 +7,6 @@ from error import error
 import ext
 import tool, db, bot
 
-from bot import config_manager
-
-_ARRAY_SEPARATOR = config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
-
 class param_packer_base(object):
     def __init__(self, command_category, param_objs, CH_regex=None, EN_regex=None):
         """
@@ -132,7 +128,9 @@ class param_validator(object):
         param_check_result. Ret of result may be an error message, or processed parameter.
     """
 
-    ARRAY_SEPARATOR = _ARRAY_SEPARATOR
+    from bot import config_manager
+
+    ARRAY_SEPARATOR = config_manager('SystemConfig.ini').get(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.ARRAY_SEPARATOR)
 
     @staticmethod
     def base_null(obj, allow_null):
