@@ -260,10 +260,6 @@ class param_validator(object):
 
     @staticmethod
     def is_not_null(obj, allow_null):
-        base = param_validator.base_null(obj, allow_null)
-        if base is not None:
-            return base
-
         return param_validation_result(obj is not None, True)
 
     class keyword_dict(object):

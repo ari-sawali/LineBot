@@ -138,7 +138,7 @@ class text_msg_handler(object):
         if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid):
             config = self._group_manager.get_group_config_type(execute_remote_gid)
         else:
-            config = None
+            config = self._group_manager.get_group_config_type(cid)
             execute_remote_gid = None
 
         if config is not None and config == db.config_type.ALL:
@@ -166,14 +166,11 @@ class text_msg_handler(object):
         prm_dict = pack_result.result
 
         if cmd_cat == param_packer.func_Q.command_category.BY_AVAILABLE:
-            print prm_dict[param_packer.func_Q.param_category.GLOBAL]
-            print prm_dict[param_packer.func_Q.param_category.AVAILABLE]
-
             if prm_dict[param_packer.func_Q.param_category.GLOBAL]:
-                expr = u'搜尋範圍: 本頻道( {} )可用的回覆組'.format(execute_in_gid)
+                expr = u'搜尋範圍: 全域回覆組'
                 result_data = self._kwd_global.get_pairs_by_group_id(bot.remote.GLOBAL_TOKEN(), True)
             elif prm_dict[param_packer.func_Q.param_category.AVAILABLE]:
-                expr = u'搜尋範圍: 全域回覆組'
+                expr = u'搜尋範圍: 本頻道( {} )可用的回覆組'.format(execute_in_gid)
                 result_data = kwd_instance.search_all_available_pair()
             else:
                 return ext.action_result(UndefinedParameterException(), False)
