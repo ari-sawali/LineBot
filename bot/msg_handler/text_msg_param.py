@@ -193,7 +193,14 @@ class param_validator(object):
         if base is not None:
             return base
 
-        if re.match(ur'[0-9a-fA-F]{56}', obj.decode('utf-8')):
+        try:
+            obj = unicode(obj)
+        except UnicodeDecodeError:
+            obj = obj.decode('utf-8')
+        except UnicodeEncodeError:
+            obj = obj.encode('utf-8')
+
+        if re.match(ur'[0-9a-fA-F]{56}', obj):
             return param_validator.conv_unicode(obj, allow_null)
         else:
             return param_validation_result(error.sys_command.must_sha(obj), False)

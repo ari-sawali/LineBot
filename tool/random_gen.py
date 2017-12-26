@@ -6,6 +6,8 @@ import scipy.special
 from scipy.stats import norm
 from math import sqrt
 
+from collections import Counter
+
 class random_drawer(object):
     @staticmethod
     def draw_number(start, end):
@@ -26,7 +28,11 @@ class random_drawer(object):
     @staticmethod
     def draw_text_string(text_list, count=1):
         results = [random_drawer.draw_from_list(text_list) for i in range(count)]
-        return u'抽選項目【{}】\n抽選結果:\n{}'.format(u'、'.join(text_list), u'\n'.join([u'{}. {}'.format(i, result) for i, result in enumerate(results, start=1)]))
+
+        return u'抽選項目【{}】\n統計次數:\n{}\n抽選結果:\n{}'.format(
+            u'、'.join(text_list), 
+            u'\n'.join([u'{}: {}次'.format(item, count) for item, count in Counter(results)]),
+            u'\n'.join([u'{}. {}'.format(i, result) for i, result in enumerate(results, start=1)]))
 
     @staticmethod
     def draw_probability(probability, is_value=True):

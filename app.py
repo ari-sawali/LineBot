@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# TODO: modulize parameter validation(txt handle)
+# TODO: singleton? https://openhome.cc/Gossip/Python/NewInitDel.html
 # TODO: modulize error
 
 import os, sys, errno

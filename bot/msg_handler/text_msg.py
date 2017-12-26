@@ -450,14 +450,26 @@ class text_msg_handler(object):
     
     def _Q(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._Q
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
 
-        if regex_result is None:
-            return
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
+
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                kwd_del_result = self._D_del_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
+
+                return self._D_generate_output(kwd_del_result)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return packing_result.result
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
         
-        # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+
 
         # create query result
         query_result = self._get_query_result(src, group_config_type, execute_in_gid, regex_result, kwd_instance, False)
