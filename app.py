@@ -244,7 +244,7 @@ def handle_join(event):
         
         if not bot.line_event_source_type.determine(event.source) == bot.line_event_source_type.USER:
             group_data = db.group_manager(MONGO_DB_URI).get_group_by_id(cid)
-            group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.HEAD + u'群組的資料' }
+            group_action_dict = { '查看群組相關資料': bot.msg_handler.text_msg_handler.CH_HEAD + u'群組的資料' }
 
             template_alt_text = '群組資料查閱快捷樣板'
             template_title = '相關指令'

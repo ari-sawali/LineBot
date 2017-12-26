@@ -136,6 +136,9 @@ class text_msg_handler(object):
 
         if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid):
             config = self._group_manager.get_group_config_type(execute_remote_gid)
+        else:
+            config = None
+            execute_remote_gid = None
 
         if config is not None and config == db.config_type.ALL:
             manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
@@ -479,7 +482,6 @@ class text_msg_handler(object):
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
         regex_list = packer_factory._I
-
 
     def _I_generate_output(self, query_result):
         if query_result.success:
