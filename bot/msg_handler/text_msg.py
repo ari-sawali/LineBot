@@ -420,13 +420,13 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-    def _D_del_kw(self, kwd_instance, packing_result, pinned, exceutor_uid):
+    def _D_del_kw(self, kwd_instance, packing_result, pinned, executor_uid):
         param_dict = packing_result.result
 
         if param_dict[param_packer.func_D.param_category.IS_ID]:
-            disabled_ids = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], del_profile_uid, pinned)
+            disabled_ids = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
         else:
-            disabled_ids = kwd_instance.disable_keyword_by_id(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), del_profile_uid, pinned)
+            disabled_ids = kwd_instance.disable_keyword_by_id(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
 
         return ext.action_result(disabled_ids, len(disabled_ids) > 0)
 
