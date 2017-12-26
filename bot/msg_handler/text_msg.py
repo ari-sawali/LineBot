@@ -133,7 +133,7 @@ class text_msg_handler(object):
                 print len(text.encode('utf-8'))
                 print len(text_msg_handler.EN_HEAD + header)
                 print text[3]
-                print (text_msg_handler.EN_HEAD + header)[3]
+                print (text_msg_handler.EN_HEAD + header)[3].encode('utf-8')
                 if text.startswith(text_msg_handler.CH_HEAD + header) or text.startswith(text_msg_handler.EN_HEAD + header):
                     return cmd_obj
 
