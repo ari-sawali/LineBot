@@ -477,7 +477,7 @@ class text_msg_handler(object):
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                query_result = self._get_query_result(packer, execute_in_gid, kwd_instance, False)
+                query_result = self._get_query_result(packing_result, execute_in_gid, kwd_instance, False)
 
                 return self._I_generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
