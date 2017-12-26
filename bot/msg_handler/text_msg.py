@@ -169,8 +169,8 @@ class text_msg_handler(object):
             else:
                 result_data = error.sys_command.action_not_implemented(u'Q/I', regex_result.match_at, action)
         elif regex_result.match_at == 1:
-            start_id = ext.string_to_int(regex_result.group(1))
-            end_id = ext.string_to_int(regex_result.group(3))
+            start_id = ext.to_int(regex_result.group(1))
+            end_id = ext.to_int(regex_result.group(3))
 
             if start_id is None:
                 result_data = error.main.invalid_thing_with_correct_format(u'參數1', u'正整數(代表起始ID)', regex_result.group(1))
@@ -206,9 +206,7 @@ class text_msg_handler(object):
             is_ids = regex_result.group(2) is not None
 
             if is_ids:
-                index_source = ext.string_to_int(*regex_result.group(3).split(self._array_separator))
-                if isinstance(index_source, int):
-                    index_source = [index_source]
+                index_source = ext.to_int(regex_result.group(3).split(self._array_separator))
             else:
                 index_source = regex_result.group(1)
 
@@ -225,6 +223,20 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'Q/I', regex_result.match_at, regex_result.regex))
 
         return result_data, expr
+
+    def _get_executor_uid(self, src):
+        # try to get complete profile
+        try:
+            uid = bot.line_api_wrapper.source_user_id(src)
+            self._line_api_wrapper.profile_name(uid)
+        except bot.UserProfileNotFoundError as ex:
+            return ext.action_result(error.line_bot_api.unable_to_receive_user_id(), False)
+
+        # verify uid structure
+        if not bot.line_api_wrapper.is_valid_user_id(uid):
+            return ext.action_result(error.line_bot_api.illegal_user_id(uid), False)
+
+        return ext.action_result(uid, True)
 
     def _reg_mongo(self):
         if self._pymongo_client is None:
@@ -280,34 +292,20 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
-                adder_uid_result = self._A_get_adder_uid(src)
-                if not adder_uid_result.success:
-                    return adder_uid_result.result
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
 
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, adder_uid_result.result)
+                kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
-                return kwd_add_result.result
+                return self._A_generate_output(kwd_add_result.result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return packing_result.result
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _A_get_adder_uid(self, src):
-        # try to get complete profile
-        try:
-            new_profile_uid = bot.line_api_wrapper.source_user_id(src)
-            self._line_api_wrapper.profile_name(new_profile_uid)
-        except bot.UserProfileNotFoundError as ex:
-            return ext.action_result(error.line_bot_api.unable_to_receive_user_id(), False)
-
-        # verify uid structure
-        if not bot.line_api_wrapper.is_valid_user_id(new_profile_uid):
-            return ext.action_result(error.line_bot_api.illegal_user_id(new_profile_uid), False)
-
-        return ext.action_result(new_profile_uid, True)
 
     def _A_add_kw(self, kwd_instance, packing_result, pinned, adder_uid):
         param_dict = packing_result.result
@@ -326,11 +324,13 @@ class text_msg_handler(object):
         # create and write
         result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, rcv_type_result.result, rep_type_result.result, None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
 
-        # check whether success
+        return ext.action_result(result, isinstance(result, db.pair_data))
+
+    def _A_generate_output(self, result):
         if isinstance(result, (str, unicode)):
-            return ext.action_result(result, False)
+            return result
         elif isinstance(result, db.pair_data):
-            return ext.action_result(u'回覆組新增成功。\n' + result.basic_text(True), True)
+            return u'回覆組新增成功。\n' + result.basic_text(True)
         else:
             raise ValueError('Unhandled type of return result. ({} - {})'.format(type(result), result))
 
@@ -384,47 +384,41 @@ class text_msg_handler(object):
         else:
             regex_list = packer_factory._D
 
-        regex_result = tool.regex_finder.find_match(regex_list, text)
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
 
-        if regex_result is None:
-            return
-        
-        # try to get complete profile
-        try:
-            del_profile_uid = bot.line_api_wrapper.source_user_id(src)
-            self._line_api_wrapper.profile_name(del_profile_uid)
-        except bot.UserProfileNotFoundError as ex:
-            return error.line_bot_api.unable_to_receive_user_id()
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                kwd_del_result = self._D_del_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
-        # verify uid structure
-        if not bot.line_api_wrapper.is_valid_user_id(del_profile_uid):
-            return error.line_bot_api.illegal_user_id(del_profile_uid)
-        
-        # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-
-        if regex_result.match_at == 0:
-            is_ids = regex_result.group(2) is not None
-
-            if is_ids:
-                disable_targets = ext.string_to_int(*regex_result.group(3).split(self._array_separator))
-                if disable_targets is None:
-                    return error.main.invalid_thing_with_correct_format(u'參數2', u'整數數字，或指定字元分隔的數字陣列(代表ID)', disable_targets)
-
-                disable_result_id_list = kwd_instance.disable_keyword_by_id(disable_targets, del_profile_uid, pinned)
+                return self._D_generate_output(kwd_del_result)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return packing_result.result
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
             else:
-                disable_targets = regex_result.group(1).split(self._array_separator)
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-                disable_result_id_list = kwd_instance.disable_keyword(disable_targets, del_profile_uid, pinned)
+    def _D_del_kw(self, kwd_instance, packing_result, pinned, exceutor_uid):
+        param_dict = packing_result.result
 
-            if len(disable_result_id_list) > 0:
-                text = u'回覆組刪除成功。\n'
-                text += '\n'.join([data.basic_text(True) for data in disable_result_id_list])
-                return text
-            else:
-                return error.main.miscellaneous(error.main.pair_not_exist_or_insuffieicnt_permission() + u'若欲使用ID作為刪除根據，請參閱小水母使用說明。')
+        func_dict = { True: kwd_instance.disable_keyword_by_id,
+                      False: kwd_instance.disable_keyword }
+
+        disabled_ids = func_dict[param_dict[param_packer.func_D.param_category.ID]](param_dict[param_packer.func_D.param_category.TXT], del_profile_uid, pinned)
+
+        return ext.action_result(disabled_ids, len(disabled_ids) > 0)
+
+    def _D_generate_output(self, del_result):
+        if del_result.success:
+            text = u'回覆組刪除成功。\n'
+            text += '\n'.join([data.basic_text(True) for data in del_result.result])
+            return text
         else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'D/R', regex_result.match_at, regex_result.regex))
+            return error.main.miscellaneous(error.main.pair_not_exist_or_insuffieicnt_permission() + u'若欲使用ID作為刪除根據，請參閱小水母使用說明。')
 
     def _R(self, src, execute_in_gid, group_config_type, executor_permission, text):
         return self._D(src, execute_in_gid, group_config_type, executor_permission, text, True)
@@ -503,9 +497,7 @@ class text_msg_handler(object):
             is_ids = regex_result.group(2) is not None
 
             if is_ids:
-                source = ext.string_to_int(*regex_result.group(3).split(self._array_separator))
-                if isinstance(source, int):
-                    source = [source]
+                source = ext.to_int(regex_result.group(3).split(self._array_separator))
             else:
                 source = regex_result.group(1)
 
@@ -589,9 +581,7 @@ class text_msg_handler(object):
         # validate and assign modify target array
         is_ids = regex_result.group(2) is not None
         if is_ids:
-            target_array = ext.string_to_int(*regex_result.group(3).split(self._array_separator))
-            if isinstance(target_array, int):
-                target_array = [target_array]
+            target_array = ext.to_int(regex_result.group(3).split(self._array_separator))
         else:
             target_array = regex_result.group(1).split(self._array_separator)
 
@@ -671,7 +661,7 @@ class text_msg_handler(object):
         limit = regex_result.group(2)
         # validate parameters
         if limit is not None:
-            limit = ext.string_to_int(limit)
+            limit = ext.to_int(limit)
             if limit is None:
                 return error.main.incorrect_param(u'參數2', u'整數，代表表示結果上限')
         else:
@@ -703,7 +693,7 @@ class text_msg_handler(object):
             return
 
         if regex_result.match_at == 0:
-            limit = ext.string_to_int(regex_result.group(1))
+            limit = ext.to_int(regex_result.group(1))
 
             if limit is None:
                 limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
@@ -871,7 +861,7 @@ class text_msg_handler(object):
             except bot.UserProfileNotFoundError:
                 return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
 
-            action = ext.string_to_int(regex_result.group(2))
+            action = ext.to_int(regex_result.group(2))
 
             if action == u'可憐兒':
                 permission = bot.permission.RESTRICTED
@@ -968,14 +958,14 @@ class text_msg_handler(object):
 
         if regex_result.match_at == 0:
             probability = regex_result.group(2)
-            scout_count = ext.string_to_int(regex_result.group(4))
+            scout_count = ext.to_int(regex_result.group(4))
 
             if scout_count is None:
                 scout_count = 1
 
             return tool.random_drawer.draw_probability_string(probability, True, scout_count, 3)
         elif regex_result.match_at == 1:
-            times = ext.string_to_int(regex_result.group(2))
+            times = ext.to_int(regex_result.group(2))
             texts = regex_result.group(3)
 
             if times is None:
@@ -983,8 +973,8 @@ class text_msg_handler(object):
 
             return tool.random_gen.random_drawer.draw_text_string(texts.split(self._array_separator), times)
         elif regex_result.match_at == 2:
-            start_index = ext.string_to_int(regex_result.group(1))
-            end_index = ext.string_to_int(regex_result.group(2))
+            start_index = ext.to_int(regex_result.group(1))
+            end_index = ext.to_int(regex_result.group(2))
 
             if start_index is None:
                 return error.sys_command.action_not_implemented(u'RD', regex_result.match_at, start_index)
@@ -1196,15 +1186,13 @@ class text_msg_handler(object):
                 return u'{}\n{}\n若城市名為中文，請用該城市的英文名搜尋。'.format(search_desc, error.main.no_result())
         elif regex_result.match_at == 1:
             action = regex_result.group(1)
-            station_ids = ext.string_to_int(*regex_result.group(2).split(self._array_separator))
-            if isinstance(station_ids, int):
-                station_ids = [station_ids]
+            station_ids = ext.to_int(regex_result.group(2).split(self._array_separator))
 
-            hr_range = ext.string_to_int(regex_result.group(5))
+            hr_range = ext.to_int(regex_result.group(5))
             if hr_range is None:
                 hr_range = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_DATA_RANGE_HR)
 
-            hr_freq = ext.string_to_int(regex_result.group(7))
+            hr_freq = ext.to_int(regex_result.group(7))
             if hr_freq is None:
                 hr_freq = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_INTERVAL_HR)
 
@@ -1279,14 +1267,14 @@ class text_msg_handler(object):
             limit_count = regex_result.group(3)
             if limit_count is None:
                 limit_count = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.LIMIT_COUNT)
-            limit_count = ext.string_to_int(limit_count)
+            limit_count = ext.to_int(limit_count)
             if limit_count is None:
                 raise RuntimeError('limit_count is not integer.')
 
             hour_range = regex_result.group(5)
             if hour_range is None:
                 hour_range = self._config_manager.getint(bot.config_category.STICKER_RANKING, bot.config_category_sticker_ranking.HOUR_RANGE)
-            hour_range = ext.string_to_int(hour_range)
+            hour_range = ext.to_int(hour_range)
             if hour_range is None:
                 raise RuntimeError('hour_range is not integer.')
                 
@@ -1404,6 +1392,28 @@ class param_packer(object):
                 raise UndefinedCommandCategoryException()
 
             return prm_objs
+    
+    class func_D(param_packer_base):
+        class command_category(ext.EnumWithName):
+            DEL_PAIR = 1, '刪除回覆組'
+
+        class param_category(ext.EnumWithName):
+            ID = 1, 'ID依據'
+            TXT = 2, '文字依據'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_A, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_D.command_category.DEL_PAIR:
+                prm_objs = [parameter(param_packer.func_D.param_category.ID, param_validator.is_null, True),  
+                            parameter(param_packer.func_D.param_category.TXT, param_validator.conv_unicode)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
 
 class packer_factory(object):
     _S = [param_packer.func_S(command_category=param_packer.func_S.command_category.DB_COMMAND,
@@ -1428,9 +1438,13 @@ class packer_factory(object):
           param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_EN,
                               EN_regex=ur'JC\nAA\n(.+)\n(.+)(?:\n(.+))?')]
 
-    _R = [ur'小水母 忘記置頂的 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+    _R = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
+                              CH_regex=ur'小水母 忘記置頂的 ?(ID ?)?(\d{1}[\d\s]*|(?:.|\n)+)', 
+                              EN_regex=ur'JC\nR\n(ID\n)?(.+)')]
 
-    _D = [ur'小水母 忘記 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)']
+    _D = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
+                              CH_regex=ur'小水母 忘記 ?(ID ?)?(\d{1}[\d\s]*|(?:.|\n)+)', 
+                              EN_regex=ur'JC\nD\n(ID\n)?(.+)')]
 
     _Q = [ur'小水母 找 ?(可以用的|全部)',
           ur'小水母 找 ?ID範圍 ?(\d+)(到|~)(\d+)',

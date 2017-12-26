@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import Iterable
 import numpy
 from enum import IntEnum
 from datetime import datetime
@@ -95,15 +96,19 @@ def simplify_string(s, max_length=8):
 def left_alphabet(s):
     return filter(unicode.isalpha, unicode(s))
 
-def string_to_int(*args):
-    """Return None if string cannot convert to int"""
-
+def string_to_float(s):
     try:
-        new_args = [int(i) for i in args]
-        if len(new_args) > 1:
-            return new_args
+        return float(s)
+    except (ValueError, TypeError):
+        return None
+
+def to_int(obj):
+    """Return None if items cannot convert to int, else return converted object"""
+    try:
+        if isinstance(to_int, Iterable):
+            return [int(i) for i in obj]
         else:
-            return new_args[0]
+            return int(obj)
     except (ValueError, TypeError):
         return None
 
@@ -112,12 +117,6 @@ def to_list(o):
         o = [o]
 
     return o
-
-def string_to_float(s):
-    try:
-        return float(s)
-    except (ValueError, TypeError):
-        return None
 
 dir_symbol_dict = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
 

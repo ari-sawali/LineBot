@@ -14,7 +14,7 @@ class weather_report_config(db_base):
 
     def add_config(self, uid, city_ids, mode=tool.weather.output_config.SIMPLE, interval=3, data_range=120):
         """Return result in string"""
-        city_ids = ext.string_to_int(city_ids)
+        city_ids = ext.to_int(city_ids)
 
         if not bot.line_api_wrapper.is_valid_user_id(uid):
             return error.error.line_bot_api.illegal_user_id(uid)
@@ -25,9 +25,6 @@ class weather_report_config(db_base):
         if city_ids is None:
             return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_ids)
 
-        if isinstance(city_ids, int):
-            city_ids = [city_ids]
-
         mod_result = self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pushAll': { weather_report_config_data.CONFIG: [weather_report_child_config.init_by_field(city_id, mode, interval, data_range) for city_id in city_ids] } }, True)
 
         if mod_result.modified_count > 0:
@@ -37,15 +34,12 @@ class weather_report_config(db_base):
 
     def del_config(self, uid, city_ids):
         """Return result in string"""
-        city_ids = ext.string_to_int(city_ids)
+        city_ids = ext.to_int(city_ids)
 
         if not bot.line_api_wrapper.is_valid_user_id(uid):
             return error.error.line_bot_api.illegal_user_id(uid)
         if city_ids is None:
             return error.error.main.invalid_thing_with_correct_format(u'城市ID', u'整數', city_ids)
-
-        if isinstance(city_ids, int):
-            city_ids = [city_ids]
 
         mod_result = self.update_one({ weather_report_config_data.USER_ID: uid }, { '$pullAll': { weather_report_config_data.CONFIG: { weather_report_child_config.CITY_ID: city_ids } } }, True)
 

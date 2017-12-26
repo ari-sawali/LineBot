@@ -166,7 +166,7 @@ class param_validator(object):
             return base
 
         if obj.startswith('https://'):
-            return param_validator.conv_unicode(obj)
+            return param_validator.conv_unicode(obj, allow_null)
         else:
             return param_validation_result(error.sys_command.must_https(obj), False)
 
@@ -177,7 +177,7 @@ class param_validator(object):
             return base
 
         if re.match(ur'[0-9a-fA-F]{56}', obj.decode('utf-8')):
-            return param_validator.conv_unicode(obj)
+            return param_validator.conv_unicode(obj, allow_null)
         else:
             return param_validation_result(error.sys_command.must_sha(obj), False)
 
@@ -187,12 +187,33 @@ class param_validator(object):
         if base is not None:
             return base
 
-        new_int = ext.string_to_int(obj)
+        new_int = ext.to_int(obj)
 
         if new_int is not None:
             return param_validation_result(new_int, False)
         else:
             return param_validation_result(error.sys_command.must_int(obj), False)
+
+    @staticmethod
+    def conv_int_arr(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        new_int = ext.to_int(ext.to_list(obj))
+
+        if new_int is not None:
+            return param_validation_result(new_int, False)
+        else:
+            return param_validation_result(error.sys_command.must_int(obj), False)
+
+    @staticmethod
+    def is_null(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        return param_validation_result(obj is None, True)
 
     class keyword_dict(object):
         @staticmethod
