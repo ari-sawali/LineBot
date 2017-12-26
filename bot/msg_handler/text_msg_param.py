@@ -219,6 +219,19 @@ class param_validator(object):
             return param_validation_result(error.sys_command.must_int(obj), False)
 
     @staticmethod
+    def valid_int(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        new_int = ext.to_int(obj)
+
+        if new_int is not None:
+            return param_validation_result(obj, True)
+        else:
+            return param_validation_result(error.sys_command.must_int(obj), False)
+
+    @staticmethod
     def conv_int_arr(obj, allow_null):
         base = param_validator.base_null(obj, allow_null)
         if base is not None:
@@ -228,6 +241,20 @@ class param_validator(object):
 
         if new_int is not None:
             return param_validation_result(new_int, False)
+        else:
+            return param_validation_result(error.sys_command.must_int(obj), False)
+
+    @staticmethod
+    def valid_int_arr(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        sp = ext.to_list(obj.split(param_validator.ARRAY_SEPARATOR))
+        new_int = ext.to_int(sp)
+
+        if new_int is not None:
+            return param_validation_result(sp, True)
         else:
             return param_validation_result(error.sys_command.must_int(obj), False)
 

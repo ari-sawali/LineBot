@@ -1393,19 +1393,19 @@ class param_packer(object):
                             parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
                             parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
                             parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
-                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
+                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.valid_int, True),  
                             parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
                             parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
                             parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
-                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True)]
+                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.valid_int, True)]
             elif command_category == param_packer.func_A.command_category.ADD_PAIR_EN:
                 prm_objs = [parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
                             parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
-                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.conv_int, True),  
+                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.valid_int, True),  
                             parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
                             parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
                             parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
-                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.conv_int, True), 
+                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.valid_int, True), 
                             parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
                             parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
             elif command_category == param_packer.func_A.command_category.ADD_PAIR_AUTO_CH:
