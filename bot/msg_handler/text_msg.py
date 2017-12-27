@@ -312,9 +312,9 @@ class text_msg_handler(object):
         param_dict = packing_result.result
 
         rcv_type_result = self._A_get_rcv_type(packing_result)
-        rcv_content = self._A_get_rcv_content(packing_result)
+        rcv_content = self._replace_newline(self._A_get_rcv_content(packing_result))
         rep_type_result = self._A_get_rep_type(packing_result)
-        rep_content = self._A_get_rep_content(packing_result)
+        rep_content = self._replace_newline(self._A_get_rep_content(packing_result))
 
         if not rcv_type_result.success:
             return rcv_type_result.result
@@ -422,7 +422,6 @@ class text_msg_handler(object):
 
     def _D_del_kw(self, kwd_instance, packing_result, pinned, executor_uid):
         param_dict = packing_result.result
-        print param_dict[param_packer.func_D.param_category.IS_ID]
         if param_dict[param_packer.func_D.param_category.IS_ID]:
             disabled_data = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
         else:
