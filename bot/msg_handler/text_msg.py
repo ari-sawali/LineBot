@@ -200,7 +200,7 @@ class text_msg_handler(object):
                 expr = u'搜尋範圍: ID為【{}】的回覆組'.format(u'、'.join([str(id) for id in search_source]))
                 result_data = kwd_instance.search_pair_by_index(search_source)
             else:
-                search_source = prm_dict[param_packer.func_Q.param_category.KEYWORD]
+                search_source = self._replace_newline(prm_dict[param_packer.func_Q.param_category.KEYWORD])
 
                 expr = u'搜尋範圍: 關鍵字 或 回覆 {}【{}】的回覆組'.format(u'為' if exact_same else u'含', search_source)
                 result_data = kwd_instance.search_pair_by_keyword(search_source, exact_same)
