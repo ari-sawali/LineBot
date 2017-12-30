@@ -534,17 +534,22 @@ class text_msg_handler(object):
         if not copy_pinned.success:
             return ext.action_result(copy_pinned.result, False)
 
+        target_gid_result = self._X_get_target_gid(execute_in_gid)
+
+        if not target_gid_result.success:
+            return ext.action_result(target_gid_result.result, False)
+
         if cmd_cat == param_packer.func_X.command_category.BY_ID_WORD:
             if param_dict[param_packer.func_X.param_category.IS_ID]:
-                return ext.action_result(self._kwd_global.clone_by_id(param_dict[param_packer.func_X.param_category.ID], execute_in_gid, executor_uid, False, copy_pinned.result), True)
+                return ext.action_result(self._kwd_global.clone_by_id(param_dict[param_packer.func_X.param_category.ID], target_gid_result.result, executor_uid, False, copy_pinned.result), True)
             else:
-                return ext.action_result(self._kwd_global.clone_by_word(param_dict[param_packer.func_X.param_category.KEYWORD], execute_in_gid, executor_uid, False, copy_pinned.result), True)
+                return ext.action_result(self._kwd_global.clone_by_word(param_dict[param_packer.func_X.param_category.KEYWORD], target_gid_result.result, executor_uid, False, copy_pinned.result), True)
         elif cmd_cat == param_packer.func_X.command_category.BY_GID:
             src_id_result = self._X_get_source_gid(execute_in_gid, pack_result)
             if not src_id_result.success:
                 return ext.action_result(src_id_result.result, False)
 
-            return ext.action_result(self._kwd_global.clone_from_group(src_id_result.result, execute_in_gid, executor_uid, False, copy_pinned.result), True)
+            return ext.action_result(self._kwd_global.clone_from_group(src_id_result.result, target_gid_result.result, executor_uid, False, copy_pinned.result), True)
 
     def _X_generate_output(self, clone_result):
         if clone_result.success:
@@ -571,6 +576,12 @@ class text_msg_handler(object):
                 return ext.action_result(error.sys_command.same_source_target(ret), False)
             else:
                 return ext.action_result(ret, True)
+        else:
+            return ext.action_result(execute_in_gid, True)
+
+    def _X_get_target_gid(self, execute_in_gid):
+        if bot.line_api_wrapper.is_valid_user_id(execute_in_gid):
+            return ext.action_result(bot.remote.PUBLIC_TOKEN(), True)
         else:
             return ext.action_result(execute_in_gid, True)
 
