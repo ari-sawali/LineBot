@@ -515,7 +515,7 @@ class text_msg_handler(object):
                 if not get_uid_result.success:
                     return get_uid_result.result
 
-                clone_result = self._X_clone(self._get_executor_uid(src), executor_permission, packing_result)
+                clone_result = self._X_clone(execute_in_gid, self._get_executor_uid(src), executor_permission, packing_result)
 
                 return self._X_generate_output(clone_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -525,7 +525,7 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-    def _X_clone(self, target_gid, execute_in_gid, executor_uid, executor_permission, pack_result):
+    def _X_clone(self, execute_in_gid, executor_uid, executor_permission, pack_result):
         cmd_cat = pack_result.command_category
         param_dict = pack_result.result
 
