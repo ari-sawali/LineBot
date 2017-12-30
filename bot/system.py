@@ -419,11 +419,20 @@ class line_api_wrapper(object):
         Return TextSendMessage.
         """
         MAX_CHARACTER_LENGTH = 2000 # Ref: https://developers.line.me/en/docs/messaging-api/reference/#text
+        MAX_NEWLINE_COUNT = 35
 
         length = len(text)
+        count_nl = text.count('\n')
+        count_unl = text.count(u'\n')
 
         if length > MAX_CHARACTER_LENGTH:
             text = error.error.line_bot_api.text_length_too_long(length, MAX_CHARACTER_LENGTH, webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
+            
+        if count_nl > MAX_NEWLINE_COUNT:
+            text = error.error.line_bot_api.too_many_newlines(count_nl, MAX_NEWLINE_COUNT, webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
+            
+        if count_unl > MAX_NEWLINE_COUNT:
+            text = error.error.line_bot_api.too_many_newlines(count_unl, MAX_NEWLINE_COUNT, webpage_gen.rec_webpage(text, db.webpage_content_type.TEXT))
 
         return TextSendMessage(text=text)
 

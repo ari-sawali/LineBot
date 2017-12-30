@@ -104,6 +104,10 @@ class error(object):
         def text_length_too_long(length, max_length, external_link):
             return u'因訊息長度({}字)超過LINE API限制({}字)，故無法顯示。請點下方連結以查看訊息。\n{}'.format(length, max_length, external_link)
 
+        @staticmethod
+        def too_many_newlines(newlines, max_newlines, external_link):
+            return u'因訊息超過{}行(最大限制{}行)，故不顯示訊息。請點下方連結以查看訊息。\n{}'.format(newlines, max_newlines, external_link)
+
     class oxford_api(object):
         @staticmethod
         def no_result(vocabulary):
