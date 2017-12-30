@@ -529,7 +529,7 @@ class text_msg_handler(object):
         cmd_cat = pack_result.command_category
         param_dict = pack_result.result
 
-        copy_pinned = self._X_copy_pinned(executor_permission)
+        copy_pinned = self._X_copy_pinned(executor_permission, param_dict[param_packer.func_X.param_category.WITH_PINNED])
 
         if not copy_pinned.success:
             return ext.action_result(copy_pinned.result, False)
@@ -1530,7 +1530,8 @@ class param_packer(object):
 
         def _get_prm_objs(self, command_category):
             if command_category == param_packer.func_X.command_category.BY_ID_WORD:
-                prm_objs = [parameter(param_packer.func_X.param_category.IS_ID, param_validator.is_not_null, True),
+                prm_objs = [parameter(param_packer.func_X.param_category.WITH_PINNED, param_validator.is_not_null, True),
+                            parameter(param_packer.func_X.param_category.IS_ID, param_validator.is_not_null, True),
                             parameter(param_packer.func_X.param_category.ID, param_validator.conv_int_arr, True),
                             parameter(param_packer.func_X.param_category.KEYWORD, param_validator.conv_unicode_arr, True)]
             elif command_category == param_packer.func_X.command_category.BY_GID:
@@ -1605,8 +1606,8 @@ class packer_factory(object):
                               EN_regex=ur'JC\nI\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
     _X = [param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
-                              CH_regex=ur'小水母 複製 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
-                              EN_regex=ur'JC\nX\n(?:(ID)\n(\d{1}[\d\s]*)|(.+))'),
+                              CH_regex=ur'小水母 複製 ?( ?包含置頂)? ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
+                              EN_regex=ur'JC\nX\n(?:(P)\n)?(?:(ID)\n(\d{1}[\d\s]*)|(.+))'),
           param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
                               CH_regex=ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( ?包含置頂)?',
                               EN_regex=ur'JC\nX\nGID\n([CR]{1}[0-9a-f]{32})\n?(P)?')]
