@@ -164,6 +164,14 @@ class error(object):
         def regex_not_implemented(function_code, match_at, regex):
             return u'未定義{}的驗證式第{}句({})的處理。請檢查語法是否正確。'.format(function_code, match_at, regex)
 
+        @staticmethod
+        def same_source_target(gid):
+            return u'指令來源和目的地不得相同。({})'.format(gid)
+
+        @staticmethod
+        def no_available_target_pair():
+            return u'指令執行失敗，無可用回覆組。'
+
     class string_calculator(object):
         @staticmethod
         def result_is_not_numeric(org_text=None):

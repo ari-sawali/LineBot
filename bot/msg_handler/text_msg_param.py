@@ -304,6 +304,14 @@ class param_validator(object):
             return param_validation_result(obj, bot.line_api_wrapper.is_valid_user_id(obj))
 
         @staticmethod
+        def validate_gid(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+            
+            return param_validation_result(obj, bot.line_api_wrapper.is_valid_room_group_id(obj))
+
+        @staticmethod
         def validate_gid_public_global(obj, allow_null):
             base = param_validator.base_null(obj, allow_null)
             if base is not None:

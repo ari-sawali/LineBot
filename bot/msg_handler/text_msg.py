@@ -490,8 +490,6 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-        regex_list = packer_factory._I
-
     def _I_generate_output(self, kwd_instance, query_result):
         if query_result.success:
             max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
@@ -506,76 +504,90 @@ class text_msg_handler(object):
             return text
         else:
             return unicode(query_result.result)
+
+    def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._X
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
+
+                clone_result = self._X_clone(self._get_executor_uid(src), executor_permission, packing_result)
+
+                return self._X_generate_output(clone_result)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _X_clone(self, target_gid, execute_in_gid, executor_uid, executor_permission, pack_result):
+        cmd_cat = pack_result.command_category
+        param_dict = pack_result.result
+
+        copy_pinned = self._X_copy_pinned(executor_permission)
+
+        if not copy_pinned.success:
+            return ext.action_result(copy_pinned.result, False)
+
+        src_id_result = self._X_get_source_gid(execute_in_gid, pack_result)
+        if not src_id_result.success:
+            return ext.action_result(src_id_result.result, False)
+
+        if cmd_cat == param_packer.func_X.command_category.BY_ID_WORD:
+            if param_dict[param_packer.func_X.param_category.IS_ID]:
+                return ext.action_result(self._kwd_global.clone_by_id(param_dict[param_packer.func_X.param_category.ID], execute_in_gid, executor_uid, False, copy_pinned.result), True)
+            else:
+                return ext.action_result(self._kwd_global.clone_by_word(param_dict[param_packer.func_X.param_category.KEYWORD], execute_in_gid, executor_uid, False, copy_pinned.result), True)
+        elif cmd_cat == param_packer.func_X.command_category.BY_GID:
+            return ext.action_result(self._kwd_global.clone_from_group(src_id_result.result, execute_in_gid, executor_uid, False, copy_pinned.result), True)
+
+    def _X_generate_output(self, clone_result):
+        if clone_result.success:
+            cloned_ids = clone_result.result
+
+            if len(cloned_ids) > 0:
+                first_id_str = str(cloned_ids[0])
+                last_id_str = str(cloned_ids[-1])
+                return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in cloned_ids])), self._webpage_generator),
+                        bot.line_api_wrapper.wrap_template_with_action({
+                            u'回覆組資料查詢(簡略)': text_msg_handler.CH_HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
+                            u'回覆組資料查詢(詳細)': text_msg_handler.CH_HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
+            else:
+                return error.sys_command.no_available_target_pair()
+        else:
+            return unicode(clone_result.result)
+
+    def _X_get_source_gid(self, execute_in_gid, pack_result):
+        param_dict = pack_result.result
+
+        if param_dict[param_packer.func_X.param_category.SOURCE_GID] is not None:
+            ret = param_dict[param_packer.func_X.param_category.SOURCE_GID]
+            if ret == execute_in_gid:
+                return ext.action_result(error.sys_command.same_source_target(ret), False)
+            else:
+                return ext.action_result(ret, True)
+        else:
+            return ext.action_result(execute_in_gid, True)
+
+    def _X_copy_pinned(self, executor_permission, user_wants_copy):
+        required_perm = bot.permission.MODERATOR
+
+        if user_wants_copy:
+            if executor_permission >= required_perm:
+                return ext.action_result(True, True)
+            else:
+                return ext.action_result(error.permission.restricted(required_perm), False)
+        else:
+            return ext.action_result(False, True)
     
     ####################
     ### UNDONE BELOW ###
     ####################
-
-    def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._X
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-
-        executor_uid = bot.line_api_wrapper.source_user_id(src)
-
-        able_to_copy_pinned = executor_permission >= bot.permission.MODERATOR
-
-        if regex_result.match_at == 0:
-            target_gid = regex_result.group(4)
-            if target_gid == u'這裡':
-                target_gid = execute_in_gid
-
-            if not bot.line_api_wrapper.is_valid_room_group_id(target_gid, True) and not target_gid == execute_in_gid:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'合法群組ID、"這裡"或"PUBLIC"(複製目標)', regex_result.group(4))
-
-            is_ids = regex_result.group(2) is not None
-
-            if is_ids:
-                source = ext.to_int(regex_result.group(3).split(self._array_separator))
-            else:
-                source = regex_result.group(1)
-
-            if source is None:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'正整數、正整數陣列(代表ID)或字串、字串陣列(代表關鍵字)', regex_result.group(1))
-
-            if is_ids:
-                result_ids = self._kwd_global.clone_by_id(source, target_gid, executor_uid, False, able_to_copy_pinned)
-            else:
-                result_ids = self._kwd_global.clone_by_word(source, target_gid, executor_uid, False, able_to_copy_pinned)
-        elif regex_result.match_at == 1:
-            source_gid = regex_result.group(1)
-            if source_gid is None:
-                source_gid = execute_in_gid
-            target_gid = regex_result.group(3)
-            if target_gid == u'這裡':
-                target_gid = execute_in_gid
-            include_pinned = regex_result.group(2) is not None and able_to_copy_pinned
-
-            if not bot.line_api_wrapper.is_valid_room_group_id(source_gid, True) and not source_gid == execute_in_gid:
-                return error.main.invalid_thing_with_correct_format(u'參數1', u'合法群組ID、"這裡"或"PUBLIC"(複製來源)', regex_result.group(1))
-
-            if not bot.line_api_wrapper.is_valid_room_group_id(target_gid, True) and not target_gid == execute_in_gid:
-                return error.main.invalid_thing_with_correct_format(u'參數2', u'合法群組ID、"這裡"或"PUBLIC"(複製來源)', regex_result.group(2))
-
-            if source_gid == target_gid:
-                return error.main.miscellaneous("回覆組複製來源和目的地相同。")
-
-            result_ids = self._kwd_global.clone_from_group(source_gid, target_gid, executor_uid, False, include_pinned)
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'X', regex_result.match_at, regex_result.regex))
-
-        if len(result_ids) > 0:
-            first_id_str = str(result_ids[0])
-            last_id_str = str(result_ids[-1])
-            return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in result_ids])), self._webpage_generator),
-                    bot.line_api_wrapper.wrap_template_with_action({
-                        u'回覆組資料查詢(簡略)': text_msg_handler.CH_HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
-                        u'回覆組資料查詢(詳細)': text_msg_handler.CH_HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
-        else:
-            return u'回覆組複製失敗。回覆組來源沒有符合條件的回覆組可供複製。'
         
     def _X2(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._X2
@@ -1497,6 +1509,37 @@ class param_packer(object):
                 raise UndefinedCommandCategoryException()
 
             return prm_objs
+    
+    class func_X(param_packer_base):
+        class command_category(ext.EnumWithName):
+            BY_ID_WORD = 1, '根據ID/字'
+            BY_GID = 2, '根據群組'
+
+        class param_category(ext.EnumWithName):
+            IS_ID = 1, '根據ID?'
+            SOURCE_GID = 2, '來源群組ID'
+            TARGET_GID = 3, '目標群組ID'
+            ID = 4, '回覆組ID'
+            KEYWORD = 5, '關鍵字'
+            WITH_PINNED = 6, '包含置頂'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_X, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_X.command_category.BY_ID_WORD:
+                prm_objs = [parameter(param_packer.func_X.param_category.IS_ID, param_validator.is_not_null, True),
+                            parameter(param_packer.func_X.param_category.ID, param_validator.conv_int_arr, True),
+                            parameter(param_packer.func_X.param_category.KEYWORD, param_validator.conv_unicode_arr, True)]
+            elif command_category == param_packer.func_X.command_category.BY_GID:
+                prm_objs = [parameter(param_packer.func_X.param_category.SOURCE_GID, param_validator.line_bot_api.validate_gid),
+                            parameter(param_packer.func_X.param_category.WITH_PINNED, param_validator.is_not_null, True)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
 
 class packer_factory(object):
     _S = [param_packer.func_S(command_category=param_packer.func_S.command_category.DB_COMMAND,
@@ -1561,8 +1604,12 @@ class packer_factory(object):
                               CH_regex=ur'小水母 詳細找 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
                               EN_regex=ur'JC\nI\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
 
-    _X = [ur'小水母 複製 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?', 
-          ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( 包含置頂)?(?:到([CR]{1}[0-9a-f]{32}|PUBLIC))?']
+    _X = [param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
+                              CH_regex=ur'小水母 複製 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
+                              EN_regex=ur'JC\nX\n(?:(ID)\n(\d{1}[\d\s]*)|(.+))'),
+          param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
+                              CH_regex=ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( ?包含置頂)?',
+                              EN_regex=ur'JC\nX\nGID\n([CR]{1}[0-9a-f]{32})\n?(P)?')]
 
     _X2 = [ur'小水母 清除(於([CR]{1}[0-9a-f]{32})中)?所有的回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340']
 
