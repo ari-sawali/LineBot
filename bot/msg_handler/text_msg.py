@@ -321,9 +321,6 @@ class text_msg_handler(object):
 
         if not rep_type_result.success:
             return rep_type_result.result
-        
-        print param_dict
-        print param_dict[param_packer.func_A.param_category.ATTACHMENT]
 
         # create and write
         result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, rcv_type_result.result, rep_type_result.result, None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
