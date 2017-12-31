@@ -635,10 +635,10 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 cmd_cat = packing_result.command_category
                 if packing_result.command_category == param_packer.func_E.command_category.MOD_LINKED:
-                    mod_result = self._E_mod_linked(packing_result, executor_permission)
+                    mod_result = self._E_mod_linked(packing_result, executor_permission, kwd_instance)
                     return self._E_generate_output_mod_linked(mod_result, pack_result)
                 elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
-                    mod_result = self._E_mod_pinned(packing_result, executor_permission)
+                    mod_result = self._E_mod_pinned(packing_result, executor_permission, kwd_instance)
                     return self._E_generate_output_mod_pinned(mod_result, pack_result)
                 else:
                     raise UndefinedCommandCategoryException()
@@ -649,7 +649,7 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-    def _E_able_to_mod_pinned(self, executor_permission):
+    def _E_able_to_mod_pinned(self, executor_permission, kwd_instance):
         return executor_permission >= bot.permission.MODERATOR
 
     def _E_mod_linked(self, pack_result, executor_permission):
@@ -679,7 +679,7 @@ class text_msg_handler(object):
         else:
             return '{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
-    def _E_mod_pinned(self, pack_result, executor_permission):
+    def _E_mod_pinned(self, pack_result, executor_permission, kwd_instance):
         param_dict = pack_result.result
 
         mod_pin = self._E_able_to_mod_pinned(executor_permission)
