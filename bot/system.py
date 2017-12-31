@@ -422,6 +422,10 @@ class line_api_wrapper(object):
         MAX_NEWLINE_COUNT = 35
 
         length = len(text)
+
+        if isinstance(text, str):
+            text = text.decode('utf-8')
+
         count_nl = text.count('\n')
         count_unl = text.count(u'\n')
 

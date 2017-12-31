@@ -905,13 +905,16 @@ class text_msg_handler(object):
                 cfg_type = db.config_type.ALL
             else:
                 return error.sys_command.action_not_implemented(u'GA', regex_result.match_at, action)
-
-            change_result = self._group_manager.set_config_type(execute_in_gid, cfg_type, setter_uid)
+            
+            if executor_permission > bot.permission.MODERATOR:
+                change_result = self._group_manager.set_config_type(execute_in_gid, cfg_type)
+            else:
+                change_result = False
 
             if change_result:
                 return u'我變成{}了哦！'.format(unicode(cfg_type))
             else:
-                return u'我沒辦法變成{}...'.format(change_result)
+                return u'你又不是管理員，我憑甚麼聽你的話去當{}啊？蛤？裝大咖的廢物，87'.format(change_result)
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'GA', regex_result.match_at, regex_result.regex))
 

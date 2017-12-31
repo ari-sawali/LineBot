@@ -105,7 +105,7 @@ class group_manager(db_base):
             print ex
             raise ex
 
-    def set_config_type(self, gid, config_type, uid):
+    def set_config_type(self, gid, config_type):
         """Return true if success, else return error message in string."""
 
         if len(gid) != group_manager.ID_LENGTH:
