@@ -702,6 +702,8 @@ class text_msg_handler(object):
     def _E_generate_shortcut_template(self, pack_result):
         param_dict = pack_result.result
 
+        expr = self._E_generate_expr(pack_result)
+
         if param_dict[param_packer.func_E.param_category.IS_ID]:
             target_array = param_dict[param_packer.func_E.param_category.ID]
             shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
