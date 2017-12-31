@@ -636,10 +636,10 @@ class text_msg_handler(object):
                 cmd_cat = packing_result.command_category
                 if packing_result.command_category == param_packer.func_E.command_category.MOD_LINKED:
                     mod_result = self._E_mod_linked(packing_result, executor_permission, kwd_instance)
-                    return self._E_generate_output_mod_linked(mod_result, pack_result)
+                    return self._E_generate_output_mod_linked(mod_result, packing_result)
                 elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
                     mod_result = self._E_mod_pinned(packing_result, executor_permission, kwd_instance)
-                    return self._E_generate_output_mod_pinned(mod_result, pack_result)
+                    return self._E_generate_output_mod_pinned(mod_result, packing_result)
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
