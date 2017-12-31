@@ -774,7 +774,7 @@ class text_msg_handler(object):
                 
                 if cmd_cat == param_packer.func_P.command_category.MESSAGE_RECORD:
                     msg_rec = self._P_get_msg_track_data(packing_result)
-                    return self._P_generate_output_msg_track(msg_rec)
+                    return self._P_generate_output_msg_track(packing_result, msg_rec)
                 elif cmd_cat == param_packer.func_P.command_category.SYSTEM_RECORD:
                     return self._P_generate_output_sys_rec(packing_result)
                 else:
@@ -840,7 +840,7 @@ class text_msg_handler(object):
         else:
             return error.sys_command.unknown_func_P_record_category(rec_cat)
 
-    def _P_generate_output_msg_track(self, data):
+    def _P_generate_output_msg_track(self, pack_result, data):
         limit = self._P_get_msg_track_data_count(pack_result)
 
         tracking_string_obj = db.group_manager.message_track_string(data, limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True, self._group_manager.message_sum())
