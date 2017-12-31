@@ -724,94 +724,148 @@ class text_msg_handler(object):
             expr = u'關鍵字: ' + u'、'.join(target_array)
 
         return expr
+        
+    def _K(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._K
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                rnk_cat = packing_result.result[param_packer.func_K.param_category.CATEGORY]
+                limit = self._K_get_limit(packing_result)
+                
+                if rnk_cat == special_param.func_K.ranking_category.USER:
+                    return kwd_instance.user_created_rank_string(limit, self._line_api_wrapper)
+                elif rnk_cat == special_param.func_K.ranking_category.KEYWORD:
+                    return kwd_instance.get_ranking_call_count_string(limit)
+                elif rnk_cat == special_param.func_K.ranking_category.RECENTLY_USED:
+                    return kwd_instance.recently_called_string(limit)
+                else:
+                    raise UndefinedCommandCategoryException()
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _K_default_limit(self):
+        return self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
+
+    def _K_get_limit(self, pack_result):
+        prm_dict = pack_result.result
+
+        default = self._K_default_limit()
+        limit_count = prm_dict[param_packer.func_K.param_category.COUNT] 
+
+        if limit_count is None:
+            return default
+        else:
+            return limit_count
+    
+    def _P(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._P
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                cmd_cat = packing_result.command_category
+                limit = self._K_get_limit(packing_result)
+                
+                if cmd_cat == param_packer.func_P.command_category.MESSAGE_RECORD:
+                    msg_rec = self._P_get_msg_track_data(packing_result)
+                    return self._P_generate_output_msg_track(msg_rec)
+                elif cmd_cat == param_packer.func_P.command_category.SYSTEM_RECORD:
+                    return self._P_generate_output_sys_rec(packing_result)
+                else:
+                    raise UndefinedCommandCategoryException()
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _P_generate_output_sys_rec(self, pack_result):
+        rec_cat = pack_result.result[param_packer.func_P.param_category.CATEGORY]
+
+        if type_category == u'自動回覆':
+            kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+            instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
+            return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
+        elif type_category == u'資訊':
+            text = u'【系統統計資料】\n'
+            text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
+            text += self._system_stats.get_statistics()
+
+            return text
+        elif type_category == u'圖片':
+            import socket
+            ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+
+            return self._imgur_api_wrapper.get_status_string(ip_address)
+        elif type_category == u'匯率':
+            return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
+        elif type_category == u'黑名單':
+            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format   (self._system_data.boot_up)
+            text += self._loop_prev.get_all_banned_str()
+
+            return text
+        else:
+            return error.sys_command.unknown_func_P_record_category()
+
+
+        if rec_cat == special_param.func_P.record_category.AUTO_REPLY:
+            kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+            instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
+            return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
+        elif rec_cat == special_param.func_P.record_category.BAN_LIST:
+            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format   (self._system_data.boot_up)
+            text += self._loop_prev.get_all_banned_str()
+
+            return text
+        elif rec_cat == special_param.func_P.record_category.EXCHANGE_RATE:
+            return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
+        elif rec_cat == special_param.func_P.record_category.IMGUR_API:
+            import socket
+            ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+
+            return self._imgur_api_wrapper.get_status_string(ip_address)
+        elif rec_cat == special_param.func_P.record_category.SYS_INFO:
+            text = u'【系統統計資料】\n'
+            text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
+            text += self._system_stats.get_statistics()
+
+            return text
+        else:
+            return error.sys_command.unknown_func_P_record_category(rec_cat)
+
+    def _P_generate_output_msg_track(self, data):
+        limit = self._P_get_msg_track_data_count(pack_result)
+
+        tracking_string_obj = db.group_manager.message_track_string(data, limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True, self._group_manager.message_sum())
+        
+        return u'為避免訊息過長造成洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
+
+    def _P_get_msg_track_data(self, pack_result):
+        limit = self._P_get_msg_track_data_count(pack_result)
+
+        return self._group_manager.order_by_recorded_msg_count(limit)
+
+    def _P_get_msg_track_data_count(self, pack_result):
+        prm_dict = pack_result.result
+
+        default = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
+        count = prm_dict[param_packer.func_P.param_category.COUNT]
+
+        if count is None:
+            return default
+        else:
+            return count
     
     ####################
     ### UNDONE BELOW ###
     ####################
-        
-    def _K(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._K
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-        default = self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
-        
-        limit = regex_result.group(2)
-        # validate parameters
-        if limit is not None:
-            limit = ext.to_int(limit)
-            if limit is None:
-                return error.main.incorrect_param(u'參數2', u'整數，代表表示結果上限')
-        else:
-            limit = default
-        
-        if limit > 99:
-            return error.main.incorrect_param(u'參數2', u'小於99的整數')
-
-        if regex_result.match_at == 0:
-            type_category = regex_result.group(3)
-
-            if type_category == u'使用者':
-                return kwd_instance.user_created_rank_string(limit, self._line_api_wrapper)
-            elif type_category == u'回覆組':
-                return kwd_instance.get_ranking_call_count_string(limit)
-            elif type_category == u'使用過的':
-                return kwd_instance.recently_called_string(limit)
-            else:
-                return error.sys_command.action_not_implemented(u'K', regex_result.match_at, type_category)
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'K', regex_result.match_at, regex_result.regex))
-    
-    def _P(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._P
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-
-        if regex_result.match_at == 0:
-            limit = ext.to_int(regex_result.group(1))
-
-            if limit is None:
-                limit = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
-        
-            tracking_string_obj = db.group_manager.message_track_string(self._group_manager.order_by_recorded_msg_count(limit), limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True, self._group_manager.message_sum())
-        
-            return u'為避免訊息過長洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
-        elif regex_result.match_at == 1:
-            type_category = regex_result.group(1)
-
-            if type_category == u'自動回覆':
-                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
-                return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
-            elif type_category == u'資訊':
-                text = u'【系統統計資料】\n'
-                text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
-                text += self._system_stats.get_statistics()
-
-                return text
-            elif type_category == u'圖片':
-                import socket
-                ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
-
-                return self._imgur_api_wrapper.get_status_string(ip_address)
-            elif type_category == u'匯率':
-                return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
-            elif type_category == u'黑名單':
-                text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format   (self._system_data.boot_up)
-                text += self._loop_prev.get_all_banned_str()
-
-                return text
-            else:
-                return error.sys_command.action_not_implemented(u'P', regex_result.match_at, type_category)
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'P', regex_result.match_at, regex_result.regex))
     
     def _P2(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._P2
@@ -1406,7 +1460,7 @@ class text_msg_handler(object):
                full_text.startswith(text_msg_handler.EN_HEAD) or \
                bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
 
-class param_packer(object):
+class param_packer(object): 
     class func_S(param_packer_base):
         class command_category(ext.EnumWithName):
             DB_COMMAND = 1, '資料庫指令'
@@ -1545,8 +1599,8 @@ class param_packer(object):
                 prm_objs = [parameter(param_packer.func_Q.param_category.GLOBAL, param_validator.is_not_null, True),
                             parameter(param_packer.func_Q.param_category.AVAILABLE, param_validator.is_not_null, True)]
             elif command_category == param_packer.func_Q.command_category.BY_ID_RANGE:
-                prm_objs = [parameter(param_packer.func_Q.param_category.START_ID, param_validator.conv_int),  
-                            parameter(param_packer.func_Q.param_category.END_ID, param_validator.conv_int)]
+                prm_objs = [parameter(param_packer.func_Q.param_category.START_ID, param_validator.conv_int_gt_0),  
+                            parameter(param_packer.func_Q.param_category.END_ID, param_validator.conv_int_gt_0)]
             elif command_category == param_packer.func_Q.command_category.BY_UID:
                 prm_objs = [parameter(param_packer.func_Q.param_category.UID, param_validator.line_bot_api.validate_uid)]
             elif command_category == param_packer.func_Q.command_category.BY_GID:
@@ -1642,6 +1696,52 @@ class param_packer(object):
                             parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
                             parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
                             parameter(param_packer.func_E.param_category.NOT_PIN, param_validator.is_not_null)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+
+    class func_K(param_packer_base):
+        class command_category(ext.EnumWithName):
+            RANKING = 1, '排名'
+
+        class param_category(ext.EnumWithName):
+            CATEGORY = 1, '種類'
+            COUNT = 2, '結果數量'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_K, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_E.command_category.RANKING:
+                prm_objs = [parameter(param_packer.func_E.param_category.CATEGORY, param_validator.special_category.K_ranking_category),
+                            parameter(param_packer.func_E.param_category.COUNT, param_validator.conv_int_gt_0, True)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+
+    class func_P(param_packer_base):
+        class command_category(ext.EnumWithName):
+            SYSTEM_RECORD = 1, '系統紀錄'
+            MESSAGE_RECORD = 2, '訊息量紀錄'
+
+        class param_category(ext.EnumWithName):
+            CATEGORY = 1, '種類'
+            COUNT = 2, '結果數量'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_P, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_P.command_category.SYSTEM_RECORD:
+                prm_objs = [parameter(param_packer.func_P.param_category.CATEGORY, param_validator.special_category.P_record_category)]
+            elif command_category == param_packer.func_P.command_category.MESSAGE_RECORD:
+                prm_objs = [parameter(param_packer.func_P.param_category.COUNT, param_validator.conv_int_gt_0, True)]
             else:
                 raise UndefinedCommandCategoryException()
 
@@ -1752,10 +1852,16 @@ class packer_factory(object):
                               CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))(不)?置頂',
                               EN_regex=ur'JC\nE\n(?:(ID)\n(\d{1}[\d\s]*)|((?:.|\n)+))\n(N)?P')]
 
-    _K = [ur'小水母 前(([1-9]\d?)名)?(使用者|回覆組|使用過的)']
+    _K = [param_packer.func_K(command_category=param_packer.func_K.command_category.RANKING,
+                              CH_regex=ur'小水母 排名(使用者|回覆組|使用過的) ?(?:前([1-9]\d?)名)?',
+                              EN_regex=ur'JC\nK\n(USER|KWRC|KW)(?:\n?([1-9]\d?))?')]
 
-    _P = [ur'小水母 系統訊息前(\d+)名', 
-          ur'小水母 系統(自動回覆|資訊|圖片|匯率|黑名單)']
+    _P = [param_packer.func_P(command_category=param_packer.func_P.command_category.MESSAGE_RECORD,
+                              CH_regex=ur'小水母 系統訊息前([1-9]\d?)名',
+                              EN_regex=ur'JC\nP\nMSG(?:\n([1-9]\d?))?'),
+          param_packer.func_P(command_category=param_packer.func_P.command_category.SYSTEM_RECORD,
+                              CH_regex=ur'小水母 系統(自動回覆|資訊|圖片|匯率|黑名單)',
+                              EN_regex=ur'JC\nP\n(KW|SYS|IMG|EXC|BAN)')]
 
     _P2 = [ur'小水母 使用者 ?([U]{1}[0-9a-f]{32}) ?的資料']
 

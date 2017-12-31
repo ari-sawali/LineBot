@@ -214,7 +214,7 @@ class param_validator(object):
             return param_validation_result(error.sys_command.must_sha(obj), False)
 
     @staticmethod
-    def conv_int(obj, allow_null):
+    def conv_int_gt_0(obj, allow_null):
         base = param_validator.base_null(obj, allow_null)
         if base is not None:
             return base
@@ -223,6 +223,8 @@ class param_validator(object):
 
         if new_int is not None:
             return param_validation_result(new_int, True)
+        elif new_int < 1:
+            return param_validation_result(error.sys_command.must_gt_0(obj), False)
         else:
             return param_validation_result(error.sys_command.must_int(obj), False)
 
@@ -309,7 +311,7 @@ class param_validator(object):
 
             if param_validator.validate_https(obj, allow_null).valid or param_validator.validate_sha224(obj, allow_null).valid:
                 ret = db.word_type.PICTURE
-            elif param_validator.conv_int(obj, allow_null).valid:
+            elif param_validator.conv_int_gt_0(obj, allow_null).valid:
                 ret = db.word_type.STICKER
             elif param_validator.conv_unicode(obj, allow_null).valid:
                 ret = db.word_type.TEXT
@@ -343,6 +345,47 @@ class param_validator(object):
             
             return param_validation_result(obj, bot.line_api_wrapper.is_valid_room_group_id(obj, True, True))
 
+    class special_category(object):
+        @staticmethod
+        def K_ranking_category(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            err = error.sys_command.unknown_func_K_ranking_category(obj)
+            t = None
+
+            if obj == u'使用者' or obj == u'USER':
+                t = special_param.func_K.ranking_category.USER
+            elif obj == u'使用過的' or obj == u'KWRC':
+                t = special_param.func_K.ranking_category.RECENTLY_USED
+            elif obj == u'回覆組' or obj == u'KW':
+                t = special_param.func_K.ranking_category.KEYWORD
+
+            return param_validation_result(t, t != err)
+
+        @staticmethod
+        def P_record_category(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            err = error.sys_command.unknown_func_K_ranking_category(obj)
+            t = None
+
+            if obj == u'自動回覆' or obj == u'KW':
+                t = special_param.func_P.record_category.USER
+            elif obj == u'資訊' or obj == u'SYS':
+                t = special_param.func_P.record_category.RECENTLY_USED
+            elif obj == u'圖片' or obj == u'IMG':
+                t = special_param.func_P.record_category.RECENTLY_USED
+            elif obj == u'匯率' or obj == u'EXC':
+                t = special_param.func_P.record_category.RECENTLY_USED
+            elif obj == u'黑名單' or obj == u'BAN':
+                t = special_param.func_P.record_category.KEYWORD
+
+            return param_validation_result(t, t != err)
+
 class param_validation_result(ext.action_result):
     def __init__(self, ret, valid):
         super(param_validation_result, self).__init__(ret, valid)
@@ -354,6 +397,22 @@ class param_validation_result(ext.action_result):
     @property
     def valid(self):
         return self._success
+
+
+class special_param(object):
+    class func_K(object):
+        class ranking_category(ext.EnumWithName):
+            KEYWORD = 1, '關鍵字排名'
+            RECENTLY_USED = 2, '最近使用'
+            USER = 3, '使用者'
+
+    class func_P(object):
+        class record_category(ext.EnumWithName):
+            AUTO_REPLY = 1, '關鍵字排名'
+            SYS_INFO = 2, '最近使用'
+            IMGUR_API = 3, '使用者'
+            EXCHANGE_RATE = 4, '匯率轉換'
+            BAN_LIST = 5, '黑名單'
 
 class UndefinedCommandCategoryException(Exception):
     def __init__(self, *args):

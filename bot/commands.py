@@ -67,7 +67,7 @@ sys_cmd_dict = { u'記住': command_object([u'記住', u'AA\n'], u'A', remote.AL
                  u'頻道': command_object(u'頻道', u'H', remote.NOT_AVAILABLE), 
                  u'系統': command_object(u'系統', u'P', remote.ALLOW_ALL), 
                  u'使用者': command_object(u'使用者', u'P2', remote.GROUP_ID_ONLY),
-                 u'前': command_object(u'前', u'K', remote.ALLOW_ALL), 
+                 u'排名': command_object(u'排名', u'K', remote.ALLOW_ALL), 
                  u'最近的': command_object(u'最近的', u'L', remote.GROUP_ID_ONLY), 
                  u'匯率': command_object(u'匯率', u'C', remote.NOT_AVAILABLE), 
                  u'雜湊': command_object(u'雜湊', u'SHA', remote.NOT_AVAILABLE), 

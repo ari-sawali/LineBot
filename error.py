@@ -136,6 +136,10 @@ class error(object):
             return u'必須是https連結。({})'.format(obj)
 
         @staticmethod
+        def must_gt_0(obj):
+            return u'整數需要大於0。({} - {})'.format(type(obj), obj)
+
+        @staticmethod
         def must_int(obj):
             return u'必須是整數或整數陣列。({} - {})'.format(type(obj), obj)
 
@@ -171,6 +175,15 @@ class error(object):
         @staticmethod
         def no_available_target_pair():
             return u'指令執行失敗，無可用回覆組。'
+
+        @staticmethod
+        def unknown_func_K_ranking_category(obj):
+            return u'不明的排名種類。({})'.format(obj)
+
+        @staticmethod
+        def unknown_func_P_record_category(obj):
+            return u'不明的系統紀錄種類。({})'.format(obj)
+            
 
     class string_calculator(object):
         @staticmethod
