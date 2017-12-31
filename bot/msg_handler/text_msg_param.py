@@ -163,6 +163,17 @@ class param_validator(object):
             return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
 
     @staticmethod
+    def conv_unicode_lower(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        try:
+            return param_validation_result(unicode(obj).lower(), True)
+        except Exception as ex:
+            return param_validation_result(u'{} - {}'.format(type(ex), ex.message), False)
+
+    @staticmethod
     def conv_unicode_arr(obj, allow_null):
         base = param_validator.base_null(obj, allow_null)
         if base is not None:

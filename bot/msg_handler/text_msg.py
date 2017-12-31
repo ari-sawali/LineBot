@@ -635,10 +635,10 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 cmd_cat = packing_result.command_category
                 if packing_result.command_category == param_packer.func_E.command_category.MOD_LINKED:
-                    mod_result = self._E_mod_linked(pack, executor_permission)
+                    mod_result = self._E_mod_linked(packing_result, executor_permission)
                     return self._E_generate_output_mod_linked(mod_result, pack_result)
                 elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
-                    mod_result = self._E_mod_pinned(pack, executor_permission)
+                    mod_result = self._E_mod_pinned(packing_result, executor_permission)
                     return self._E_generate_output_mod_pinned(mod_result, pack_result)
                 else:
                     raise UndefinedCommandCategoryException()
@@ -1011,22 +1011,36 @@ class text_msg_handler(object):
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'SHA', regex_result.match_at, regex_result.regex))
     
     def _O(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._O
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
+        packer_list = packer_factory._O
 
-        if regex_result is None:
-            return
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                oxford_query_result = self._O_oxford_query(packing_result)
 
-        if regex_result.match_at == 0:
-            voc = regex_result.group(1)
-
-            if not self._oxford_dict.enabled:
-                return error.oxford_api.disabled()
+                return self._O_generate_output(packing_result, oxford_query_result)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
             else:
-                return bot.oxford_api_wrapper.json_to_string(voc, self._oxford_dict.get_data_json(voc))
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _O_oxford_query(self, pack_result):
+        if not self._oxford_dict.enabled:
+            return ext.action_result(error.oxford_api.disabled(), False)
         else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'O', regex_result.match_at, regex_result.regex))
+            voc = pack_result.result[param_packer.func_O.param_category.VOCABULARY]
+
+            return ext.action_result(self._oxford_dict.get_data_json(pack_result.result[param_packer.func_O.param_category.VOCABULARY]), True)
+
+    def _O_generate_output(self, pack_result, query_result):
+        if not query_result.success:
+            return ext.action_result(query_result.result, False)
+        else:
+            voc = pack_result.result[param_packer.func_O.param_category.VOCABULARY]
+
+            return ext.action_result(bot.oxford_api_wrapper.json_to_string(pack_result.result[param_packer.func_O.param_category.VOCABULARY], query_result.result), True)
     
     def _RD(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._RD
@@ -1599,7 +1613,7 @@ class param_packer(object):
             MOD_PINNED = 2, '修改置頂'
 
         class param_category(ext.EnumWithName):
-            IS_ID = 1, '根據ID?'
+            VOCABULARYIS_ID = 1, '根據ID?'
             ID = 2, 'ID陣列'
             KEYWORD = 3, '關鍵字'
             LINKED = 4, '相關關鍵字'
@@ -1623,6 +1637,30 @@ class param_packer(object):
                             parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
                             parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
                             parameter(param_packer.func_E.param_category.NOT_PIN, param_validator.is_not_null)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+
+
+
+
+
+    class func_O(param_packer_base):
+        class command_category(ext.EnumWithName):
+            OXFORD = 1, '牛津字典'
+
+        class param_category(ext.EnumWithName):
+            VOCABULARY = 1, '單字'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_O, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_O.command_category.OXFORD:
+                prm_objs = [parameter(param_packer.func_O.param_category.VOCABULARY, param_validator.conv_unicode_lower)]
             else:
                 raise UndefinedCommandCategoryException()
 
@@ -1728,7 +1766,9 @@ class packer_factory(object):
 
     _SHA = [ur'小水母 雜湊SHA ?(.*)']
 
-    _O = [ur'小水母 查 ?(\w+)']
+    _O = [param_packer.func_O(command_category=param_packer.func_O.command_category.OXFORD,
+                              CH_regex=ur'小水母 查 ?(\w+)',
+                              EN_regex=ur'JC\nO\n(\w+)')]
 
     _RD = [ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', 
            ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', 
