@@ -731,8 +731,10 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
-                rnk_cat = packing_result.result[param_packer.func_K.param_category.CATEGORY]
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+
                 limit = self._K_get_limit(packing_result)
+                rnk_cat = packing_result.result[param_packer.func_K.param_category.CATEGORY]
                 
                 if rnk_cat == special_param.func_K.ranking_category.USER:
                     return kwd_instance.user_created_rank_string(limit, self._line_api_wrapper)
