@@ -259,6 +259,19 @@ class param_validator(object):
     def is_not_null(obj, allow_null):
         return param_validation_result(obj is not None, True)
 
+    @staticmethod
+    def text_to_bool(obj, allow_null):
+        base = param_validator.base_null(obj, allow_null)
+        if base is not None:
+            return base
+
+        if any(cond == obj for cond in (u'有', '有', 'O', u'O')):
+            return param_validation_result(True, True)
+        elif any(cond == obj for cond in (u'無', '無', 'X', u'X')):
+            return param_validation_result(False, True)
+        else:
+            raise UndefinedTextException(obj)
+
     class keyword_dict(object):
         @staticmethod
         def conv_pair_type_from_org(obj, allow_null):
@@ -342,3 +355,7 @@ class UndefinedParameterException(Exception):
 class UndefinedPackedStatusException(Exception):
     def __init__(self, *args):
         return super(UndefinedPackedStatusException, self).__init__(*args)
+
+class UndefinedTextException(Exception):
+    def __init__(self, *args):
+        return super(UndefinedTextException, self).__init__(*args)

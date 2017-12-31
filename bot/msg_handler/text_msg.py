@@ -595,117 +595,137 @@ class text_msg_handler(object):
                 return ext.action_result(error.permission.restricted(required_perm), False)
         else:
             return ext.action_result(False, True)
+        
+    def _X2(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._X2
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
+
+                clear_count = self._kwd_global.clear(execute_in_gid, get_uid_result.result)
+
+                return self._X2_generate_output(clear_count)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _X2_generate_output(self, clear_count):
+        if clear_count > 0:
+            return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
+        else:
+            return u'沒有刪除任何回覆組。'
+        
+    def _E(self, src, execute_in_gid, group_config_type, executor_permission, text):
+        packer_list = packer_factory._E
+
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                get_uid_result = self._get_executor_uid(src)
+                if not get_uid_result.success:
+                    return get_uid_result.result
+
+                kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                cmd_cat = packing_result.command_category
+                if packing_result.command_category == param_packer.func_E.command_category.MOD_LINKED:
+                    mod_result = self._E_mod_linked(pack, executor_permission)
+                    return self._E_generate_output_mod_linked(mod_result, pack_result)
+                elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
+                    mod_result = self._E_mod_pinned(pack, executor_permission)
+                    return self._E_generate_output_mod_pinned(mod_result, pack_result)
+                else:
+                    raise UndefinedCommandCategoryException()
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
+            else:
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
+
+    def _E_able_to_mod_pinned(self, executor_permission):
+        return executor_permission >= bot.permission.MODERATOR
+
+    def _E_mod_linked(self, pack_result, executor_permission):
+        param_dict = pack_result.result
+
+        is_add = param_dict[param_packer.func_E.param_category.HAS_LINK]
+        mod_pin = self._E_able_to_mod_pinned(executor_permission)
+
+        if param_dict[param_packer.func_E.param_category.IS_ID]:
+            if is_add:
+                result = kwd_instance.add_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+            else:
+                result = kwd_instance.del_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+        else:
+            if is_add:
+                result = kwd_instance.add_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+            else:
+                result = kwd_instance.del_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+
+        return ext.action_result(None, result)
+
+    def _E_generate_output_mod_linked(self, mod_result, pack_result):
+        expr = self._E_generate_expr(pack_result)
+
+        if mod_result.success:
+            return (bot.line_api_wrapper.wrap_text_message(u'{} 相關回覆組變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
+        else:
+            return '{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
+
+    def _E_mod_pinned(self, pack_result, executor_permission):
+        param_dict = pack_result.result
+
+        mod_pin = self._E_able_to_mod_pinned(executor_permission)
+
+        if is_ids:
+            result = kwd_instance.set_pinned_by_index(param_dict[param_packer.func_E.param_category.ID], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
+        else:
+            result = kwd_instance.set_pinned_by_keyword(param_dict[param_packer.func_E.param_category.KEYWORD], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
+
+        return ext.action_result(None, result)
+
+    def _E_generate_output_mod_pinned(self, pin_result, pack_result):
+        expr = self._E_generate_expr(pack_result)
+
+        if result:
+            return (bot.line_api_wrapper.wrap_text_message('{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
+        else:
+            return '{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
+
+    def _E_generate_shortcut_template(self, pack_result):
+        param_dict = pack_result.result
+
+        if param_dict[param_packer.func_E.param_category.IS_ID]:
+            target_array = param_dict[param_packer.func_E.param_category.ID]
+            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
+        else:
+            target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
+            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊()'.format(kw): u'詳細找{}'.format(kw) for kw in target_array }, u'更動回覆組: {}'.format(expr), u'相關指令')
+
+        return shortcut_template
+
+    def _E_generate_expr(self, pack_result):
+        param_dict = pack_result.result
+
+        if param_dict[param_packer.func_E.param_category.IS_ID]:
+            target_array = param_dict[param_packer.func_E.param_category.ID]
+            expr = u'、'.join([u'#{}'.format(str(id)) for id in target_array])
+        else:
+            target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
+            expr = u'關鍵字: ' + u'、'.join(target_array)
+
+        return expr
     
     ####################
     ### UNDONE BELOW ###
     ####################
-        
-    def _X2(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._X2
-
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-
-        executor_uid = bot.line_api_wrapper.source_user_id(src)
-        
-        if regex_result.match_at == 0:
-            target_gid = regex_result.group(2)
-            if target_gid is None:
-                target_gid = execute_in_gid
-
-            try:
-                clear_count = self._kwd_global.clear(target_gid, executor_uid)
-            except db.ActionNotAllowed as ex:
-                return ex.message
-
-            if clear_count > 0:
-                return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
-            else:
-                return u'沒有刪除任何回覆組。'
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'X2', regex_result.match_at, regex_result.regex))
-        
-    def _E(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._E
-        
-        regex_result = tool.regex_finder.find_match(regex_list, text)
-
-        if regex_result is None:
-            return
-        
-        # assign keyword instance
-        kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-        
-        # validate and assign modify target array
-        is_ids = regex_result.group(2) is not None
-        if is_ids:
-            target_array = ext.to_int(regex_result.group(3).split(self._array_separator))
-        else:
-            target_array = regex_result.group(1).split(self._array_separator)
-
-        if target_array is None:
-            return error.main.invalid_thing_with_correct_format(u'參數1', u'正整數、正整數陣列(代表ID)或字串、字串陣列(代表關鍵字)', regex_result.group(1))
-
-        # create template of target item
-        if is_ids:
-            expr = u'、'.join([u'#{}'.format(str(id)) for id in target_array])
-
-            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
-        else:
-            expr = u'關鍵字: ' + u'、'.join(target_array)
-
-            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊()'.format(kw): u'詳細找{}'.format(kw) for kw in target_array }, u'更動回覆組: {}'.format(expr), u'相關指令')
-
-        if regex_result.match_at == 0:
-            linked_word_list = regex_result.group(4).split(self._array_separator)
-            action = regex_result.group(5)
-
-            able_to_mod_pin = executor_permission >= bot.permission.MODERATOR
-
-            if action == u'有':
-                is_add = True
-            elif action == u'無':
-                is_add = False
-            else:
-                return error.sys_command.action_not_implemented(u'E', regex_result.match_at, action)
-
-            if is_ids:
-                if is_add:
-                    result = kwd_instance.add_linked_word_by_id(target_array, linked_word_list, able_to_mod_pin)
-                else:
-                    result = kwd_instance.del_linked_word_by_id(target_array, linked_word_list, able_to_mod_pin)
-            else:
-                if is_add:
-                    result = kwd_instance.add_linked_word_by_word(target_array, linked_word_list, able_to_mod_pin)
-                else:
-                    result = kwd_instance.del_linked_word_by_word(target_array, linked_word_list, able_to_mod_pin)
-
-            if result:
-                return (bot.line_api_wrapper.wrap_text_message(u'{} 相關回覆組變更成功。'.format(expr), self._webpage_generator), shortcut_template)
-            else:
-                return '{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
-        elif regex_result.match_at == 1:
-            action = regex_result.group(4)
-            if action is None:
-                pinned = True
-            elif action == u'不':
-                pinned = False
-            else:
-                return error.sys_command.action_not_implemented(u'E', regex_result.match_at, action)
-
-            if is_ids:
-                result = kwd_instance.set_pinned_by_index(target_array, pinned)
-            else:
-                result = kwd_instance.set_pinned_by_keyword(target_array, pinned)
-            
-            if result:
-                return (bot.line_api_wrapper.wrap_text_message('{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), shortcut_template)
-            else:
-                return '{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'E', regex_result.match_at, regex_result.regex))
         
     def _K(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._K
@@ -1553,6 +1573,61 @@ class param_packer(object):
 
             return prm_objs
 
+    class func_X2(param_packer_base):
+        class command_category(ext.EnumWithName):
+            CLEAR_DATA = 1, '清除關鍵字'
+
+        class param_category(ext.EnumWithName):
+            GID = 1, '群組ID'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_X2, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_X2.command_category.CLEAR_DATA:
+                prm_objs = []
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+
+    class func_E(param_packer_base):
+        class command_category(ext.EnumWithName):
+            MOD_LINKED = 1, '修改相關關鍵字'
+            MOD_PINNED = 2, '修改置頂'
+
+        class param_category(ext.EnumWithName):
+            IS_ID = 1, '根據ID?'
+            ID = 2, 'ID陣列'
+            KEYWORD = 3, '關鍵字'
+            LINKED = 4, '相關關鍵字'
+            HAS_LINK = 5, '有/無關'
+            NOT_PIN = 6, '不置頂'
+
+        def __init__(self, command_category, CH_regex=None, EN_regex=None):
+            prm_objs = self._get_prm_objs(command_category)
+
+            super(param_packer.func_E, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+
+        def _get_prm_objs(self, command_category):
+            if command_category == param_packer.func_E.command_category.MOD_LINKED:
+                prm_objs = [parameter(param_packer.func_E.param_category.IS_ID, param_validator.is_not_null, True),
+                            parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
+                            parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
+                            parameter(param_packer.func_E.param_category.LINKED, param_validator.conv_unicode_arr),
+                            parameter(param_packer.func_E.param_category.HAS_LINK, param_validator.text_to_bool)]
+            elif command_category == param_packer.func_E.command_category.MOD_PINNED:
+                prm_objs = [parameter(param_packer.func_E.param_category.IS_ID, param_validator.is_not_null, True),
+                            parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
+                            parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
+                            parameter(param_packer.func_E.param_category.NOT_PIN, param_validator.is_not_null)]
+            else:
+                raise UndefinedCommandCategoryException()
+
+            return prm_objs
+
 class packer_factory(object):
     _S = [param_packer.func_S(command_category=param_packer.func_S.command_category.DB_COMMAND,
                               CH_regex=ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
@@ -1623,10 +1698,16 @@ class packer_factory(object):
                               CH_regex=ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( ?包含置頂)?',
                               EN_regex=ur'JC\nX\nGID\n([CR]{1}[0-9a-f]{32})\n?(P)?')]
 
-    _X2 = [ur'小水母 清除(於([CR]{1}[0-9a-f]{32})中)?所有的回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340']
+    _X2 = [param_packer.func_X2(command_category=param_packer.func_X2.command_category.CLEAR_DATA,
+                                CH_regex=ur'小水母 清除所有回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340',
+                                EN_regex=ur'JC\nX\n571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340')]
 
-    _E = [ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)跟((?:.|\n)+)(無|有)關', 
-          ur'小水母 修改 ?((ID ?)(\d{1}[\d\s]*)|(?:.|\n)+)(不)?置頂']
+    _E = [param_packer.func_E(command_category=param_packer.func_E.command_category.MOD_LINKED,
+                              CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))跟((?:.|\n)+)(無|有)關',
+                              EN_regex=ur'JC\nE\n(?:(ID)\n(\d{1}[\d\s]*)|((?:.|\n)+))\n((?:.|\n)+)\n(O|X)'),
+          param_packer.func_E(command_category=param_packer.func_E.command_category.MOD_PINNED,
+                              CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))(不)?置頂',
+                              EN_regex=ur'JC\nE\n(?:(ID)\n(\d{1}[\d\s]*)|((?:.|\n)+))\n(N)?P')]
 
     _K = [ur'小水母 前(([1-9]\d?)名)?(使用者|回覆組|使用過的)']
 
