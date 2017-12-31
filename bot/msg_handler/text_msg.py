@@ -770,7 +770,6 @@ class text_msg_handler(object):
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
                 cmd_cat = packing_result.command_category
-                limit = self._K_get_limit(packing_result)
                 
                 if cmd_cat == param_packer.func_P.command_category.MESSAGE_RECORD:
                     msg_rec = self._P_get_msg_track_data(packing_result)
