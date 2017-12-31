@@ -788,32 +788,6 @@ class text_msg_handler(object):
     def _P_generate_output_sys_rec(self, pack_result):
         rec_cat = pack_result.result[param_packer.func_P.param_category.CATEGORY]
 
-        if type_category == u'自動回覆':
-            kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-            instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
-            return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
-        elif type_category == u'資訊':
-            text = u'【系統統計資料】\n'
-            text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
-            text += self._system_stats.get_statistics()
-
-            return text
-        elif type_category == u'圖片':
-            import socket
-            ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
-
-            return self._imgur_api_wrapper.get_status_string(ip_address)
-        elif type_category == u'匯率':
-            return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
-        elif type_category == u'黑名單':
-            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format   (self._system_data.boot_up)
-            text += self._loop_prev.get_all_banned_str()
-
-            return text
-        else:
-            return error.sys_command.unknown_func_P_record_category()
-
-
         if rec_cat == special_param.func_P.record_category.AUTO_REPLY:
             kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
             instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
