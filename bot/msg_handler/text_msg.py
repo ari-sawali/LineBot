@@ -1715,9 +1715,9 @@ class param_packer(object):
             super(param_packer.func_K, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
 
         def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_E.command_category.RANKING:
-                prm_objs = [parameter(param_packer.func_E.param_category.CATEGORY, param_validator.special_category.K_ranking_category),
-                            parameter(param_packer.func_E.param_category.COUNT, param_validator.conv_int_gt_0, True)]
+            if command_category == param_packer.func_K.command_category.RANKING:
+                prm_objs = [parameter(param_packer.func_K.param_category.CATEGORY, param_validator.special_category.K_ranking_category),
+                            parameter(param_packer.func_K.param_category.COUNT, param_validator.conv_int_gt_0, True)]
             else:
                 raise UndefinedCommandCategoryException()
 
