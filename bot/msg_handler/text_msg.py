@@ -1039,13 +1039,13 @@ class text_msg_handler(object):
 
             return ext.action_result(self._oxford_dict.get_data_json(pack_result.result[param_packer.func_O.param_category.VOCABULARY]), True)
 
-    def _O_generate_output(self, pack_result, query_result):
+    def _O_generate_output(self, pack_result, query_result): 
         if not query_result.success:
-            return ext.action_result(query_result.result, False)
+            return query_result.result
         else:
             voc = pack_result.result[param_packer.func_O.param_category.VOCABULARY]
 
-            return ext.action_result(bot.oxford_api_wrapper.json_to_string(pack_result.result[param_packer.func_O.param_category.VOCABULARY], query_result.result), True)
+            return bot.oxford_api_wrapper.json_to_string(pack_result.result[param_packer.func_O.param_category.VOCABULARY], query_result.result)
     
     def _RD(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._RD
