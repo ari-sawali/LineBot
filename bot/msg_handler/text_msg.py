@@ -677,7 +677,7 @@ class text_msg_handler(object):
         if mod_result.success:
             return (bot.line_api_wrapper.wrap_text_message(u'{} 相關回覆組變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
         else:
-            return '{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
+            return u'{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
     def _E_mod_pinned(self, pack_result, executor_permission, kwd_instance):
         param_dict = pack_result.result
@@ -695,9 +695,9 @@ class text_msg_handler(object):
         expr = self._E_generate_expr(pack_result)
 
         if pin_result.success:
-            return (bot.line_api_wrapper.wrap_text_message('{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
+            return (bot.line_api_wrapper.wrap_text_message(u'{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
         else:
-            return '{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
+            return u'{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
     def _E_generate_shortcut_template(self, pack_result):
         param_dict = pack_result.result
@@ -1743,7 +1743,7 @@ class packer_factory(object):
 
     _X2 = [param_packer.func_X2(command_category=param_packer.func_X2.command_category.CLEAR_DATA,
                                 CH_regex=ur'小水母 清除所有回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340',
-                                EN_regex=ur'JC\nX\n571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340')]
+                                EN_regex=ur'JC\nX2\n571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340')]
 
     _E = [param_packer.func_E(command_category=param_packer.func_E.command_category.MOD_LINKED,
                               CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))跟((?:.|\n)+)(無|有)關',
