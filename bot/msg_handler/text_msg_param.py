@@ -374,15 +374,15 @@ class param_validator(object):
             t = None
 
             if obj == u'自動回覆' or obj == u'KW':
-                t = special_param.func_P.record_category.USER
+                t = special_param.func_P.record_category.AUTO_REPLY
             elif obj == u'資訊' or obj == u'SYS':
-                t = special_param.func_P.record_category.RECENTLY_USED
+                t = special_param.func_P.record_category.SYS_INFO
             elif obj == u'圖片' or obj == u'IMG':
-                t = special_param.func_P.record_category.RECENTLY_USED
+                t = special_param.func_P.record_category.IMGUR_API
             elif obj == u'匯率' or obj == u'EXC':
-                t = special_param.func_P.record_category.RECENTLY_USED
+                t = special_param.func_P.record_category.EXCHANGE_RATE
             elif obj == u'黑名單' or obj == u'BAN':
-                t = special_param.func_P.record_category.KEYWORD
+                t = special_param.func_P.record_category.BAN_LIST
 
             return param_validation_result(t, t != err)
 
