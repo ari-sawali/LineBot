@@ -18,7 +18,7 @@ class regex_finder(object):
             No result: None
         """
         for num, regex in enumerate(regex_list):
-            if not isinstance(regex, list):
+            if not isinstance(regex, (list, tuple)):
                 regex = ext.to_list(regex)
 
             for re_pattern in regex:

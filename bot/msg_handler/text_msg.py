@@ -1850,7 +1850,7 @@ class packer_factory(object):
 
     _H = [ur'小水母 頻道資訊']
 
-    _SHA = [ur'小水母 雜湊SHA ?(.*)']
+    _SHA = [(ur'小水母 雜湊SHA ?(.*)', ur'JC\nSHA\n(.*)')]
 
     _O = [param_packer.func_O(command_category=param_packer.func_O.command_category.OXFORD,
                               CH_regex=ur'小水母 查 ?(\w+)',
@@ -1867,7 +1867,7 @@ class packer_factory(object):
     _C = [ur'小水母 匯率(可用)?', 
           ur'小水母 匯率([A-Z ]{3,})', 
           ur'小水母 匯率((1999|20\d{2})(0[1-9]|1[1-2])([0-2][1-9]|3[0-1]))(時的([A-Z ]{3,}))?', 
-          ur'小水母 匯率([A-Z]{3}) ([\d\.]+) ?轉成 ?([A-Z]{3})']
+          (ur'小水母 匯率([A-Z]{3}) ([\d\.]+) ?轉成 ?([A-Z]{3})', ur'JC\nC\n([A-Z]{3})\n([\d\.]+)\n([A-Z]{3})')]
 
     _FX = [ur'小水母 解因式分解 ?([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
            ur'小水母 解方程式 ?(變數((?:.|\n)+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
