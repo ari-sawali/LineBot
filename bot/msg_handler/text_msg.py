@@ -652,7 +652,7 @@ class text_msg_handler(object):
     def _E_able_to_mod_pinned(self, executor_permission, kwd_instance):
         return executor_permission >= bot.permission.MODERATOR
 
-    def _E_mod_linked(self, pack_result, executor_permission):
+    def _E_mod_linked(self, pack_result, executor_permission, kwd_instance):
         param_dict = pack_result.result
 
         is_add = param_dict[param_packer.func_E.param_category.HAS_LINK]
