@@ -684,7 +684,7 @@ class text_msg_handler(object):
 
         mod_pin = self._E_able_to_mod_pinned(executor_permission)
 
-        if is_ids:
+        if param_dict[param_packer.func_E.param_category.IS_ID]:
             result = kwd_instance.set_pinned_by_index(param_dict[param_packer.func_E.param_category.ID], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
         else:
             result = kwd_instance.set_pinned_by_keyword(param_dict[param_packer.func_E.param_category.KEYWORD], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
