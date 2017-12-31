@@ -914,7 +914,7 @@ class text_msg_handler(object):
             if change_result:
                 return u'我變成{}了哦！'.format(unicode(cfg_type))
             else:
-                return u'你又不是管理員，我憑甚麼聽你的話去當{}啊？蛤？裝大咖的廢物，87'.format(change_result)
+                return u'你又不是管理員，我憑甚麼聽你的話去當{}啊？蛤？裝大咖的廢物，87'.format(unicode(cfg_type))
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'GA', regex_result.match_at, regex_result.regex))
 
