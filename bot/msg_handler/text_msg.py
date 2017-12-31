@@ -1613,7 +1613,7 @@ class param_packer(object):
             MOD_PINNED = 2, '修改置頂'
 
         class param_category(ext.EnumWithName):
-            VOCABULARYIS_ID = 1, '根據ID?'
+            IS_ID = 1, '根據ID?'
             ID = 2, 'ID陣列'
             KEYWORD = 3, '關鍵字'
             LINKED = 4, '相關關鍵字'
