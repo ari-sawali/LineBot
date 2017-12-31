@@ -694,7 +694,7 @@ class text_msg_handler(object):
     def _E_generate_output_mod_pinned(self, pin_result, pack_result):
         expr = self._E_generate_expr(pack_result)
 
-        if result:
+        if pin_result.success:
             return (bot.line_api_wrapper.wrap_text_message('{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
         else:
             return '{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
