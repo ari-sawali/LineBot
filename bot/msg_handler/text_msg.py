@@ -649,7 +649,7 @@ class text_msg_handler(object):
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
 
-    def _E_able_to_mod_pinned(self, executor_permission, kwd_instance):
+    def _E_able_to_mod_pinned(self, executor_permission):
         return executor_permission >= bot.permission.MODERATOR
 
     def _E_mod_linked(self, pack_result, executor_permission, kwd_instance):
