@@ -106,7 +106,7 @@ class error(object):
 
         @staticmethod
         def too_many_newlines(newlines, max_newlines, external_link):
-            return u'因訊息超過{}行(最大限制{}行)，故不顯示訊息。請點下方連結以查看訊息。\n{}'.format(newlines, max_newlines, external_link)
+            return u'因訊息行數({}行)超過最大限制({}行)，故不顯示訊息。請點下方連結以查看訊息。\n{}'.format(newlines, max_newlines, external_link)
 
     class oxford_api(object):
         @staticmethod
@@ -183,7 +183,6 @@ class error(object):
         @staticmethod
         def unknown_func_P_record_category(obj):
             return u'不明的系統紀錄種類。({})'.format(obj)
-            
 
     class string_calculator(object):
         @staticmethod
