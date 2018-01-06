@@ -1169,7 +1169,7 @@ class text_msg_handler(object):
                     sha = str(sha)
                     action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'找' + sha
                     action_dict['詳細 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'詳細找' + sha
-            elif last_action_enum == bot.system_data_category.LAST_PIC_SHA:
+            elif last_action_enum == bot.system_data_category.LAST_MESSAGE:
                 action_dict = {text_msg_handler.CH_HEAD + u'找' + msg for msg in last_array}
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_action_enum)), u'快捷指令/快速查詢'))
