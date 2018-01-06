@@ -30,24 +30,15 @@ class system_data_category(ext.EnumWithName):
     LAST_PIC_SHA = 1, '最近圖片雜湊(SHA224)'
     LAST_PAIR_ID = 2, '最近回覆組ID'
     LAST_UID = 3, '最近訊息傳送者(不含小水母)UID'
+    LAST_MESSAGE = 4, '最近訊息'
 
 class system_data(object):
     MAX_LENGTH_OF_DEQUE = 5
 
     def __init__(self):
         self._boot_up = datetime.now() + timedelta(hours=8)
-        
-        self._last_sticker = {}
-        self._last_pic_sha = {}
-        self._last_pair = {}
-        self._last_uid = {}
 
-        self._field_dict = {
-            system_data_category.LAST_STICKER: self._last_sticker,
-            system_data_category.LAST_PIC_SHA: self._last_pic_sha,
-            system_data_category.LAST_PAIR_ID: self._last_pair,
-            system_data_category.LAST_UID: self._last_uid
-        }
+        self._field_dict = { e: {} for e in list(system_data_category) }
 
     def set(self, category_enum, cid, content):
         d = self._field_dict[category_enum]

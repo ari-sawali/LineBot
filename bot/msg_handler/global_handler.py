@@ -320,6 +320,8 @@ class global_msg_handle(object):
         ##############################################
         ######## ASSIGN NECESSARY VARIABLES 1 ########
         ##############################################
+        
+        self._system_data.set(bot.system_data_category.LAST_MESSAGE, cid, full_text)
 
         cid = bot.line_api_wrapper.source_channel_id(src)
         uid = bot.line_api_wrapper.source_user_id(src)

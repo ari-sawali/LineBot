@@ -1128,7 +1128,8 @@ class text_msg_handler(object):
                 u'貼圖': bot.system_data_category.LAST_STICKER,
                 u'圖片': bot.system_data_category.LAST_PIC_SHA,
                 u'回覆組': bot.system_data_category.LAST_PAIR_ID,
-                u'發送者': bot.system_data_category.LAST_UID
+                u'發送者': bot.system_data_category.LAST_UID,
+                u'訊息': bot.system_data_category.LAST_MESSAGE
             }
 
             last_action_enum = action_dict.get(regex_result.group(1))
@@ -1161,15 +1162,15 @@ class text_msg_handler(object):
                     action_dict['簡潔 - {}'.format(item)] = text_msg_handler.CH_HEAD + u'找ID ' + item
                     action_dict['詳細 - {}'.format(item)] = text_msg_handler.CH_HEAD + u'詳細找ID ' + item
             elif last_action_enum == bot.system_data_category.LAST_UID:
-                action_dict = { 
-                    '使用者{}製作'.format(uid[0:9]): text_msg_handler.CH_HEAD + u'找' + uid + u'做的' for uid in last_array
-                }
+                action_dict = {  '使用者{}製作'.format(uid[0:9]): text_msg_handler.CH_HEAD + u'找' + uid + u'做的' for uid in last_array }
             elif last_action_enum == bot.system_data_category.LAST_PIC_SHA:
                 action_dict = {}
                 for sha in last_array:
                     sha = str(sha)
                     action_dict['簡潔 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'找' + sha
                     action_dict['詳細 - {}'.format(sha)] = text_msg_handler.CH_HEAD + u'詳細找' + sha
+            elif last_action_enum == bot.system_data_category.LAST_PIC_SHA:
+                action_dict = {text_msg_handler.CH_HEAD + u'找' + msg for msg in last_array}
 
             rep_list.append(bot.line_api_wrapper.wrap_template_with_action(action_dict, u'{}快捷查詢樣板'.format(unicode(last_action_enum)), u'快捷指令/快速查詢'))
 
@@ -1860,7 +1861,7 @@ class packer_factory(object):
            (ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', ur'JC\nRD(\n(\d{1,6}))?\n((?:.|\n)+)'), 
            ur'小水母 抽 ?(\d+)(到|~)(\d+)']
 
-    _L = [ur'小水母 最近的(貼圖|圖片|回覆組|發送者)']
+    _L = [ur'小水母 最近的(貼圖|圖片|回覆組|發送者|訊息)']
 
     _T = [ur'小水母 編碼((?:.|\n)+)']
 
