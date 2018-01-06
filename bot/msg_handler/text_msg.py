@@ -1853,8 +1853,8 @@ class packer_factory(object):
     _SHA = [(ur'小水母 雜湊SHA ?(.*)', ur'JC\nSHA\n(.*)')]
 
     _O = [param_packer.func_O(command_category=param_packer.func_O.command_category.OXFORD,
-                              CH_regex=ur'小水母 查 ?(\w+)',
-                              EN_regex=ur'JC\nO\n(\w+)')]
+                              CH_regex=ur'小水母 查 ?([\w\s]+)',
+                              EN_regex=ur'JC\nO\n([\w\s]+)')]
 
     _RD = [(ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', ur'JC\nRD\n(([\d\.]{1,})%)(\n(\d{1,6}))?'), 
            (ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', ur'JC\nRD(\n(\d{1,6}))?\n((?:.|\n)+)'), 
