@@ -93,7 +93,10 @@ class line_sticker_downloader(object):
             
             with zipfile.ZipFile(comp_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 for path in path_list:
-                    zipf.write(path, os.path.basename(path))
+                    try:
+                        zipf.write(path, os.path.basename(path))
+                    except OSError:
+                        return None
 
             try:
                 shutil.rmtree(os.path.join(self._file_proc_path, pack_name))

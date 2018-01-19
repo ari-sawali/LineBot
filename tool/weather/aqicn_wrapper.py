@@ -253,9 +253,13 @@ class AqicnApi:
         
         if r.status_code != self._expected_response_status:
             logging.getLogger(__name__).warning("Default status code changed - see API documentation for more possible changes")
-        json_resp = r.json()
-        if json_resp["status"] != "ok": raise AqicnApiError(json_resp["data"])
-        return json_resp
+
+        try:
+            json_resp = r.json()
+            if json_resp["status"] != "ok": raise AqicnApiError(json_resp["data"])
+            return json_resp
+        except ValueError:
+            raise AqicnApiError("No Data. :{}".format(r))
 
     # All API methods according to:
     # http://aqicn.org/json-api/doc/

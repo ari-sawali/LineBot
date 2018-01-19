@@ -1371,16 +1371,19 @@ class text_msg_handler(object):
             with self._flask_app.test_request_context():
                 url = request.host_url
             
-            ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'若要將動態貼圖轉為gif，請點此 https://ezgif.com/apng-to-gif', u'']
-            ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
-            ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
-            ret.append(u'')
-            ret.append(u'檔案下載連結: (如下)')
-            ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
-            ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
-            ret.append(u'內含貼圖 {} 張'.format(dl_result.sticker_count))
+            if dl_result is not None:
+                ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'若要將動態貼圖轉為gif，請點此 https://ezgif.com/   apng-to-gif', u'']
+                ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
+                ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
+                ret.append(u'')
+                ret.append(u'檔案下載連結: (如下)')
+                ret.append(u'下載耗時 {:.3f} 秒'.format(dl_result.downloading_consumed_time))
+                ret.append(u'壓縮耗時 {:.3f} 秒'.format(dl_result.compression_consumed_time))
+                ret.append(u'內含貼圖 {} 張'.format(dl_result.sticker_count))
 
-            return [bot.line_api_wrapper.wrap_text_message(txt, self._webpage_generator) for txt in (u'\n'.join(ret), url + dl_result.compressed_file_path.replace("\\", "\\\\"))]
+                return [bot.line_api_wrapper.wrap_text_message(txt, self._webpage_generator) for txt in (u'\n'.join(ret), url + dl_result.compressed_file_path.replace("\\", "\\\\"))]
+            else:
+                return u'貼圖下載失敗，請重試。'
         else:
             raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'DL', regex_result.match_at, regex_result.regex))
         
