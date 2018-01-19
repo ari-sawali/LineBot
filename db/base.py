@@ -109,7 +109,7 @@ class db_base(pymongo.collection.Collection):
 
         return super(db_base, self).update_one(filter, update, upsert, bypass_document_validation, collation)
     
-    def update_many(filter, update, upsert = False, array_filters = None, bypass_document_validation = False, collation = None, session = None):
+    def update_many(self, filter, update, upsert = False, array_filters = None, bypass_document_validation = False, collation = None, session = None):
         print 'MongoDB UPDATE_MANY @{}.{}'.format(self._db_name, self._collection_name)
 
         return super(db_base, self).update_many(filter, update, upsert, array_filters, bypass_document_validation, collation, session)
