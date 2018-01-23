@@ -1124,17 +1124,20 @@ class text_msg_handler(object):
 
         if regex_result.match_at == 0:
             # Action detection - START
-            action_dict = {
-                u'貼圖': bot.system_data_category.LAST_STICKER,
-                u'圖片': bot.system_data_category.LAST_PIC_SHA,
-                u'回覆組': bot.system_data_category.LAST_PAIR_ID,
-                u'發送者': bot.system_data_category.LAST_UID,
-                u'訊息': bot.system_data_category.LAST_MESSAGE
-            }
-
-            last_action_enum = action_dict.get(regex_result.group(1))
-
-            if last_action_enum is None:
+            
+            action = regex_result.group(1)
+            
+            if action == u'貼圖' or action == u'S':
+                last_action_enum = bot.system_data_category.LAST_STICKER
+            elif action == u'圖片' or action == u'P':
+                last_action_enum = bot.system_data_category.LAST_PIC_SHA
+            elif action == u'回覆組' or action == u'R':
+                last_action_enum = bot.system_data_category.LAST_PAIR_ID
+            elif action == u'發送者' or action == u'U':
+                last_action_enum = bot.system_data_category.LAST_UID
+            elif action == u'訊息' or action == u'M':
+                last_action_enum = bot.system_data_category.LAST_MESSAGE
+            else:
                 return error.sys_command.action_not_implemented(u'L', regex_result.match_at, action)
             # Action detection - END
 
@@ -1850,9 +1853,9 @@ class packer_factory(object):
 
     _GA2 = [ur'小水母 讓 ?([U]{1}[0-9a-f]{32}) ?變成(可憐兒|一般人|副管|管理員)']
 
-    _GA3 = [ur'小水母 啟用公用資料庫([A-Z0-9]{40})']
+    _GA3 = [(ur'小水母 啟用公用資料庫([A-Z0-9]{40})', ur'JC\nGA3\n([A-Z0-9]{40})']
 
-    _H = [ur'小水母 頻道資訊']
+    _H = [(ur'小水母 頻道資訊', ur'JC\nH')]
 
     _SHA = [(ur'小水母 雜湊SHA ?(.*)', ur'JC\nSHA\n(.*)')]
 
@@ -1866,7 +1869,7 @@ class packer_factory(object):
 
     _L = [ur'小水母 最近的(貼圖|圖片|回覆組|發送者|訊息)']
 
-    _T = [ur'小水母 編碼((?:.|\n)+)']
+    _T = [(ur'小水母 編碼((?:.|\n)+)', ur'JC\nT\n((?:.|\n)+)')]
 
     _C = [ur'小水母 匯率(可用)?', 
           ur'小水母 匯率([A-Z ]{3,})', 
@@ -1879,7 +1882,7 @@ class packer_factory(object):
     _W = [ur'小水母 天氣ID查詢 ?([\w\s]+)', 
           ur'小水母 天氣(查詢|記錄|刪除) ?([\d\s]+) ?(詳|簡)? ?((\d+)小時內)? ?(每(\d+)小時)?']
 
-    _DL = [ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?']
+    _DL = [(ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?', ur'JC\nDL\n(\d+)(S)?')]
 
     _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
-            ur'小水母 貼圖(\d+)']
+            (ur'小水母 貼圖(\d+)', ur'JC\nSTK\n')]
