@@ -1885,4 +1885,4 @@ class packer_factory(object):
     _DL = [(ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?', ur'JC\nDL\n(\d+)(S)?')]
 
     _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
-            (ur'小水母 貼圖(\d+)', ur'JC\nSTK\n')]
+            (ur'小水母 貼圖(\d+)', ur'JC\nSTK\n(\d+)')]
