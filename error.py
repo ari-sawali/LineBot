@@ -184,6 +184,15 @@ class error(object):
         def unknown_func_P_record_category(obj):
             return u'不明的系統紀錄種類。({})'.format(obj)
 
+        @staticmethod
+        def unknown_func_GA_group_config(obj):
+            return u'不明的系統設定種類。({})'.format(obj)
+
+        @staticmethod
+        def unknown_func_GA2_permission(obj):
+            return u'不明的使用者權限代號。({})'.format(obj)
+
+
     class string_calculator(object):
         @staticmethod
         def result_is_not_numeric(org_text=None):

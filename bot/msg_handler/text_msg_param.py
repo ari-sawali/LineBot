@@ -353,7 +353,7 @@ class param_validator(object):
                 return base
 
             err = error.sys_command.unknown_func_K_ranking_category(obj)
-            t = None
+            t = err
 
             if obj == u'使用者' or obj == u'USER':
                 t = special_param.func_K.ranking_category.USER
@@ -371,7 +371,7 @@ class param_validator(object):
                 return base
 
             err = error.sys_command.unknown_func_K_ranking_category(obj)
-            t = None
+            t = err
 
             if obj == u'自動回覆' or obj == u'KW':
                 t = special_param.func_P.record_category.AUTO_REPLY
@@ -386,6 +386,46 @@ class param_validator(object):
 
             return param_validation_result(t, t != err)
 
+        @staticmethod
+        def GA_group_config(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            err = error.sys_command.unknown_func_GA_group_config(obj)
+            t = err
+
+            if obj == u'啞巴' or obj == u'0':
+                t = db.config_type.SILENCE
+            elif obj == u'機器人' or obj == u'1':
+                t = db.config_type.SYS_ONLY
+            elif obj == u'服務員' or obj == u'2':
+                t = db.config_type.GROUP_DATABASE_ONLY
+            elif obj == u'八嘎囧' or obj == u'3':
+                t = db.config_type.ALL
+
+            return param_validation_result(t, t != err)
+
+        @staticmethod
+        def GA2_permission(obj, allow_null):
+            base = param_validator.base_null(obj, allow_null)
+            if base is not None:
+                return base
+
+            err = error.sys_command.unknown_func_GA2_permission(obj)
+            t = err
+
+            if obj == u'可憐兒' or obj == u'0':
+                permission = bot.permission.RESTRICTED
+            elif obj == u'一般人' or obj == u'1':
+                permission = bot.permission.USER
+            elif obj == u'副管' or obj == u'2':
+                permission = bot.permission.MODERATOR
+            elif obj == u'管理員' or obj == u'3':
+                permission = bot.permission.ADMIN
+
+            return param_validation_result(t, t != err)
+
 class param_validation_result(ext.action_result):
     def __init__(self, ret, valid):
         super(param_validation_result, self).__init__(ret, valid)
@@ -397,7 +437,6 @@ class param_validation_result(ext.action_result):
     @property
     def valid(self):
         return self._success
-
 
 class special_param(object):
     class func_K(object):
