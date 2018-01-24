@@ -297,6 +297,8 @@ class text_msg_handler(object):
                 if not get_uid_result.success:
                     return get_uid_result.result
 
+                print execute_in_gid
+
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
