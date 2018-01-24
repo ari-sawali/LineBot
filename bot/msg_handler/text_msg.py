@@ -1378,7 +1378,7 @@ class text_msg_handler(object):
                 url = request.host_url
             
             if dl_result is not None:
-                ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'若要將動態貼圖轉為gif，請點此 https://ezgif.com/   apng-to-gif', u'']
+                ret = [u'貼圖圖包製作完成，請盡快下載。', u'檔案將於小水母休眠後刪除。', u'LINE內建瀏覽器無法下載檔案，請自行複製連結至手機瀏覽器。', u'若要將動態貼圖轉為gif，請點此 https://ezgif.com/apng-to-gif', u'']
                 ret.append(u'圖包ID: {}'.format(sticker_meta.pack_id))
                 ret.append(u'{} (由 {} 製作)'.format(sticker_meta.title, sticker_meta.author))
                 ret.append(u'')
