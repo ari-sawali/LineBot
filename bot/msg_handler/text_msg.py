@@ -141,21 +141,24 @@ class text_msg_handler(object):
 
         if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid, True, True):
             config = self._group_manager.get_group_config_type(execute_remote_gid)
+            control_remotely = True
         else:
             config = self._group_manager.get_group_config_type(cid)
             execute_remote_gid = None
+            control_remotely = False
 
         if config is not None and config == db.config_type.ALL:
             manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
         else:
             manager_range = db.group_dict_manager_range.GROUP_ONLY
 
-        if execute_remote_gid == bot.remote.GLOBAL_TOKEN():
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
-        elif execute_remote_gid == bot.remote.PUBLIC_TOKEN():
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID)
-        elif execute_remote_gid == cid:
-            kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, execute_remote_gid, manager_range)
+        if control_remotely:
+            if execute_remote_gid == bot.remote.GLOBAL_TOKEN():
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID, db.group_dict_manager_range.GLOBAL)
+            elif execute_remote_gid == bot.remote.PUBLIC_TOKEN():
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, db.PUBLIC_GROUP_ID)
+            else:
+                kwd_instance = self._kwd_public.clone_instance(self._mongo_uri, execute_remote_gid, manager_range)
         else:
             source_type = bot.line_event_source_type.determine(src)
             if source_type == bot.line_event_source_type.USER:
@@ -296,8 +299,6 @@ class text_msg_handler(object):
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
-
-                print execute_in_gid
 
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
