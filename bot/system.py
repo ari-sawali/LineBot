@@ -493,7 +493,7 @@ class imgur_api_wrapper(object):
     @property
     def user_reset(self):
         """UNIX EPOCH @UTC <Type 'datetime'>"""
-        return datetime.fromtimestamp(self._imgur_api.credits['UserReset'])
+        return datetime.fromtimestamp(float(self._imgur_api.credits['UserReset']))
 
     @property
     def client_limit(self):
