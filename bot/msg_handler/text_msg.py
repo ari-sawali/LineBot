@@ -86,7 +86,7 @@ class text_msg_handler(object):
             return False
 
         # log statistics
-        self._system_stats.command_called(cmd_data.function_code)
+        self._system_stats.command_called(unicode(cmd_data.function_code))
 
         # get function
         cmd_function = getattr(self, '_{}'.format(cmd_data.function_code))
