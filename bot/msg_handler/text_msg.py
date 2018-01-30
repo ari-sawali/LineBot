@@ -480,14 +480,14 @@ class text_msg_handler(object):
                 P_handler = command_handler_collection._P(self._webpage_generator, self._config_manager, self._system_data, self._system_stats, 
                                                           self._group_manager, self._loop_prev, self._oxr_client, self._imgur_api_wrapper)
 
-
                 cmd_cat = packing_result.command_category
                 
                 if cmd_cat == param_packer.func_P.command_category.MESSAGE_RECORD:
                     msg_rec = P_handler.get_msg_track_data(packing_result)
                     return P_handler.generate_output_msg_track(packing_result, msg_rec)
                 elif cmd_cat == param_packer.func_P.command_category.SYSTEM_RECORD:
-                    return P_handler.generate_output_sys_rec(packing_result)
+                    kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
+                    return P_handler.generate_output_sys_rec(kwd_instance, packing_result)
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:

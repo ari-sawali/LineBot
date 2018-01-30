@@ -43,7 +43,7 @@ class special_text_handler(object):
         if config_data is not None and len(config_data.config) > 0:
             ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_type(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
 
-            return u'\n==========\n'.join(ret)
+            return u'\n===========================\n'.join(ret)
         else:
             command_head = bot.msg_handler.text_msg_handler.CH_HEAD + u'天氣查詢 '
 
