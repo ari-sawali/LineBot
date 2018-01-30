@@ -207,7 +207,7 @@ class param_validator(object):
         except UnicodeEncodeError:
             obj = obj.encode('utf-8')
 
-        if tool.regex.regex_finder.find_match(ur'[0-9a-fA-F]{56}', obj):
+        if tool.regex.regex_finder.find_match(ur'.*(?:[0-9a-fA-F]{56}).*', obj) is not None:
             return param_validator.conv_unicode(obj, allow_null)
         else:
             return param_validation_result(error.sys_command.must_sha(obj), False)
