@@ -94,11 +94,6 @@ class output_type(ext.EnumWithName):
     SIMPLE = 0, '簡潔'
     DETAIL = 1, '詳細'
 
-class action_type(ext.EnumWithName):
-    ADD_TRACK = 0, '新增追蹤項目'
-    DEL_TRACK = 1, '刪除追蹤項目'
-    GET_DATA = 2, '獲取資料'
-
 class weather_reporter(object):
     CITY_ID_REGISTRY = cityids.CityIDRegistry('%03d-%03d.txt.gz')
 

@@ -562,11 +562,11 @@ class param_validator(object):
             t = err
 
             if obj == u'新增' or obj == u'A':
-                t = tool.weather.action_type.ADD_TRACK
+                t = func_W.action_category.ADD_TRACK
             elif obj == u'刪除' or obj == u'D':
-                t = tool.weather.action_type.DEL_TRACK
+                t = func_W.action_category.DEL_TRACK
             elif obj == u'查詢' or obj == u'ID':
-                t = tool.weather.action_type.GET_DATA
+                t = func_W.action_category.GET_DATA
 
             return param_validation_result(t, t != err)
 
@@ -612,6 +612,12 @@ class special_param(object):
             IMGUR_API = 3, '使用者'
             EXCHANGE_RATE = 4, '匯率轉換'
             BAN_LIST = 5, '黑名單'
+
+    class func_W(object):
+        class action_category(ext.EnumWithName):
+            ADD_TRACK = 0, '新增追蹤項目'
+            DEL_TRACK = 1, '刪除追蹤項目'
+            GET_DATA = 2, '獲取資料'
 
 class param_packer(object): 
     class func_S(param_packer_base):
