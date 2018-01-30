@@ -1101,7 +1101,7 @@ class text_msg_handler(object):
 
 class command_handler_collection(object):
     @staticmethod
-    def replace_newline(self, text):
+    def replace_newline(text):
         if isinstance(text, unicode):
             return text.replace(u'\\n', u'\n')
         elif isinstance(text, str):

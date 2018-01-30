@@ -123,11 +123,14 @@ class weather_reporter(object):
                 detail_location = u''
 
             ret.append(u'位置: {}{}'.format(weather_data.get_location_string(o_config), detail_location))
-            ret.append(u'【空氣品質相關】')
+            ret.append(u'')
+            ret.append(u'【===空氣品質相關===】')
             ret.append(aqi_data.to_string(o_config))
-            ret.append(u'【紫外線相關】')
+            ret.append(u'')
+            ret.append(u'【===紫外線相關===】')
             ret.append(weather_data.get_uv_string())
-            ret.append(u'【天氣相關】')
+            ret.append(u'')
+            ret.append(u'【===天氣相關===】')
             ret.append(weather_data.get_weather_string(o_config))
 
             return u'\n'.join(ret)

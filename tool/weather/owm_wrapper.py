@@ -96,9 +96,10 @@ class OwmResult:
 
     def get_weather_string(self, o_config):
         ret = []
-
+        
         ret.append(u'【目前天氣】')
         ret.append(self._current.to_string(o_config))
+        ret.append(u'')
         ret.append(u'【未來天氣】')
         ret.append(u'\n\n'.join([w.to_string(o_config) for w in self._weather_list]))
 
