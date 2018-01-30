@@ -58,7 +58,7 @@ class text_msg_handler(object):
     def handle_text(self, event, user_permission, group_config_type):
         """Return whether message has been replied"""
         token = event.reply_token
-        text = unicode(event.message.text).upper()
+        text = unicode(event.message.text)
         src = event.source
 
         src_gid = bot.line_api_wrapper.source_channel_id(src)
@@ -74,15 +74,17 @@ class text_msg_handler(object):
             execute_remote_gid = src_gid
             text = text
 
-        cmd_key, cmd_data = self._get_cmd_data(text)
+        cmd_iter = self._get_cmd_data(text)
+        if cmd_iter is not None:
+            cmd_key, cmd_data = cmd_iter
 
         # terminate if set to silence
-        if group_config_type <= db.group_data_range.SILENCE and cmd_data.function_code != 'GA':
-            print 'Terminate because the group is set to silence and function code is not GA.'
-            return False
-
         if cmd_data is None:
             print 'Called an not existed command.'
+            return False
+
+        if group_config_type <= db.group_data_range.SILENCE and cmd_data.function_code != 'GA':
+            print 'Terminate because the group is set to silence and function code is not GA.'
             return False
 
         # log statistics
@@ -552,7 +554,7 @@ class text_msg_handler(object):
             gid = regex_result.group(1)
 
             if gid is None:
-                if bot.line_event_source_type.determine(src) == bot.line_event_source_type.USER:
+                if not bot.line_api_wrapper.is_valid_room_group_id(execute_in_gid):
                     return error.main.incorrect_channel(False, True, True)
                 else:
                     gid = execute_in_gid
