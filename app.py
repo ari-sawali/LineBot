@@ -250,7 +250,7 @@ def handle_join(event):
             template_title = '相關指令'
 
             if group_data is None:
-                activation_token = global_handler._group_manager.new_data(cid, db.config_type.ALL)
+                activation_token = global_handler._group_manager.new_data(cid, db.group_data_range.ALL)
                 
                 group_action_dict['啟用公用資料庫'] = bot.msg_handler.text_msg_handler.CH_HEAD + u'啟用公用資料庫' + activation_token
                 group_template = bot.line_api_wrapper.wrap_template_with_action(group_action_dict, template_alt_text, template_title)

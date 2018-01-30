@@ -90,9 +90,14 @@ class CoordinateRelationship(object):
     def __unicode__(self):
         return unicode(str(self).decode('utf-8'))
 
-class output_config(ext.EnumWithName):
+class output_type(ext.EnumWithName):
     SIMPLE = 0, '簡潔'
     DETAIL = 1, '詳細'
+
+class action_type(ext.EnumWithName):
+    ADD_TRACK = 0, '新增追蹤項目'
+    DEL_TRACK = 1, '刪除追蹤項目'
+    GET_DATA = 2, '獲取資料'
 
 class weather_reporter(object):
     CITY_ID_REGISTRY = cityids.CityIDRegistry('%03d-%03d.txt.gz')
@@ -101,12 +106,12 @@ class weather_reporter(object):
         self._owm = owm_client
         self._aqicn = aqicn_client
 
-    def get_data_by_owm_id(self, owm_city_id, o_config=output_config.SIMPLE, interval=3, hours_within=120):
+    def get_data_by_owm_id(self, owm_city_id, o_config=output_type.SIMPLE, interval=3, hours_within=120):
         """Return String"""
         weather_data = self._owm.get_weathers_by_id(owm_city_id, o_config, interval, hours_within)
         return self._proc_weather_data(owm_city_id, weather_data, o_config)
 
-    def get_data_by_coord(self, coord, o_config=output_config.SIMPLE, interval=3, hours_within=120):
+    def get_data_by_coord(self, coord, o_config=output_type.SIMPLE, interval=3, hours_within=120):
         """Return String"""
         weather_data = self._owm.get_weathers_by_coord(coord, o_config, interval, hours_within)
         return self._proc_weather_data(coord, weather_data, o_config)

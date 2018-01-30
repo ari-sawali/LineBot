@@ -6,16 +6,21 @@ from datetime import datetime, timedelta
 
 from .base import db_base, dict_like_mapping
 from .misc import PackedResult
-import error, bot
+import error, bot, ext
 
 DB_NAME = 'rec'
 
 def package_id_to_url(package_id):
     return u'https://line.me/S/sticker/{}'.format(package_id)
 
+class ranking_category(ext.EnumWithName):
+    PACKAGE = 1, '圖包'
+    STICKER = 2, '貼圖'
+
 class sticker_recorder(db_base):
     COLLECTION_NAME = 'stk'
-    DATA_EXPIRE_SECS = 21 * 24 * 60 * 60
+    DATA_EXPIRE_DAYS = 21
+    DATA_EXPIRE_SECS = DATA_EXPIRE_DAYS * 24 * 60 * 60
 
     def __init__(self, mongo_db_uri):
         super(sticker_recorder, self).__init__(mongo_db_uri, DB_NAME, sticker_recorder.COLLECTION_NAME, False)
@@ -24,12 +29,20 @@ class sticker_recorder(db_base):
     def record(self, package_id, sticker_id):
         self.insert_one(sticker_record_data.init_by_field(package_id, sticker_id))
 
+    def get_ranking(self, category, hours_range_within=None, limit=None):
+        if category == ranking_category.PACKAGE:
+            return hottest_package_str(hours_range_within, limit)
+        elif category == ranking_category.STICKER:
+            return hottest_package_str(hours_range_within, limit)
+        else:
+            raise RuntimeError('Undefined ranking category.')
+
     def hottest_package_str(self, hours_range_within=None, limit=None):
         """
         Set hours_range_within to None to get full time ranking.
         Set limit to None to get full ranking.
         """
-        text_to_join = [u'熱門貼圖排行(圖包ID分類)']
+        text_to_join = [u'因資料庫大小限制，故貼圖紀錄最多只可回溯{}天。\n\n熱門貼圖排行(圖包ID分類)'.format(sticker_recorder.DATA_EXPIRE_DAYS)]
 
         pipeline = []
         COUNT = 'ct'
@@ -65,7 +78,7 @@ class sticker_recorder(db_base):
         Set hours_range_within to None to get full time ranking.
         Set limit to None to get full ranking.
         """
-        title = u'熱門貼圖排行(貼圖ID分類)'
+        title = u'因資料庫大小限制，故貼圖紀錄最多只可回溯{}天。\n\n熱門貼圖排行(貼圖ID分類)'.format(sticker_recorder.DATA_EXPIRE_DAYS)
 
         pipeline = []
         COUNT = 'ct'

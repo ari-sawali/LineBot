@@ -369,7 +369,9 @@ class line_api_wrapper(object):
         length_action_dict = len(data_dict)
 
         if length_action_dict > MAX_ACTIONS:
-            raise ValueError(error.error.main.miscellaneous(u'Length of data dict must less than or equals to {}.'.format(MAX_ACTIONS)))
+            error_msg = error.error.line_bot_api.too_many_linked_words(length_action_dict)
+
+            return TextSendMessage(text=error_msg)
 
         column_list = []
         for i in range(0, length_action_dict, MAX_ACTIONS_IN_CAROUSEL):

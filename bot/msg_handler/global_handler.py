@@ -383,7 +383,7 @@ class global_msg_handle(object):
 
         terminate = self._handle_text_sys_command(event, user_permission, group_config)
 
-        if terminate or group_config <= db.config_type.SYS_ONLY:
+        if terminate or group_config <= db.group_data_range.SYS_ONLY:
             print 'terminate - system command'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.TEXT, db.msg_type.TEXT)
             return
@@ -499,7 +499,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate = group_config <= db.config_type.SILENCE or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.group_data_range.SILENCE or user_permission == bot.permission.RESTRICTED
 
         if terminate:
             print 'terminate - group set to silence or user is restricted'
@@ -522,7 +522,7 @@ class global_msg_handle(object):
 
         terminate = self._handle_sticker_rps(event, sticker_id)
 
-        if terminate or group_config <= db.config_type.SYS_ONLY:
+        if terminate or group_config <= db.group_data_range.SYS_ONLY:
             print 'terminate - game (Rock-Paper-Scissor) action submitted'
             self._group_manager.log_message_activity(bot.line_api_wrapper.source_channel_id(src), db.msg_type.STICKER, db.msg_type.TEXT)
             return
@@ -616,7 +616,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate = group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.group_data_range.SYS_ONLY or user_permission == bot.permission.RESTRICTED
 
         if terminate:
             print 'terminate - group set to silence or user is restricted'
@@ -670,9 +670,9 @@ class global_msg_handle(object):
         src_type = bot.line_event_source_type.determine(src)
 
         if src_type == bot.line_event_source_type.GROUP or src_type == bot.line_event_source_type.ROOM:
-            op_config = tool.weather.output_config.SIMPLE
+            op_config = tool.weather.output_type.SIMPLE
         elif src_type == bot.line_event_source_type.USER:
-            op_config = tool.weather.output_config.DETAIL
+            op_config = tool.weather.output_type.DETAIL
         else:
             raise NotImplementedError(src_type)
 
@@ -722,7 +722,7 @@ class global_msg_handle(object):
         ### TERMINATE CHECK - GROUP CONFIG IS SILENCE CHECK ###
         #######################################################
 
-        terminate = group_config <= db.config_type.SYS_ONLY or user_permission == bot.permission.RESTRICTED
+        terminate = group_config <= db.group_data_range.SYS_ONLY or user_permission == bot.permission.RESTRICTED
 
         if terminate:
             print 'terminate - group set to silence or user is restricted'

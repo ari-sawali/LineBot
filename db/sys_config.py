@@ -75,5 +75,3 @@ class config_data(dict_like_mapping):
 
     def set(self, field, value):
         self[field] = value
-
-

@@ -41,7 +41,7 @@ class special_text_handler(object):
 
         config_data = self._weather_config.get_config(uid) 
         if config_data is not None and len(config_data.config) > 0:
-            ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_config(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
+            ret = [self._weather_reporter.get_data_by_owm_id(cfg.city_id, tool.weather.output_type(cfg.mode), cfg.interval, cfg.data_range) for cfg in config_data.config]
 
             return u'\n==========\n'.join(ret)
         else:

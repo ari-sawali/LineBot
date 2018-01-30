@@ -108,6 +108,11 @@ class error(object):
         def too_many_newlines(newlines, max_newlines, external_link):
             return u'因訊息行數({}行)超過最大限制({}行)，故不顯示訊息。請點下方連結以查看訊息。\n{}'.format(newlines, max_newlines, external_link)
 
+        @staticmethod
+        def too_many_linked_words(count):
+            MAX = 15
+            return u'因相關關鍵字數量({}個)超過系統限制({}個)，故無法顯示。請刪除{}組相關關鍵字以後重試。'.format(count, MAX, count - MAX)
+
     class oxford_api(object):
         @staticmethod
         def no_result(vocabulary):
@@ -191,6 +196,26 @@ class error(object):
         @staticmethod
         def unknown_func_GA2_permission(obj):
             return u'不明的使用者權限代號。({})'.format(obj)
+        
+        @staticmethod
+        def unknown_func_L_category(obj):
+            return u'不明的最近資料種類。({})'.format(obj)\
+
+        @staticmethod
+        def unknown_func_W_output_type(obj):
+            return u'不明的天氣資料輸出種類。({})'.format(obj)
+
+        @staticmethod
+        def unknown_func_W_action(obj):
+            return u'不明的天氣資料操作種類。({})'.format(obj)
+
+        @staticmethod
+        def unknown_func_STK_ranking_category(obj):
+            return u'不明的貼圖排行種類。({})'.format(obj)
+
+        @staticmethod
+        def func_C_currency_symbol_unrecognizable(obj):
+            return u'無法分析貨幣種類。({})'.format(obj)
 
 
     class string_calculator(object):

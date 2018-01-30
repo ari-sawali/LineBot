@@ -19,7 +19,7 @@ GROUP_DB_NAME = 'group'
 ### ENUM ###
 ############
 
-class config_type(ext.EnumWithName):
+class group_data_range(ext.EnumWithName):
     SILENCE = 0, '啞巴'
     SYS_ONLY = 1, '機器人'
     GROUP_DATABASE_ONLY = 2, '服務員'
@@ -57,14 +57,14 @@ class group_manager(db_base):
             sys.exit(1)
 
     # utilities - misc
-    def new_data(self, gid, config=config_type.GROUP_DATABASE_ONLY):
+    def new_data(self, gid, config=group_data_range.GROUP_DATABASE_ONLY):
         """Return result none if creation failed, else return token to activate accepting public database if config is not set to public."""
         if len(gid) != group_manager.ID_LENGTH:
             return
         else:
             try:
                 if bot.line_api_wrapper.is_valid_user_id(gid):
-                    config = config_type.ALL
+                    config = group_data_range.ALL
 
                 data = group_data.init_by_field(gid, config)
                 self.insert_one(data)
@@ -78,7 +78,7 @@ class group_manager(db_base):
         """Return boolean to indicate activation result."""
         group_activated = self._activator.del_data(gid, token)
         if group_activated:
-            self.find_one_and_update({ group_data.GROUP_ID: gid }, { '$set': { group_data.CONFIG_TYPE: config_type.ALL } })
+            self.find_one_and_update({ group_data.GROUP_ID: gid }, { '$set': { group_data.CONFIG_TYPE: group_data_range.ALL } })
 
         return group_activated
             
@@ -145,7 +145,7 @@ class group_manager(db_base):
                 if add is not None:
                     return self.get_group_config_type(gid)
                 else:
-                    return config_type.GROUP_DATABASE_ONLY
+                    return group_data_range.GROUP_DATABASE_ONLY
 
     def get_user_permission(self, gid, uid):
         if uid == self._ADMIN_UID:
@@ -379,7 +379,7 @@ class group_data(dict_like_mapping):
 
     @property
     def config_type(self):
-        return config_type(self[group_data.CONFIG_TYPE])
+        return group_data_range(self[group_data.CONFIG_TYPE])
         
     @property
     def message_track_record(self):

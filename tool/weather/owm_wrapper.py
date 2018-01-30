@@ -11,7 +11,7 @@ from pyowm.exceptions.not_found_error import NotFoundError
 
 import ext
 
-from .main import output_config, Coordinate
+from .main import output_type, Coordinate
 
 Weather_ID_Pair = namedtuple('Weather_ID_Pair', ['name', 'id'])
 
@@ -36,7 +36,7 @@ class owm(object):
     def __init__(self, app_key):
         self._owm_client = pyowm.OWM(app_key)
 
-    def get_weathers_by_id(self, id, o_config=output_config.SIMPLE, interval=3, hours_within=120):
+    def get_weathers_by_id(self, id, o_config=output_type.SIMPLE, interval=3, hours_within=120):
         """\
         Return None if resource not found. Else return string.
         interval -> floor.
@@ -58,7 +58,7 @@ class owm(object):
         except NotFoundError:
             return None
 
-    def get_weathers_by_coord(self, coord, o_config=output_config.SIMPLE, interval=3, hours_within=120):
+    def get_weathers_by_coord(self, coord, o_config=output_type.SIMPLE, interval=3, hours_within=120):
         """\
         Return None if resource no found. Else string.
         interval -> floor.
@@ -107,7 +107,7 @@ class OwmResult:
     def get_location_string(self, o_config):
         ret = u'{}, {} (#{})'.format(self._location.get_name(), self._location.get_country(), self._location.get_ID())
 
-        if o_config == output_config.DETAIL:
+        if o_config == output_type.DETAIL:
             ret += u' @{}'.format(Coordinate(self._location.get_lat(), self._location.get_lon()))
 
         return ret
@@ -148,7 +148,7 @@ class weather(object):
 
         ret.append(u'{} | 氣溫 {:.2f} ℃ | 濕度 {} %'.format(status, temp_cur, humid, ref_time))
         
-        if o_config == output_config.DETAIL:
+        if o_config == output_type.DETAIL:
             if temp is None:
                 min_temp = temp.get('temp_min', weather.UNKNOWN)
                 max_temp = temp.get('temp_max', weather.UNKNOWN)

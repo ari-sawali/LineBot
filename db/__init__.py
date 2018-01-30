@@ -5,7 +5,7 @@ from .keyword_dict import (
 from .keyword_dict_global import word_dict_global
 
 from .group_manage import (
-    group_manager, group_data, config_type, msg_type, user_data, InsufficientPermissionError
+    group_manager, group_data, group_data_range, msg_type, user_data, InsufficientPermissionError
 )
 
 from .sys_stats import (
@@ -21,7 +21,7 @@ from .content_holder import (
 )
 
 from .stk_rec import (
-    sticker_recorder, sticker_record_data
+    ranking_category, sticker_recorder, sticker_record_data
 )
 
 from .weather import (

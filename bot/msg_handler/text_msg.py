@@ -58,7 +58,7 @@ class text_msg_handler(object):
     def handle_text(self, event, user_permission, group_config_type):
         """Return whether message has been replied"""
         token = event.reply_token
-        text = unicode(event.message.text)
+        text = unicode(event.message.text).upper()
         src = event.source
 
         src_gid = bot.line_api_wrapper.source_channel_id(src)
@@ -74,10 +74,10 @@ class text_msg_handler(object):
             execute_remote_gid = src_gid
             text = text
 
-        cmd_data = self._get_cmd_data(text)
+        cmd_key, cmd_data = self._get_cmd_data(text)
 
         # terminate if set to silence
-        if group_config_type <= db.config_type.SILENCE and cmd_data.function_code != 'GA':
+        if group_config_type <= db.group_data_range.SILENCE and cmd_data.function_code != 'GA':
             print 'Terminate because the group is set to silence and function code is not GA.'
             return False
 
@@ -86,7 +86,7 @@ class text_msg_handler(object):
             return False
 
         # log statistics
-        self._system_stats.command_called(unicode(cmd_data.function_code))
+        self._system_stats.command_called(cmd_key)
 
         # get function
         cmd_function = getattr(self, '_{}'.format(cmd_data.function_code))
@@ -98,7 +98,7 @@ class text_msg_handler(object):
             if bot.line_api_wrapper.is_valid_room_group_id(execute_remote_gid):
                 group_config_type = self._group_manager.get_group_config_type(execute_remote_gid)
             else:
-                group_config_type = db.config_type.ALL
+                group_config_type = db.group_data_range.ALL
 
         # check the action is valid with the provided permission
         low_perm = cmd_data.lowest_permission
@@ -127,10 +127,10 @@ class text_msg_handler(object):
         return True
 
     def _get_cmd_data(self, text):
-        for cmd_obj in bot.sys_cmd_dict.itervalues():
+        for cmd_key, cmd_obj in bot.sys_cmd_dict.iteritems():
             for header in cmd_obj.headers:
                 if text.startswith(text_msg_handler.CH_HEAD + header) or self._get_cmd_data_match_en(text, header):
-                    return cmd_obj
+                    return cmd_key, cmd_obj
 
     def _get_cmd_data_match_en(self, text, header):
         s = text.split(u'\n')
@@ -147,7 +147,7 @@ class text_msg_handler(object):
             execute_remote_gid = None
             control_remotely = False
 
-        if config is not None and config == db.config_type.ALL:
+        if config is not None and config == db.group_data_range.ALL:
             manager_range = db.group_dict_manager_range.GROUP_AND_PUBLIC
         else:
             manager_range = db.group_dict_manager_range.GROUP_ONLY
@@ -252,13 +252,15 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                S_handler = command_handler_collection._S(self._pymongo_client)
+
                 self._reg_mongo()
 
                 param_dict = packing_result.result
 
-                text = self._S_generate_output_head(param_dict)
+                text = S_handler.generate_output_head(param_dict)
                 try:
-                    text += self._S_generate_output_mongo_result(param_dict)
+                    text += S_handler.generate_output_mongo_result(param_dict)
                 except pymongo.errors.OperationFailure as ex:
                     text += error.mongo_db.op_fail(ex)
 
@@ -269,23 +271,6 @@ class text_msg_handler(object):
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _S_generate_output_head(self, param_dict):
-        text = u'目標資料庫:\n{}\n'.format(param_dict[param_packer.func_S.param_category.DB_NAME])
-        text += u'資料庫主指令:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_CMD])
-        text += u'資料庫主指令參數:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_PRM])
-        text += u'資料庫副指令:\n{}\n\n'.format(param_dict[param_packer.func_S.param_category.OTHER_PRM])
-
-        return text
-
-    def _S_generate_output_mongo_result(self, param_dict):
-        return ext.object_to_json(self._S_execute_mongo_shell(param_dict))
-
-    def _S_execute_mongo_shell(self, param_dict):
-        return self._pymongo_client.get_database(param_dict[param_packer.func_S.param_category.DB_NAME]) \
-                                   .command(param_dict[param_packer.func_S.param_category.MAIN_CMD], 
-                                            param_dict[param_packer.func_S.param_category.MAIN_PRM], 
-                                            **param_dict[param_packer.func_S.param_category.OTHER_PRM])
     
     def _A(self, src, execute_in_gid, group_config_type, executor_permission, text, pinned=False):
         if pinned:
@@ -296,12 +281,14 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                A_handler = command_handler_collection._A()
+
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
 
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                kwd_add_result = self._A_add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
+                kwd_add_result = A_handler.add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
                 return self._A_generate_output(kwd_add_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -310,91 +297,6 @@ class text_msg_handler(object):
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _A_add_kw(self, kwd_instance, packing_result, pinned, adder_uid):
-        param_dict = packing_result.result
-
-        rcv_type_result = self._A_get_rcv_type(packing_result)
-        rcv_content = self._replace_newline(self._A_get_rcv_content(packing_result))
-        rep_type_result = self._A_get_rep_type(packing_result)
-        rep_content = self._replace_newline(self._A_get_rep_content(packing_result))
-
-        if not rcv_type_result.success:
-            return rcv_type_result.result
-
-        if not rep_type_result.success:
-            return rep_type_result.result
-
-        # create and write
-        result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, rcv_type_result.result, rep_type_result.result, None, param_dict[param_packer.func_A.param_category.ATTACHMENT])
-
-        return ext.action_result(result, isinstance(result, db.pair_data))
-
-    def _A_generate_output(self, kwd_add_result):
-        if kwd_add_result.success:
-            if isinstance(kwd_add_result.result, (str, unicode)):
-                return result
-            elif isinstance(kwd_add_result.result, db.pair_data):
-                return u'回覆組新增成功。\n' + kwd_add_result.result.basic_text(True)
-            else:
-                raise ValueError('Unhandled type of return result. ({} - {})'.format(type(kwd_add_result.result), kwd_add_result.result))
-        else:
-            return u'回覆組新增失敗。\n\n{}'.format(kwd_add_result.result)
-
-    def _A_is_auto_detect(self, packing_result):
-        return any(packing_result.command_category == cat for cat in (param_packer.func_A.command_category.ADD_PAIR_AUTO_CH, param_packer.func_A.command_category.ADD_PAIR_AUTO_EN))
-
-    def _A_get_rcv_type(self, packing_result):
-        param_dict = packing_result.result
-        if self._A_is_auto_detect(packing_result):
-            return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.RCV_CONTENT], False)
-        else:
-            return ext.action_result(param_dict[param_packer.func_A.param_category.RCV_TYPE], True)
-
-    def _A_get_rep_type(self, packing_result):
-        param_dict = packing_result.result
-        if self._A_is_auto_detect(packing_result):
-            return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.REP_CONTENT], False)
-        else:
-            return ext.action_result(param_dict[param_packer.func_A.param_category.REP_TYPE], True)
-
-    def _A_get_rcv_content(self, packing_result):
-        param_dict = packing_result.result
-        cmd_cat = packing_result.command_category
-
-        if self._A_is_auto_detect(packing_result):
-            return param_dict[param_packer.func_A.param_category.RCV_CONTENT]
-        else:
-            if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
-                t = param_dict[param_packer.func_A.param_category.RCV_TXT]
-
-                if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
-                    t = self._replace_newline(t)
-
-                return t
-            elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
-                return param_dict[param_packer.func_A.param_category.RCV_STK]
-            elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
-                return param_dict[param_packer.func_A.param_category.RCV_PIC]
-
-    def _A_get_rep_content(self, packing_result):
-        param_dict = packing_result.result
-        cmd_cat = packing_result.command_category
-
-        if self._A_is_auto_detect(packing_result):
-            return param_dict[param_packer.func_A.param_category.REP_CONTENT]
-        else:
-            if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
-                t = param_dict[param_packer.func_A.param_category.REP_TXT]
-
-                if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
-                    t = self._replace_newline(t)
-
-                return t
-            elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
-                return param_dict[param_packer.func_A.param_category.REP_STK]
-            elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
-                return param_dict[param_packer.func_A.param_category.REP_PIC]
         
     def _M(self, src, execute_in_gid, group_config_type, executor_permission, text):
         return self._A(src, execute_in_gid, group_config_type, executor_permission, text, True)
@@ -408,37 +310,22 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                D_handler = command_handler_collection._D()
+
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
 
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-                kwd_del_result = self._D_del_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
+                kwd_del_result = D_handler.del_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
-                return self._D_generate_output(kwd_del_result)
+                return D_handler.generate_output(kwd_del_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _D_del_kw(self, kwd_instance, packing_result, pinned, executor_uid):
-        param_dict = packing_result.result
-        if param_dict[param_packer.func_D.param_category.IS_ID]:
-            disabled_data = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
-        else:
-            disabled_data = kwd_instance.disable_keyword(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
-
-        return ext.action_result(disabled_data, len(disabled_data) > 0)
-
-    def _D_generate_output(self, del_result):
-        if del_result.success:
-            text = u'回覆組刪除成功。\n'
-            text += '\n'.join([data.basic_text(True) for data in del_result.result])
-            return text
-        else:
-            return error.main.miscellaneous(error.main.pair_not_exist_or_insuffieicnt_permission() + u'若欲使用ID作為刪除根據，請參閱小水母使用說明。')
 
     def _R(self, src, execute_in_gid, group_config_type, executor_permission, text):
         return self._D(src, execute_in_gid, group_config_type, executor_permission, text, True)
@@ -449,32 +336,18 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                Q_handler = command_handler_collection._Q(self._config_manager, self._webpage_generator)
+
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 query_result = self._get_query_result(packing_result, execute_in_gid, kwd_instance, False)
 
-                return self._Q_generate_output(query_result)
+                return Q_handler.generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _Q_generate_output(self, query_result):
-        if query_result.success:
-            max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_QUERY_OUTPUT_COUNT)
-            str_length = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_SIMPLE_STRING_LENGTH)
-
-            title, data = query_result.result
-
-            output = db.keyword_dict.group_dict_manager.list_keyword(data, max_count, title, error.main.no_result(), str_length)
-
-            text = output.limited
-            if output.has_result:
-                text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
-            return text
-        else:
-            return unicode(query_result.result)
     
     def _I(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._I
@@ -482,31 +355,18 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                I_handler = command_handler_collection._I(self._line_api_wrapper, self._config_manager, self._webpage_generator)
+
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 query_result = self._get_query_result(packing_result, execute_in_gid, kwd_instance, False)
 
-                return self._I_generate_output(kwd_instance, query_result)
+                return I_handler.generate_output(kwd_instance, query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _I_generate_output(self, kwd_instance, query_result):
-        if query_result.success:
-            max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
-            
-            title, data = query_result.result
-
-            output = db.keyword_dict.group_dict_manager.list_keyword_info(data, kwd_instance, self._line_api_wrapper, max_count, title.replace('\n', ''),  error.main.no_result())
-
-            text = output.limited
-            if output.has_result:
-                text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
-            return text
-        else:
-            return unicode(query_result.result)
 
     def _X(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._X
@@ -514,90 +374,21 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                X_handler = command_handler_collection._X(self._webpage_generator, self._kwd_global)
+
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
 
-                clone_result = self._X_clone(execute_in_gid, get_uid_result.result, executor_permission, packing_result)
+                clone_result = X_handler.clone(execute_in_gid, get_uid_result.result, executor_permission, packing_result)
 
-                return self._X_generate_output(clone_result)
+                return X_handler.gene(clone_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _X_clone(self, execute_in_gid, executor_uid, executor_permission, pack_result):
-        cmd_cat = pack_result.command_category
-        param_dict = pack_result.result
-
-        copy_pinned = self._X_copy_pinned(executor_permission, param_dict[param_packer.func_X.param_category.WITH_PINNED])
-
-        if not copy_pinned.success:
-            return ext.action_result(copy_pinned.result, False)
-
-        target_gid_result = self._X_get_target_gid(execute_in_gid)
-
-        if not target_gid_result.success:
-            return ext.action_result(target_gid_result.result, False)
-
-        if cmd_cat == param_packer.func_X.command_category.BY_ID_WORD:
-            if param_dict[param_packer.func_X.param_category.IS_ID]:
-                return ext.action_result(self._kwd_global.clone_by_id(param_dict[param_packer.func_X.param_category.ID], target_gid_result.result, executor_uid, False, copy_pinned.result), True)
-            else:
-                return ext.action_result(self._kwd_global.clone_by_word(param_dict[param_packer.func_X.param_category.KEYWORD], target_gid_result.result, executor_uid, False, copy_pinned.result), True)
-        elif cmd_cat == param_packer.func_X.command_category.BY_GID:
-            src_id_result = self._X_get_source_gid(execute_in_gid, pack_result)
-            if not src_id_result.success:
-                return ext.action_result(src_id_result.result, False)
-
-            return ext.action_result(self._kwd_global.clone_from_group(src_id_result.result, target_gid_result.result, executor_uid, False, copy_pinned.result), True)
-
-    def _X_generate_output(self, clone_result):
-        if clone_result.success:
-            cloned_ids = clone_result.result
-
-            if len(cloned_ids) > 0:
-                first_id_str = str(cloned_ids[0])
-                last_id_str = str(cloned_ids[-1])
-                return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in cloned_ids])), self._webpage_generator),
-                        bot.line_api_wrapper.wrap_template_with_action({
-                            u'回覆組資料查詢(簡略)': text_msg_handler.CH_HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
-                            u'回覆組資料查詢(詳細)': text_msg_handler.CH_HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
-            else:
-                return error.sys_command.no_available_target_pair()
-        else:
-            return unicode(clone_result.result)
-
-    def _X_get_source_gid(self, execute_in_gid, pack_result):
-        param_dict = pack_result.result
-
-        if param_dict[param_packer.func_X.param_category.SOURCE_GID] is not None:
-            ret = param_dict[param_packer.func_X.param_category.SOURCE_GID]
-            if ret == execute_in_gid:
-                return ext.action_result(error.sys_command.same_source_target(ret), False)
-            else:
-                return ext.action_result(ret, True)
-        else:
-            return ext.action_result(execute_in_gid, True)
-
-    def _X_get_target_gid(self, execute_in_gid):
-        if bot.line_api_wrapper.is_valid_user_id(execute_in_gid):
-            return ext.action_result(bot.remote.PUBLIC_TOKEN(), True)
-        else:
-            return ext.action_result(execute_in_gid, True)
-
-    def _X_copy_pinned(self, executor_permission, user_wants_copy):
-        required_perm = bot.permission.MODERATOR
-
-        if user_wants_copy:
-            if executor_permission >= required_perm:
-                return ext.action_result(True, True)
-            else:
-                return ext.action_result(error.permission.restricted(required_perm), False)
-        else:
-            return ext.action_result(False, True)
         
     def _X2(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._X2
@@ -605,25 +396,21 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                X2_handler = command_handler_collection._X2()
+
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
 
                 clear_count = self._kwd_global.clear(execute_in_gid, get_uid_result.result)
 
-                return self._X2_generate_output(clear_count)
+                return X2_handler.generate_output(clear_count)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _X2_generate_output(self, clear_count):
-        if clear_count > 0:
-            return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
-        else:
-            return u'沒有刪除任何回覆組。'
         
     def _E(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._E
@@ -631,6 +418,8 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                E_handler = command_handler_collection._E(self._webpage_generator)
+
                 get_uid_result = self._get_executor_uid(src)
                 if not get_uid_result.success:
                     return get_uid_result.result
@@ -638,11 +427,11 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 cmd_cat = packing_result.command_category
                 if packing_result.command_category == param_packer.func_E.command_category.MOD_LINKED:
-                    mod_result = self._E_mod_linked(packing_result, executor_permission, kwd_instance)
-                    return self._E_generate_output_mod_linked(mod_result, packing_result)
+                    mod_result = E_handler.mod_linked(packing_result, executor_permission, kwd_instance)
+                    return E_handler.generate_output_mod_linked(mod_result, packing_result)
                 elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
                     mod_result = self._E_mod_pinned(packing_result, executor_permission, kwd_instance)
-                    return self._E_generate_output_mod_pinned(mod_result, packing_result)
+                    return E_handler.generate_output_mod_pinned(mod_result, packing_result)
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -651,82 +440,6 @@ class text_msg_handler(object):
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _E_able_to_mod_pinned(self, executor_permission):
-        return executor_permission >= bot.permission.MODERATOR
-
-    def _E_mod_linked(self, pack_result, executor_permission, kwd_instance):
-        param_dict = pack_result.result
-
-        is_add = param_dict[param_packer.func_E.param_category.HAS_LINK]
-        mod_pin = self._E_able_to_mod_pinned(executor_permission)
-
-        if param_dict[param_packer.func_E.param_category.IS_ID]:
-            if is_add:
-                result = kwd_instance.add_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
-            else:
-                result = kwd_instance.del_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
-        else:
-            if is_add:
-                result = kwd_instance.add_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
-            else:
-                result = kwd_instance.del_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
-
-        return ext.action_result(None, result)
-
-    def _E_generate_output_mod_linked(self, mod_result, pack_result):
-        expr = self._E_generate_expr(pack_result)
-
-        if mod_result.success:
-            return (bot.line_api_wrapper.wrap_text_message(u'{} 相關回覆組變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
-        else:
-            return u'{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
-
-    def _E_mod_pinned(self, pack_result, executor_permission, kwd_instance):
-        param_dict = pack_result.result
-
-        mod_pin = self._E_able_to_mod_pinned(executor_permission)
-
-        if param_dict[param_packer.func_E.param_category.IS_ID]:
-            result = kwd_instance.set_pinned_by_index(param_dict[param_packer.func_E.param_category.ID], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
-        else:
-            result = kwd_instance.set_pinned_by_keyword(param_dict[param_packer.func_E.param_category.KEYWORD], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
-
-        return ext.action_result(None, result)
-
-    def _E_generate_output_mod_pinned(self, pin_result, pack_result):
-        expr = self._E_generate_expr(pack_result)
-
-        if pin_result.success:
-            return (bot.line_api_wrapper.wrap_text_message(u'{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
-        else:
-            return u'{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
-
-    def _E_generate_shortcut_template(self, pack_result):
-        param_dict = pack_result.result
-
-        expr = self._E_generate_expr(pack_result)
-
-        if param_dict[param_packer.func_E.param_category.IS_ID]:
-            target_array = param_dict[param_packer.func_E.param_category.ID]
-            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array }, u'更動回覆組ID: {}'.format(expr), u'相關指令')
-        else:
-            target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
-            shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊()'.format(kw): u'詳細找{}'.format(kw) for kw in target_array }, u'更動回覆組: {}'.format(expr), u'相關指令')
-
-        return shortcut_template
-
-    def _E_generate_expr(self, pack_result):
-        param_dict = pack_result.result
-
-        if param_dict[param_packer.func_E.param_category.IS_ID]:
-            target_array = param_dict[param_packer.func_E.param_category.ID]
-            expr = u'、'.join([u'#{}'.format(str(id)) for id in target_array])
-        else:
-            target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
-            expr = u'關鍵字: ' + u'、'.join(target_array)
-
-        return expr
         
     def _K(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._K
@@ -734,9 +447,11 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                K_handler = command_handler_collection._K(self._config_manager)
+
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
 
-                limit = self._K_get_limit(packing_result)
+                limit = K_handler.get_limit(packing_result)
                 rnk_cat = packing_result.result[param_packer.func_K.param_category.CATEGORY]
                 
                 if rnk_cat == special_param.func_K.ranking_category.USER:
@@ -753,20 +468,6 @@ class text_msg_handler(object):
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _K_default_limit(self):
-        return self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
-
-    def _K_get_limit(self, pack_result):
-        prm_dict = pack_result.result
-
-        default = self._K_default_limit()
-        limit_count = prm_dict[param_packer.func_K.param_category.COUNT] 
-
-        if limit_count is None:
-            return default
-        else:
-            return limit_count
     
     def _P(self, src, execute_in_gid, group_config_type, executor_permission, text):
         packer_list = packer_factory._P
@@ -774,13 +475,17 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
+                P_handler = command_handler_collection._P(self._webpage_generator, self._config_manager, self._system_data, self._system_stats, 
+                                                          self._group_manager, self._loop_prev, self._oxr_client, self._imgur_api_wrapper)
+
+
                 cmd_cat = packing_result.command_category
                 
                 if cmd_cat == param_packer.func_P.command_category.MESSAGE_RECORD:
-                    msg_rec = self._P_get_msg_track_data(packing_result)
-                    return self._P_generate_output_msg_track(packing_result, msg_rec)
+                    msg_rec = P_handler.get_msg_track_data(packing_result)
+                    return P_handler.generate_output_msg_track(packing_result, msg_rec)
                 elif cmd_cat == param_packer.func_P.command_category.SYSTEM_RECORD:
-                    return self._P_generate_output_sys_rec(packing_result)
+                    return P_handler.generate_output_sys_rec(packing_result)
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -789,57 +494,6 @@ class text_msg_handler(object):
                 pass
             else:
                 raise UndefinedPackedStatusException(unicode(packing_result.status))
-
-    def _P_generate_output_sys_rec(self, pack_result):
-        rec_cat = pack_result.result[param_packer.func_P.param_category.CATEGORY]
-
-        if rec_cat == special_param.func_P.record_category.AUTO_REPLY:
-            kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
-            instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
-            return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
-        elif rec_cat == special_param.func_P.record_category.BAN_LIST:
-            text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format   (self._system_data.boot_up)
-            text += self._loop_prev.get_all_banned_str()
-
-            return text
-        elif rec_cat == special_param.func_P.record_category.EXCHANGE_RATE:
-            return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
-        elif rec_cat == special_param.func_P.record_category.IMGUR_API:
-            import socket
-            ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
-
-            return self._imgur_api_wrapper.get_status_string(ip_address)
-        elif rec_cat == special_param.func_P.record_category.SYS_INFO:
-            text = u'【系統統計資料】\n'
-            text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
-            text += self._system_stats.get_statistics()
-
-            return text
-        else:
-            return error.sys_command.unknown_func_P_record_category(rec_cat)
-
-    def _P_generate_output_msg_track(self, pack_result, data):
-        limit = self._P_get_msg_track_data_count(pack_result)
-
-        tracking_string_obj = db.group_manager.message_track_string(data, limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True, self._group_manager.message_sum())
-        
-        return u'為避免訊息過長造成洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
-
-    def _P_get_msg_track_data(self, pack_result):
-        limit = self._P_get_msg_track_data_count(pack_result)
-
-        return self._group_manager.order_by_recorded_msg_count(limit)
-
-    def _P_get_msg_track_data_count(self, pack_result):
-        prm_dict = pack_result.result
-
-        default = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
-        count = prm_dict[param_packer.func_P.param_category.COUNT]
-
-        if count is None:
-            return default
-        else:
-            return count
     
     ####################
     ### UNDONE BELOW ###
@@ -928,13 +582,13 @@ class text_msg_handler(object):
             action = regex_result.group(1)
 
             if action == u'啞巴':
-                cfg_type = db.config_type.SILENCE
+                cfg_type = db.group_data_range.SILENCE
             elif action == u'機器人':
-                cfg_type = db.config_type.SYS_ONLY
+                cfg_type = db.group_data_range.SYS_ONLY
             elif action == u'服務員':
-                cfg_type = db.config_type.GROUP_DATABASE_ONLY
+                cfg_type = db.group_data_range.GROUP_DATABASE_ONLY
             elif action == u'八嘎囧':
-                cfg_type = db.config_type.ALL
+                cfg_type = db.group_data_range.ALL
             else:
                 return error.sys_command.action_not_implemented(u'GA', regex_result.match_at, action)
             
@@ -1331,8 +985,8 @@ class text_msg_handler(object):
             if hr_freq is None:
                 hr_freq = self._config_manager.getint(bot.config_category.WEATHER_REPORT, bot.config_category_weather_report.DEFAULT_INTERVAL_HR)
 
-            mode_dict = { u'簡': tool.weather.output_config.SIMPLE, u'詳': tool.weather.output_config.DETAIL }
-            mode = mode_dict.get(regex_result.group(3), tool.weather.output_config.SIMPLE)
+            mode_dict = { u'簡': tool.weather.output_type.SIMPLE, u'詳': tool.weather.output_type.DETAIL }
+            mode = mode_dict.get(regex_result.group(3), tool.weather.output_type.SIMPLE)
 
             executor_uid = bot.line_api_wrapper.source_user_id(src)
 
@@ -1445,447 +1099,423 @@ class text_msg_handler(object):
                full_text.startswith(text_msg_handler.EN_HEAD) or \
                bot.line_api_wrapper.is_valid_room_group_id(full_text.split(text_msg_handler.REMOTE_SPLITTER)[0], True, True)
 
-class param_packer(object): 
-    class func_S(param_packer_base):
-        class command_category(ext.EnumWithName):
-            DB_COMMAND = 1, '資料庫指令'
+class command_handler_collection(object):
+    @staticmethod
+    def replace_newline(self, text):
+        if isinstance(text, unicode):
+            return text.replace(u'\\n', u'\n')
+        elif isinstance(text, str):
+            return text.replace('\\n', '\n')
+        elif isinstance(text, list):
+            return [t.replace(u'\\n', u'\n') for t in text]
+        else:
+            return text
 
-        class param_category(ext.EnumWithName):
-            DB_NAME = 1, '資料庫名稱'
-            MAIN_CMD = 2, '主指令'
-            MAIN_PRM = 3, '主參數'
-            OTHER_PRM = 4, '其餘參數'
+    class _S(object):
+        def __init__(self, mongo_client):
+            self._mongo_client = mongo_client
 
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
+        def generate_output_head(self, param_dict):
+            text = u'目標資料庫:\n{}\n'.format(param_dict[param_packer.func_S.param_category.DB_NAME])
+            text += u'資料庫主指令:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_CMD])
+            text += u'資料庫主指令參數:\n{}\n'.format(param_dict[param_packer.func_S.param_category.MAIN_PRM])
+            text += u'資料庫副指令:\n{}\n\n'.format(param_dict[param_packer.func_S.param_category.OTHER_PRM])
 
-            super(param_packer.func_S, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+            return text
 
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_S.command_category.DB_COMMAND:
-                prm_objs = [parameter(param_packer.func_S.param_category.DB_NAME, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.MAIN_CMD, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.MAIN_PRM, param_validator.conv_unicode), 
-                            parameter(param_packer.func_S.param_category.OTHER_PRM, param_validator.check_dict)]
+        def generate_output_mongo_result(self, param_dict):
+            return ext.object_to_json(self.execute_mongo_shell(param_dict))
+
+        def execute_mongo_shell(self, param_dict):
+            return self._mongo_client.get_database(param_dict[param_packer.func_S.param_category.DB_NAME]) \
+                                     .command(param_dict[param_packer.func_S.param_category.MAIN_CMD], 
+                                              param_dict[param_packer.func_S.param_category.MAIN_PRM], 
+                                              **param_dict[param_packer.func_S.param_category.OTHER_PRM])
+
+    class _A(object):
+        def add_kw(self, kwd_instance, packing_result, pinned, adder_uid):
+            param_dict = packing_result.result
+
+            rcv_type_result = self._get_rcv_type(packing_result)
+            rcv_content = command_handler_collection.replace_newline(self._get_rcv_content(packing_result))
+            rep_type_result = self._get_rep_type(packing_result)
+            rep_content = command_handler_collection.replace_newline(self._get_rep_content(packing_result))
+
+            if not rcv_type_result.success:
+                return rcv_type_result.result
+
+            if not rep_type_result.success:
+                return rep_type_result.result
+
+            # create and write
+            result = kwd_instance.insert_keyword(rcv_content, rep_content, adder_uid, pinned, rcv_type_result.result, rep_type_result.result, None, param_dict  [param_packer.func_A.param_category.ATTACHMENT])
+
+            return ext.action_result(result, isinstance(result, db.pair_data))
+
+        def generate_output(self, kwd_add_result):
+            if kwd_add_result.success:
+                if isinstance(kwd_add_result.result, (str, unicode)):
+                    return result
+                elif isinstance(kwd_add_result.result, db.pair_data):
+                    return u'回覆組新增成功。\n' + kwd_add_result.result.basic_text(True)
+                else:
+                    raise ValueError('Unhandled type of return result. ({} - {})'.format(type(kwd_add_result.result), kwd_add_result.result))
             else:
-                raise UndefinedCommandCategoryException()
+                return u'回覆組新增失敗。\n\n{}'.format(kwd_add_result.result)
 
-            return prm_objs
-    
-    class func_A(param_packer_base):
-        class command_category(ext.EnumWithName):
-            ADD_PAIR_CH = 1, '新增回覆組(中文)'
-            ADD_PAIR_EN = 2, '新增回覆組(英文)'
-            ADD_PAIR_AUTO_CH = 3, '新增回覆組(自動偵測，中文)'
-            ADD_PAIR_AUTO_EN = 4, '新增回覆組(自動偵測，英文)'
+        def _is_auto_detect(self, packing_result):
+            return any(packing_result.command_category == cat for cat in (param_packer.func_A.command_category.ADD_PAIR_AUTO_CH, param_packer.func_A.command_category.ADD_PAIR_AUTO_EN))
 
-        class param_category(ext.EnumWithName):
-            ATTACHMENT = 2, '附加回覆內容'
-            RCV_TYPE = 3, '接收(種類)'
-            RCV_TXT = 4, '接收(文字)'
-            RCV_STK = 5, '接收(貼圖)'
-            RCV_PIC = 6, '接收(圖片)'
-            REP_TYPE = 7, '回覆(種類)'
-            REP_TXT = 8, '回覆(文字)'
-            REP_STK = 9, '回覆(貼圖)'
-            REP_PIC = 10, '回覆(圖片)'
-            RCV_CONTENT = 11, '接收(內容)'
-            REP_CONTENT = 12, '回覆(內容)'
-
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_A, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_A.command_category.ADD_PAIR_CH:
-                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),
-                            parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
-                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
-                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
-                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.valid_int, True),  
-                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
-                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
-                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
-                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.valid_int, True)]
-            elif command_category == param_packer.func_A.command_category.ADD_PAIR_EN:
-                prm_objs = [parameter(param_packer.func_A.param_category.RCV_TYPE, param_validator.keyword_dict.conv_pair_type_from_org),  
-                            parameter(param_packer.func_A.param_category.RCV_TXT, param_validator.conv_unicode, True),  
-                            parameter(param_packer.func_A.param_category.RCV_STK, param_validator.valid_int, True),  
-                            parameter(param_packer.func_A.param_category.RCV_PIC, param_validator.validate_sha224, True),  
-                            parameter(param_packer.func_A.param_category.REP_TYPE, param_validator.keyword_dict.conv_pair_type_from_org), 
-                            parameter(param_packer.func_A.param_category.REP_TXT, param_validator.conv_unicode, True), 
-                            parameter(param_packer.func_A.param_category.REP_STK, param_validator.valid_int, True), 
-                            parameter(param_packer.func_A.param_category.REP_PIC, param_validator.validate_https, True), 
-                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
-            elif command_category == param_packer.func_A.command_category.ADD_PAIR_AUTO_CH:
-                prm_objs = [parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True),  
-                            parameter(param_packer.func_A.param_category.RCV_CONTENT, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.REP_CONTENT, param_validator.conv_unicode)]
-            elif command_category == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
-                prm_objs = [parameter(param_packer.func_A.param_category.RCV_CONTENT, param_validator.conv_unicode),  
-                            parameter(param_packer.func_A.param_category.REP_CONTENT, param_validator.conv_unicode),
-                            parameter(param_packer.func_A.param_category.ATTACHMENT, param_validator.conv_unicode, True)]
+        def _get_rcv_type(self, packing_result):
+            param_dict = packing_result.result
+            if self._A_is_auto_detect(packing_result):
+                return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.RCV_CONTENT], False)
             else:
-                raise UndefinedCommandCategoryException()
+                return ext.action_result(param_dict[param_packer.func_A.param_category.RCV_TYPE], True)
 
-            return prm_objs
-    
-    class func_D(param_packer_base):
-        class command_category(ext.EnumWithName):
-            DEL_PAIR = 1, '刪除回覆組'
-
-        class param_category(ext.EnumWithName):
-            IS_ID = 1, '根據ID?'
-            ID = 2, 'ID'
-            WORD = 3, '關鍵字'
-
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_D, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_D.command_category.DEL_PAIR:
-                prm_objs = [parameter(param_packer.func_D.param_category.IS_ID, param_validator.is_not_null, True),  
-                            parameter(param_packer.func_D.param_category.ID, param_validator.conv_int_arr, True),  
-                            parameter(param_packer.func_D.param_category.WORD, param_validator.conv_unicode_arr, True)]
+        def _get_rep_type(self, packing_result):
+            param_dict = packing_result.result
+            if self._A_is_auto_detect(packing_result):
+                return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.REP_CONTENT], False)
             else:
-                raise UndefinedCommandCategoryException()
+                return ext.action_result(param_dict[param_packer.func_A.param_category.REP_TYPE], True)
 
-            return prm_objs
-    
-    class func_Q(param_packer_base):
-        class command_category(ext.EnumWithName):
-            BY_AVAILABLE = 1, '根據可用範圍'
-            BY_ID_RANGE = 2, '根據ID範圍'
-            BY_UID = 3, '根據製作者'
-            BY_GID = 4, '根據群組'
-            BY_KEY = 5, '根據關鍵'
+        def _get_rcv_content(self, packing_result):
+            param_dict = packing_result.result
+            cmd_cat = packing_result.command_category
 
-        class param_category(ext.EnumWithName):
-            AVAILABLE = 1, '可用的'
-            GLOBAL = 2, '全域'
-            START_ID = 3, '起始ID'
-            END_ID = 4, '終止ID'
-            UID = 5, '製作者ID'
-            GID = 6, '群組ID'
-            IS_ID = 7, '根據ID?'
-            KEYWORD = 8, '關鍵字'
-            ID = 9, 'ID'
-
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_Q, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_Q.command_category.BY_AVAILABLE:
-                prm_objs = [parameter(param_packer.func_Q.param_category.GLOBAL, param_validator.is_not_null, True),
-                            parameter(param_packer.func_Q.param_category.AVAILABLE, param_validator.is_not_null, True)]
-            elif command_category == param_packer.func_Q.command_category.BY_ID_RANGE:
-                prm_objs = [parameter(param_packer.func_Q.param_category.START_ID, param_validator.conv_int_gt_0),  
-                            parameter(param_packer.func_Q.param_category.END_ID, param_validator.conv_int_gt_0)]
-            elif command_category == param_packer.func_Q.command_category.BY_UID:
-                prm_objs = [parameter(param_packer.func_Q.param_category.UID, param_validator.line_bot_api.validate_uid)]
-            elif command_category == param_packer.func_Q.command_category.BY_GID:
-                prm_objs = [parameter(param_packer.func_Q.param_category.GID, param_validator.line_bot_api.validate_gid_public_global)]
-            elif command_category == param_packer.func_Q.command_category.BY_KEY:
-                prm_objs = [parameter(param_packer.func_Q.param_category.IS_ID, param_validator.is_not_null, True),  
-                            parameter(param_packer.func_Q.param_category.ID, param_validator.conv_int_arr, True),  
-                            parameter(param_packer.func_Q.param_category.KEYWORD, param_validator.conv_unicode, True)]
+            if self._A_is_auto_detect(packing_result):
+                return param_dict[param_packer.func_A.param_category.RCV_CONTENT]
             else:
-                raise UndefinedCommandCategoryException()
+                if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
+                    t = param_dict[param_packer.func_A.param_category.RCV_TXT]
 
-            return prm_objs
-    
-    class func_X(param_packer_base):
-        class command_category(ext.EnumWithName):
-            BY_ID_WORD = 1, '根據ID/字'
-            BY_GID = 2, '根據群組'
+                    if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
+                        t = command_handler_collection.replace_newline(t)
 
-        class param_category(ext.EnumWithName):
-            IS_ID = 1, '根據ID?'
-            SOURCE_GID = 2, '來源群組ID'
-            TARGET_GID = 3, '目標群組ID'
-            ID = 4, '回覆組ID'
-            KEYWORD = 5, '關鍵字'
-            WITH_PINNED = 6, '包含置頂'
+                    return t
+                elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.STICKER:
+                    return param_dict[param_packer.func_A.param_category.RCV_STK]
+                elif param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.PICTURE:
+                    return param_dict[param_packer.func_A.param_category.RCV_PIC]
 
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
+        def _get_rep_content(self, packing_result):
+            param_dict = packing_result.result
+            cmd_cat = packing_result.command_category
 
-            super(param_packer.func_X, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_X.command_category.BY_ID_WORD:
-                prm_objs = [parameter(param_packer.func_X.param_category.WITH_PINNED, param_validator.is_not_null, True),
-                            parameter(param_packer.func_X.param_category.IS_ID, param_validator.is_not_null, True),
-                            parameter(param_packer.func_X.param_category.ID, param_validator.conv_int_arr, True),
-                            parameter(param_packer.func_X.param_category.KEYWORD, param_validator.conv_unicode_arr, True)]
-            elif command_category == param_packer.func_X.command_category.BY_GID:
-                prm_objs = [parameter(param_packer.func_X.param_category.SOURCE_GID, param_validator.line_bot_api.validate_gid),
-                            parameter(param_packer.func_X.param_category.WITH_PINNED, param_validator.is_not_null, True)]
+            if self._is_auto_detect(packing_result):
+                return param_dict[param_packer.func_A.param_category.REP_CONTENT]
             else:
-                raise UndefinedCommandCategoryException()
+                if param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.TEXT:
+                    t = param_dict[param_packer.func_A.param_category.REP_TXT]
 
-            return prm_objs
+                    if cmd_cat == param_packer.func_A.command_category.ADD_PAIR_AUTO_EN:
+                        t = command_handler_collection.replace_newline(t)
 
-    class func_X2(param_packer_base):
-        class command_category(ext.EnumWithName):
-            CLEAR_DATA = 1, '清除關鍵字'
+                    return t
+                elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.STICKER:
+                    return param_dict[param_packer.func_A.param_category.REP_STK]
+                elif param_dict[param_packer.func_A.param_category.REP_TYPE] == db.word_type.PICTURE:
+                    return param_dict[param_packer.func_A.param_category.REP_PIC]
 
-        class param_category(ext.EnumWithName):
-            GID = 1, '群組ID'
-
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_X2, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_X2.command_category.CLEAR_DATA:
-                prm_objs = []
+    class _D(object):
+        def del_kw(self, kwd_instance, packing_result, pinned, executor_uid):
+            param_dict = packing_result.result
+            if param_dict[param_packer.func_D.param_category.IS_ID]:
+                disabled_data = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
             else:
-                raise UndefinedCommandCategoryException()
+                disabled_data = kwd_instance.disable_keyword(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
 
-            return prm_objs
+            return ext.action_result(disabled_data, len(disabled_data) > 0)
 
-    class func_E(param_packer_base):
-        class command_category(ext.EnumWithName):
-            MOD_LINKED = 1, '修改相關關鍵字'
-            MOD_PINNED = 2, '修改置頂'
-
-        class param_category(ext.EnumWithName):
-            IS_ID = 1, '根據ID?'
-            ID = 2, 'ID陣列'
-            KEYWORD = 3, '關鍵字'
-            LINKED = 4, '相關關鍵字'
-            HAS_LINK = 5, '有/無關'
-            NOT_PIN = 6, '不置頂'
-
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_E, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_E.command_category.MOD_LINKED:
-                prm_objs = [parameter(param_packer.func_E.param_category.IS_ID, param_validator.is_not_null, True),
-                            parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
-                            parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
-                            parameter(param_packer.func_E.param_category.LINKED, param_validator.conv_unicode_arr),
-                            parameter(param_packer.func_E.param_category.HAS_LINK, param_validator.text_to_bool)]
-            elif command_category == param_packer.func_E.command_category.MOD_PINNED:
-                prm_objs = [parameter(param_packer.func_E.param_category.IS_ID, param_validator.is_not_null, True),
-                            parameter(param_packer.func_E.param_category.ID, param_validator.conv_int_arr, True),
-                            parameter(param_packer.func_E.param_category.KEYWORD, param_validator.conv_unicode_arr, True),
-                            parameter(param_packer.func_E.param_category.NOT_PIN, param_validator.is_not_null)]
+        def generate_output(self, del_result):
+            if del_result.success:
+                text = u'回覆組刪除成功。\n'
+                text += '\n'.join([data.basic_text(True) for data in del_result.result])
+                return text
             else:
-                raise UndefinedCommandCategoryException()
+                return error.main.miscellaneous(error.main.pair_not_exist_or_insuffieicnt_permission() + u'若欲使用ID作為刪除根據，請參閱小水母使用說明。')
 
-            return prm_objs
+    class _Q(object):
+        def __init__(self, config_manager, webpage_generator):
+            self._config_manager = config_manager
+            self._webpage_generator = webpage_generator
 
-    class func_K(param_packer_base):
-        class command_category(ext.EnumWithName):
-            RANKING = 1, '排名'
+        def generate_output(self, query_result):
+            if query_result.success:
+                max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_QUERY_OUTPUT_COUNT)
+                str_length = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_SIMPLE_STRING_LENGTH)
 
-        class param_category(ext.EnumWithName):
-            CATEGORY = 1, '種類'
-            COUNT = 2, '結果數量'
+                title, data = query_result.result
 
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
+                output = db.keyword_dict.group_dict_manager.list_keyword(data, max_count, title, error.main.no_result(), str_length)
 
-            super(param_packer.func_K, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_K.command_category.RANKING:
-                prm_objs = [parameter(param_packer.func_K.param_category.CATEGORY, param_validator.special_category.K_ranking_category),
-                            parameter(param_packer.func_K.param_category.COUNT, param_validator.conv_int_gt_0, True)]
+                text = output.limited
+                if output.has_result:
+                    text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.QUERY))
+                return text
             else:
-                raise UndefinedCommandCategoryException()
+                return unicode(query_result.result)
 
-            return prm_objs
+    class _I(object):
+        def __init__(self, line_wrapper, config_manager, webpage_generator):
+            self._line_wrapper = line_wrapper
+            self._config_manager = config_manager
+            self._webpage_generator = webpage_generator
 
-    class func_P(param_packer_base):
-        class command_category(ext.EnumWithName):
-            SYSTEM_RECORD = 1, '系統紀錄'
-            MESSAGE_RECORD = 2, '訊息量紀錄'
+        def generate_output(self, kwd_instance, query_result):
+            if query_result.success:
+                max_count = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_INFO_OUTPUT_COUNT)
+                
+                title, data = query_result.result
 
-        class param_category(ext.EnumWithName):
-            CATEGORY = 1, '種類'
-            COUNT = 2, '結果數量'
+                output = db.keyword_dict.group_dict_manager.list_keyword_info(data, kwd_instance, self._line_api_wrapper, max_count, title.replace('\n', ''),  error.main.no_result())
 
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
-
-            super(param_packer.func_P, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
-
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_P.command_category.SYSTEM_RECORD:
-                prm_objs = [parameter(param_packer.func_P.param_category.CATEGORY, param_validator.special_category.P_record_category)]
-            elif command_category == param_packer.func_P.command_category.MESSAGE_RECORD:
-                prm_objs = [parameter(param_packer.func_P.param_category.COUNT, param_validator.conv_int_gt_0, True)]
+                text = output.limited
+                if output.has_result:
+                    text += u'\n\n完整結果: {}'.format(self._webpage_generator.rec_webpage(output.full, db.webpage_content_type.INFO))
+                return text
             else:
-                raise UndefinedCommandCategoryException()
+                return unicode(query_result.result)
 
-            return prm_objs
+    class _X(object):
+        def __init__(self, webpage_generator, kwd_global):
+            self._webpage_generator = webpage_generator
+            self._kwd_global = kwd_global
 
+        def clone(self, execute_in_gid, executor_uid, executor_permission, pack_result):
+            cmd_cat = pack_result.command_category
+            param_dict = pack_result.result
 
+            copy_pinned = self._copy_pinned(executor_permission, param_dict[param_packer.func_X.param_category.WITH_PINNED])
 
+            if not copy_pinned.success:
+                return ext.action_result(copy_pinned.result, False)
 
+            target_gid_result = self._get_target_gid(execute_in_gid)
 
-    class func_O(param_packer_base):
-        class command_category(ext.EnumWithName):
-            OXFORD = 1, '牛津字典'
+            if not target_gid_result.success:
+                return ext.action_result(target_gid_result.result, False)
 
-        class param_category(ext.EnumWithName):
-            VOCABULARY = 1, '單字'
+            if cmd_cat == param_packer.func_X.command_category.BY_ID_WORD:
+                if param_dict[param_packer.func_X.param_category.IS_ID]:
+                    return ext.action_result(self._kwd_global.clone_by_id(param_dict[param_packer.func_X.param_category.ID], target_gid_result.result, executor_uid, False, copy_pinned.result), True)
+                else:
+                    return ext.action_result(self._kwd_global.clone_by_word(param_dict[param_packer.func_X.param_category.KEYWORD], target_gid_result.result, executor_uid, False,  copy_pinned.result), True)
+            elif cmd_cat == param_packer.func_X.command_category.BY_GID:
+                src_id_result = self._get_source_gid(execute_in_gid, pack_result)
+                if not src_id_result.success:
+                    return ext.action_result(src_id_result.result, False)
 
-        def __init__(self, command_category, CH_regex=None, EN_regex=None):
-            prm_objs = self._get_prm_objs(command_category)
+                return ext.action_result(self._kwd_global.clone_from_group(src_id_result.result, target_gid_result.result, executor_uid, False, copy_pinned.result), True)
 
-            super(param_packer.func_O, self).__init__(command_category, prm_objs, CH_regex, EN_regex)
+        def generate_output(self, clone_result):
+            if clone_result.success:
+                cloned_ids = clone_result.result
 
-        def _get_prm_objs(self, command_category):
-            if command_category == param_packer.func_O.command_category.OXFORD:
-                prm_objs = [parameter(param_packer.func_O.param_category.VOCABULARY, param_validator.conv_unicode_lower)]
+                if len(cloned_ids) > 0:
+                    first_id_str = str(cloned_ids[0])
+                    last_id_str = str(cloned_ids[-1])
+                    return [bot.line_api_wrapper.wrap_text_message(u'回覆組複製完畢。\n新建回覆組ID: {}'.format(u'、'.join([u'#{}'.format(id) for id in cloned_ids])), self._webpage_generator),
+                            bot.line_api_wrapper.wrap_template_with_action({
+                                u'回覆組資料查詢(簡略)': text_msg_handler.CH_HEAD + u'找ID範圍' + first_id_str + u'到' + last_id_str,
+                                u'回覆組資料查詢(詳細)': text_msg_handler.CH_HEAD + u'詳細找ID範圍' + first_id_str + u'到' + last_id_str } ,u'新建回覆組相關指令樣板', u'相關指令')]
+                else:
+                    return error.sys_command.no_available_target_pair()
             else:
-                raise UndefinedCommandCategoryException()
+                return unicode(clone_result.result)
 
-            return prm_objs
+        def _get_source_gid(self, execute_in_gid, pack_result):
+            param_dict = pack_result.result
 
-class packer_factory(object):
-    _S = [param_packer.func_S(command_category=param_packer.func_S.command_category.DB_COMMAND,
-                              CH_regex=ur'小水母 DB ?資料庫((?:.|\n)+)(?<! ) ?主指令((?:.|\n)+)(?<! ) ?主參數((?:.|\n)+)(?<! ) ?參數((?:.|\n)+)(?<! )', 
-                              EN_regex=ur'JC\nS\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))\n(.+(?<! ))')]
+            if param_dict[param_packer.func_X.param_category.SOURCE_GID] is not None:
+                ret = param_dict[param_packer.func_X.param_category.SOURCE_GID]
+                if ret == execute_in_gid:
+                    return ext.action_result(error.sys_command.same_source_target(ret), False)
+                else:
+                    return ext.action_result(ret, True)
+            else:
+                return ext.action_result(execute_in_gid, True)
 
-    _M = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex=ur'小水母 置頂 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
-                              EN_regex=ur'JC\nM\n(T\n(.+)|S\n(\d+)|P\n([0-9a-f]{56}))\n(T\n(.+)|S\n(\d+)|P\n(https://.+))(?:\n(.+))?'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_CH,
-                              CH_regex=ur'小水母 置頂 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(?:入 ?((?:.|\n)+)(?<! )) ?(?:出 ?((?:.|\n)+)(?<! ))'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_EN,
-                              EN_regex=ur'JC\nMM\n(.+)\n(.+)(?:\n(.+))?')]
+        def _get_target_gid(self, execute_in_gid):
+            if bot.line_api_wrapper.is_valid_user_id(execute_in_gid):
+                return ext.action_result(bot.remote.PUBLIC_TOKEN(), True)
+            else:
+                return ext.action_result(execute_in_gid, True)
 
-    _A = [param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_CH,
-                              CH_regex=ur'小水母 記住 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(收到 ?((?:.|\n)+)(?<! )|看到 ?([0-9a-f]{56})|被貼 ?(\d+)) ?(回答 ?((?:.|\n)+)(?<! )|回圖 ?(https://(?:.|\n)+)|回貼 ?(\d+))'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_EN,
-                              EN_regex=ur'JC\nA\n(T\n(.+)|S\n(\d+)|P\n([0-9a-f]{56}))\n(T\n(.+)|S\n(\d+)|P\n(https://.+))(?:\n(.+))?'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_CH,
-                              CH_regex=ur'小水母 記住 ?(?:\s|附加((?:.|\n)+)(?<! ))? ?(?:入 ?((?:.|\n)+)(?<! )) ?(?:出 ?((?:.|\n)+)(?<! ))'),
-          param_packer.func_A(command_category=param_packer.func_A.command_category.ADD_PAIR_AUTO_EN,
-                              EN_regex=ur'JC\nAA\n(.+)\n(.+)(?:\n(.+))?')]
+        def _copy_pinned(self, executor_permission, user_wants_copy):
+            required_perm = bot.permission.MODERATOR
 
-    _R = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記置頂的 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))', 
-                              EN_regex=ur'JC\nR\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
+            if user_wants_copy:
+                if executor_permission >= required_perm:
+                    return ext.action_result(True, True)
+                else:
+                    return ext.action_result(error.permission.restricted(required_perm), False)
+            else:
+                return ext.action_result(False, True)
 
-    _D = [param_packer.func_D(command_category=param_packer.func_D.command_category.DEL_PAIR,
-                              CH_regex=ur'小水母 忘記 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))', 
-                              EN_regex=ur'JC\nD\n?(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
+    class _X2(object):
+        def generate_output(self, clear_count):
+            if clear_count > 0:
+                return u'已刪除群組所屬回覆組(共{}組)。'.format(clear_count)
+            else:
+                return u'沒有刪除任何回覆組。'
 
-    _Q = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
-                              CH_regex=ur'小水母 找 ?(?:(全部)|(可以用的))',
-                              EN_regex=ur'JC\n(?:(Q\nALL)|(Q))'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_ID_RANGE,
-                              CH_regex=ur'小水母 找 ?ID範圍 ?(\d+)(?:到|~)(\d+)',
-                              EN_regex=ur'JC\nQ\nID\n(\d+)\n(\d+)'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_UID,
-                              CH_regex=ur'小水母 找 ?([U]{1}[0-9a-f]{32}) ?做的',
-                              EN_regex=ur'JC\nQ\nUID\n([U]{1}[0-9a-f]{32})'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_GID,
-                              CH_regex=ur'小水母 找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
-                              EN_regex=ur'JC\nQ\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
-                              CH_regex=ur'小水母 找 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
-                              EN_regex=ur'JC\nQ\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
+    class _E(object):
+        def __init__(self, webpage_generator):
+            self._webpage_generator = webpage_generator
 
-    _I = [param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_AVAILABLE,
-                              CH_regex=ur'小水母 詳細找 ?(?:(全部)|(可以用的))',
-                              EN_regex=ur'JC\n(?:(I\nALL)|(I))'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_ID_RANGE,
-                              CH_regex=ur'小水母 詳細找 ?ID範圍 ?(\d+)(?:到|~)(\d+)',
-                              EN_regex=ur'JC\nI\nID\n(\d+)\n(\d+)'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_UID,
-                              CH_regex=ur'小水母 詳細找 ?([U]{1}[0-9a-f]{32}) ?做的',
-                              EN_regex=ur'JC\nI\nUID\n([U]{1}[0-9a-f]{32})'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_GID,
-                              CH_regex=ur'小水母 詳細找 ?([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL) ?裡面的',
-                              EN_regex=ur'JC\nI\nGID\n([CR]{1}[0-9a-f]{32}|PUBLIC|GLOBAL)'),
-          param_packer.func_Q(command_category=param_packer.func_Q.command_category.BY_KEY,
-                              CH_regex=ur'小水母 詳細找 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
-                              EN_regex=ur'JC\nI\n(?:(ID\n)(\d{1}[\d\s]*)|(.+))')]
+        def _able_to_mod_pinned(self, executor_permission):
+            return executor_permission >= bot.permission.MODERATOR
 
-    _X = [param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
-                              CH_regex=ur'小水母 複製 ?( ?包含置頂)? ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))',
-                              EN_regex=ur'JC\nX\n(?:(P)\n)?(?:(ID)\n(\d{1}[\d\s]*)|(.+))'),
-          param_packer.func_X(command_category=param_packer.func_X.command_category.BY_ID_WORD,
-                              CH_regex=ur'小水母 複製群組([CR]{1}[0-9a-f]{32})?裡面的( ?包含置頂)?',
-                              EN_regex=ur'JC\nX\nGID\n([CR]{1}[0-9a-f]{32})\n?(P)?')]
+        def mod_linked(self, pack_result, executor_permission, kwd_instance):
+            param_dict = pack_result.result
 
-    _X2 = [param_packer.func_X2(command_category=param_packer.func_X2.command_category.CLEAR_DATA,
-                                CH_regex=ur'小水母 清除所有回覆組571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340',
-                                EN_regex=ur'JC\nX2\n571a95ae875a9ae315fad8cdf814858d9441c5ec671f0fb373b5f340')]
+            is_add = param_dict[param_packer.func_E.param_category.HAS_LINK]
+            mod_pin = self._Eble_to_mod_pinned(executor_permission)
 
-    _E = [param_packer.func_E(command_category=param_packer.func_E.command_category.MOD_LINKED,
-                              CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))跟((?:.|\n)+)(無|有)關',
-                              EN_regex=ur'JC\nE\n(?:(ID)\n(\d{1}[\d\s]*)|((?:.|\n)+))\n((?:.|\n)+)\n(O|X)'),
-          param_packer.func_E(command_category=param_packer.func_E.command_category.MOD_PINNED,
-                              CH_regex=ur'小水母 修改 ?(?:(ID ?)(\d{1}[\d\s]*)|((?:.|\n)+))(不)?置頂',
-                              EN_regex=ur'JC\nE\n(?:(ID)\n(\d{1}[\d\s]*)|((?:.|\n)+))\n(N)?P')]
+            if param_dict[param_packer.func_E.param_category.IS_ID]:
+                if is_add:
+                    result = kwd_instance.add_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+                else:
+                    result = kwd_instance.del_linked_word_by_id(param_dict[param_packer.func_E.param_category.ID], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+            else:
+                if is_add:
+                    result = kwd_instance.add_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
+                else:
+                    result = kwd_instance.del_linked_word_by_word(param_dict[param_packer.func_E.param_category.KEYWORD], param_dict[param_packer.func_E.param_category.LINKED], mod_pin)
 
-    _K = [param_packer.func_K(command_category=param_packer.func_K.command_category.RANKING,
-                              CH_regex=ur'小水母 排名(使用者|回覆組|使用過的) ?(?:前([1-9]\d?)名)?',
-                              EN_regex=ur'JC\nK\n(USER|KWRC|KW)(?:\n?([1-9]\d?))?')]
+            return ext.action_result(None, result)
 
-    _P = [param_packer.func_P(command_category=param_packer.func_P.command_category.MESSAGE_RECORD,
-                              CH_regex=ur'小水母 系統訊息前([1-9]\d?)名',
-                              EN_regex=ur'JC\nP\nMSG(?:\n([1-9]\d?))?'),
-          param_packer.func_P(command_category=param_packer.func_P.command_category.SYSTEM_RECORD,
-                              CH_regex=ur'小水母 系統(自動回覆|資訊|圖片|匯率|黑名單)',
-                              EN_regex=ur'JC\nP\n(KW|SYS|IMG|EXC|BAN)')]
+        def generate_output_mod_linked(self, mod_result, pack_result):
+            expr = self._generate_expr(pack_result)
 
-    _P2 = [ur'小水母 使用者 ?([U]{1}[0-9a-f]{32}) ?的資料']
+            if mod_result.success:
+                return (bot.line_api_wrapper.wrap_text_message(u'{} 相關回覆組變更成功。'.format(expr), self._webpage_generator), self._generate_shortcut_template(pack_result))
+            else:
+                return u'{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
-    _G = [ur'小水母 群組([CR]{1}[0-9a-f]{32})?的資料']
+        def _mod_pinned(self, pack_result, executor_permission, kwd_instance):
+            param_dict = pack_result.result
 
-    _GA = [ur'小水母 當(啞巴|機器人|服務員|八嘎囧)']
+            mod_pin = self._able_to_mod_pinned(executor_permission)
 
-    _GA2 = [ur'小水母 讓 ?([U]{1}[0-9a-f]{32}) ?變成(可憐兒|一般人|副管|管理員)']
+            if param_dict[param_packer.func_E.param_category.IS_ID]:
+                result = kwd_instance.set_pinned_by_index(param_dict[param_packer.func_E.param_category.ID], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
+            else:
+                result = kwd_instance.set_pinned_by_keyword(param_dict[param_packer.func_E.param_category.KEYWORD], mod_pin and not param_dict[param_packer.func_E.param_category.NOT_PIN])
 
-    _GA3 = [(ur'小水母 啟用公用資料庫([A-Z0-9]{40})', ur'JC\nGA3\n([A-Z0-9]{40})')]
+            return ext.action_result(None, result)
 
-    _H = [(ur'小水母 頻道資訊', ur'JC\nH')]
+        def generate_output_mod_pinned(self, pin_result, pack_result):
+            expr = self._generate_expr(pack_result)
 
-    _SHA = [(ur'小水母 雜湊SHA ?(.*)', ur'JC\nSHA\n(.*)')]
+            if pin_result.success:
+                return (bot.line_api_wrapper.wrap_text_message(u'{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
+            else:
+                return u'{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
-    _O = [param_packer.func_O(command_category=param_packer.func_O.command_category.OXFORD,
-                              CH_regex=ur'小水母 查 ?([\w\s]+)',
-                              EN_regex=ur'JC\nO\n([\w\s]+)')]
+        def _generate_shortcut_template(self, pack_result):
+            param_dict = pack_result.result
 
-    _RD = [(ur'小水母 抽 ?(([\d\.]{1,})%) ?((\d{1,6})次)?', ur'JC\nRD\n(([\d\.]{1,})%)(\n(\d{1,6}))?'), 
-           (ur'小水母 抽 ?((\d{1,6})次)? ?((?:.|\n)+)', ur'JC\nRD(\n(\d{1,6}))?\n((?:.|\n)+)'),
-           ur'小水母 抽 ?(\d+)(到|~)(\d+)']
+            expr = self._E_generate_expr(pack_result)
 
-    _L = [(ur'小水母 最近的(貼圖|圖片|回覆組|發送者|訊息)', ur'JC\nL\n(S|P|R|U|M)')]
+            if param_dict[param_packer.func_E.param_category.IS_ID]:
+                target_array = param_dict[param_packer.func_E.param_category.ID]
+                shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊(#{})'.format(id): text_msg_handler.CH_HEAD + u'詳細找ID {}'.format(id) for id in target_array },     u'更動回覆組ID: {}'.format(expr), u'相關指令')
+            else:
+                target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
+                shortcut_template = bot.line_api_wrapper.wrap_template_with_action({ '回覆組詳細資訊()'.format(kw): u'詳細找{}'.format(kw) for kw in target_array }, u'更動回覆組: {}'.format(expr),   u'相關指令')
 
-    _T = [(ur'小水母 編碼((?:.|\n)+)', ur'JC\nT\n((?:.|\n)+)')]
+            return shortcut_template
 
-    _C = [ur'小水母 匯率(可用)?', 
-          ur'小水母 匯率([A-Z ]{3,})', 
-          ur'小水母 匯率((1999|20\d{2})(0[1-9]|1[1-2])([0-2][1-9]|3[0-1]))(時的([A-Z ]{3,}))?', 
-          (ur'小水母 匯率([A-Z]{3}) ([\d\.]+) ?轉成 ?([A-Z]{3})', ur'JC\nC\n([A-Z]{3})\n([\d\.]+)\n([A-Z]{3})')]
+        def _generate_expr(self, pack_result):
+            param_dict = pack_result.result
 
-    _FX = [ur'小水母 解因式分解 ?([!$%^&*()_+|~\-=`{}\[\]:\";\'<>\?,\./0-9A-Za-z]+)', 
-           ur'小水母 解方程式 ?(變數((?:.|\n)+)(?<! )) ?(方程式([!$%^&*()_+|~\-\n=`{}\[\]:\";\'<>\?,\./0-9A-Za-z和]+))']
+            if param_dict[param_packer.func_E.param_category.IS_ID]:
+                target_array = param_dict[param_packer.func_E.param_category.ID]
+                expr = u'、'.join([u'#{}'.format(str(id)) for id in target_array])
+            else:
+                target_array = param_dict[param_packer.func_E.param_category.KEYWORD]
+                expr = u'關鍵字: ' + u'、'.join(target_array)
 
-    _W = [ur'小水母 天氣ID查詢 ?([\w\s]+)', 
-          ur'小水母 天氣(查詢|記錄|刪除) ?([\d\s]+) ?(詳|簡)? ?((\d+)小時內)? ?(每(\d+)小時)?']
+            return expr
 
-    _DL = [(ur'小水母 下載貼圖圖包 ?(\d+) ?(含聲音)?', ur'JC\nDL\n(\d+)(S)?')]
+    class _K(object):
+        def __init__(self, config_manager):
+            self._config_manager = config_manager
 
-    _STK = [ur'小水母 貼圖(圖包)?排行 ?(前(\d+)名)? ?((\d+)小時內)?', 
-            (ur'小水母 貼圖(\d+)', ur'JC\nSTK\n(\d+)')]
+        def get_limit(self, pack_result):
+            prm_dict = pack_result.result
+
+            default = self._default_limit()
+            limit_count = prm_dict[param_packer.func_K.param_category.COUNT] 
+
+            if limit_count is None:
+                return default
+            else:
+                return limit_count
+
+        def _default_limit(self):
+            return self._config_manager.getint(bot.config_category.KEYWORD_DICT, bot.config_category_kw_dict.DEFAULT_RANK_RESULT_COUNT)
+
+    class _P(object):
+        def __init__(self, webpage_generator, config_manager, system_data, system_stats, group_manager, loop_preventer, oxr_client, imgur_api):
+            self._webpage_generator = webpage_generator
+            self._config_manager = config_manager
+            self._system_data = system_data
+            self._system_stats = system_stats
+            self._group_manager = group_manager
+            self._loop_prev = loop_preventer
+            self._oxr_client = oxr_client
+            self._imgur_api_wrapper = imgur_api
+
+        def generate_output_sys_rec(self, kwd_instance, pack_result):
+            rec_cat = pack_result.result[param_packer.func_P.param_category.CATEGORY]
+
+            if rec_cat == special_param.func_P.record_category.AUTO_REPLY:
+                instance_type = u'{}回覆組資料庫'.format(unicode(kwd_instance.available_range))
+                return u'【{}相關統計資料】\n'.format(instance_type) + kwd_instance.get_statistics_string()
+            elif rec_cat == special_param.func_P.record_category.BAN_LIST:
+                text = u'【暫時封鎖清單】\n以下使用者因洗板疑慮，已暫時封鎖指定使用者對小水母的所有操控。輸入驗證碼以解除鎖定。\n此清單將在小水母重新開啟後自動消除。\n系統開機時間: {}\n\n'.format       (self._system_data.boot_up)
+                text += self._loop_prev.get_all_banned_str()
+
+                return text
+            elif rec_cat == special_param.func_P.record_category.EXCHANGE_RATE:
+                return self._oxr_client.usage_str(self._oxr_client.get_usage_dict())
+            elif rec_cat == special_param.func_P.record_category.IMGUR_API:
+                import socket
+                ip_address = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+
+                return self._imgur_api_wrapper.get_status_string(ip_address)
+            elif rec_cat == special_param.func_P.record_category.SYS_INFO:
+                text = u'【系統統計資料】\n'
+                text += u'開機時間: {} (UTC+8)\n\n'.format(self._system_data.boot_up)
+                text += self._system_stats.get_statistics()
+
+                return text
+            else:
+                return error.sys_command.unknown_func_P_record_category(rec_cat)
+
+        def generate_output_msg_track(self, pack_result, data):
+            limit = self._get_msg_track_data_count(pack_result)
+
+            tracking_string_obj = db.group_manager.message_track_string(data, limit, [u'【訊息流量統計】(前{}名)'.format(limit)], error.main.miscellaneous(u'沒有訊息量追蹤紀錄。'), True, True,    self._group_manager.message_sum())
+            
+            return u'為避免訊息過長造成洗板，請點此察看結果:\n{}'.format(self._webpage_generator.rec_webpage(tracking_string_obj.full, db.webpage_content_type.TEXT))
+
+        def get_msg_track_data(self, pack_result):
+            limit = self._get_msg_track_data_count(pack_result)
+
+            return self._group_manager.order_by_recorded_msg_count(limit)
+
+        def _get_msg_track_data_count(self, pack_result):
+            prm_dict = pack_result.result
+
+            default = self._config_manager.getint(bot.config.config_category.KEYWORD_DICT, bot.config.config_category_kw_dict.MAX_MESSAGE_TRACK_OUTPUT_COUNT)
+            count = prm_dict[param_packer.func_P.param_category.COUNT]
+
+            if count is None:
+                return default
+            else:
+                return count

@@ -12,7 +12,7 @@ class weather_report_config(db_base):
     def __init__(self, mongo_db_uri):
         super(weather_report_config, self).__init__(mongo_db_uri, DB_NAME, weather_report_config.COLLECTION_NAME, False, [weather_report_config_data.USER_ID])
 
-    def add_config(self, uid, city_ids, mode=tool.weather.output_config.SIMPLE, interval=3, data_range=120):
+    def add_config(self, uid, city_ids, mode=tool.weather.output_type.SIMPLE, interval=3, data_range=120):
         """Return result in string"""
         city_ids = ext.to_int(city_ids)
 
