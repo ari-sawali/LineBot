@@ -13,3 +13,4 @@ pyowm
 Pillow
 geopy
 xlrd
+flask-bootstrap

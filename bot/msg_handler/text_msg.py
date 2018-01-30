@@ -1261,7 +1261,7 @@ class command_handler_collection(object):
 
     class _I(object):
         def __init__(self, line_wrapper, config_manager, webpage_generator):
-            self._line_wrapper = line_wrapper
+            self._line_api_wrapper = line_wrapper
             self._config_manager = config_manager
             self._webpage_generator = webpage_generator
 
