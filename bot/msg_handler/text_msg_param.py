@@ -207,7 +207,7 @@ class param_validator(object):
         except UnicodeEncodeError:
             obj = obj.encode('utf-8')
 
-        if tool.regex.regex_finder.find_match(ur'.*(?:[0-9a-fA-F]{56}).*', obj) is not None:
+        if tool.regex.regex_finder.find_match([ur'(?:[0-9a-fA-F]{56})'], obj) is not None:
             return param_validator.conv_unicode(obj, allow_null)
         else:
             return param_validation_result(error.sys_command.must_sha(obj), False)
@@ -468,7 +468,7 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            return param_validation_result(obj, tool.regex.regex_finder.find_match(ur'.*(?:[A-Z0-9]{40}).*', obj) is None)
+            return param_validation_result(obj, tool.regex.regex_finder.find_match([ur'.*(?:[A-Z0-9]{40}).*'], obj) is None)
 
         @staticmethod
         def L_category(obj, allow_null):
@@ -499,7 +499,7 @@ class param_validator(object):
                 return base
 
             l = len(obj)
-            regex_valid = tool.regex.regex_finder.find_match(ur'([A-Z ]{3, })', obj) is not None
+            regex_valid = tool.regex.regex_finder.find_match([ur'([A-Z ]{3, })'], obj) is not None
 
             if regex_valid and (l == 3 or (l >= 3 and l % 3 == 2)):
                 return param_validator.conv_unicode_arr(obj, allow_null)
@@ -512,7 +512,7 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            if tool.regex.regex_finder.find_match(ur'([A-Z]{3})', obj) is not None:
+            if tool.regex.regex_finder.find_match([ur'([A-Z]{3})'], obj) is not None:
                 return param_validator.conv_unicode_arr(obj, allow_null)
             else:
                 return param_validation_result(error.sys_command.func_C_currency_symbol_unrecognizable(obj), False)
@@ -523,7 +523,7 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            return param_validation_result(obj, tool.regex.regex_finder.find_match(ur'(?:(?:1999|20\d{2})(?:0[1-9]|1[1-2])(?:[0-2][1-9]|3[0-1]))', obj) is not None)
+            return param_validation_result(obj, tool.regex.regex_finder.find_match([ur'(?:(?:1999|20\d{2})(?:0[1-9]|1[1-2])(?:[0-2][1-9]|3[0-1]))'], obj) is not None)
 
         @staticmethod
         def FX_validate_formulas(obj, allow_null):
@@ -531,7 +531,7 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            if tool.regex.regex_finder.find_match(ur'([!^*()_+|~\-=<>/0-9A-Za-z&]+)', obj) is not None:
+            if tool.regex.regex_finder.find_match([ur'([!^*()_+|~\-=<>/0-9A-Za-z&]+)'], obj) is not None:
                 return param_validation_result(obj.split('&'), True)
             else:
                 return param_validation_result(obj, False)
