@@ -290,7 +290,7 @@ class text_msg_handler(object):
                 kwd_instance = self._get_kwd_instance(src, group_config_type, execute_in_gid)
                 kwd_add_result = A_handler.add_kw(kwd_instance, packing_result, pinned, get_uid_result.result)
 
-                return self._A_generate_output(kwd_add_result)
+                return A_handler.generate_output(kwd_add_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return unicode(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
@@ -430,7 +430,7 @@ class text_msg_handler(object):
                     mod_result = E_handler.mod_linked(packing_result, executor_permission, kwd_instance)
                     return E_handler.generate_output_mod_linked(mod_result, packing_result)
                 elif packing_result.command_category == param_packer.func_E.command_category.MOD_PINNED:
-                    mod_result = self._E_mod_pinned(packing_result, executor_permission, kwd_instance)
+                    mod_result = E_handler.mod_pinned(packing_result, executor_permission, kwd_instance)
                     return E_handler.generate_output_mod_pinned(mod_result, packing_result)
                 else:
                     raise UndefinedCommandCategoryException()
@@ -1168,14 +1168,14 @@ class command_handler_collection(object):
 
         def _get_rcv_type(self, packing_result):
             param_dict = packing_result.result
-            if self._A_is_auto_detect(packing_result):
+            if self._is_auto_detect(packing_result):
                 return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.RCV_CONTENT], False)
             else:
                 return ext.action_result(param_dict[param_packer.func_A.param_category.RCV_TYPE], True)
 
         def _get_rep_type(self, packing_result):
             param_dict = packing_result.result
-            if self._A_is_auto_detect(packing_result):
+            if self._is_auto_detect(packing_result):
                 return param_validator.keyword_dict.get_type_auto(param_dict[param_packer.func_A.param_category.REP_CONTENT], False)
             else:
                 return ext.action_result(param_dict[param_packer.func_A.param_category.REP_TYPE], True)
@@ -1184,7 +1184,7 @@ class command_handler_collection(object):
             param_dict = packing_result.result
             cmd_cat = packing_result.command_category
 
-            if self._A_is_auto_detect(packing_result):
+            if self._is_auto_detect(packing_result):
                 return param_dict[param_packer.func_A.param_category.RCV_CONTENT]
             else:
                 if param_dict[param_packer.func_A.param_category.RCV_TYPE] == db.word_type.TEXT:
@@ -1365,9 +1365,6 @@ class command_handler_collection(object):
         def __init__(self, webpage_generator):
             self._webpage_generator = webpage_generator
 
-        def _able_to_mod_pinned(self, executor_permission):
-            return executor_permission >= bot.permission.MODERATOR
-
         def mod_linked(self, pack_result, executor_permission, kwd_instance):
             param_dict = pack_result.result
 
@@ -1387,6 +1384,14 @@ class command_handler_collection(object):
 
             return ext.action_result(None, result)
 
+        def generate_output_mod_pinned(self, pin_result, pack_result):
+            expr = self._generate_expr(pack_result)
+
+            if pin_result.success:
+                return (bot.line_api_wrapper.wrap_text_message(u'{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._generate_shortcut_template(pack_result))
+            else:
+                return u'{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
+
         def generate_output_mod_linked(self, mod_result, pack_result):
             expr = self._generate_expr(pack_result)
 
@@ -1395,7 +1400,10 @@ class command_handler_collection(object):
             else:
                 return u'{} 相關回覆組變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
 
-        def _mod_pinned(self, pack_result, executor_permission, kwd_instance):
+        def _able_to_mod_pinned(self, executor_permission):
+            return executor_permission >= bot.permission.MODERATOR
+
+        def mod_pinned(self, pack_result, executor_permission, kwd_instance):
             param_dict = pack_result.result
 
             mod_pin = self._able_to_mod_pinned(executor_permission)
@@ -1407,18 +1415,10 @@ class command_handler_collection(object):
 
             return ext.action_result(None, result)
 
-        def generate_output_mod_pinned(self, pin_result, pack_result):
-            expr = self._generate_expr(pack_result)
-
-            if pin_result.success:
-                return (bot.line_api_wrapper.wrap_text_message(u'{} 置頂屬性變更成功。'.format(expr), self._webpage_generator), self._E_generate_shortcut_template(pack_result))
-            else:
-                return u'{} 置頂屬性變更失敗。可能是因為ID不存在或權限不足而造成。'.format(expr)
-
         def _generate_shortcut_template(self, pack_result):
             param_dict = pack_result.result
 
-            expr = self._E_generate_expr(pack_result)
+            expr = self._generate_expr(pack_result)
 
             if param_dict[param_packer.func_E.param_category.IS_ID]:
                 target_array = param_dict[param_packer.func_E.param_category.ID]
