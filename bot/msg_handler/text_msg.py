@@ -616,7 +616,7 @@ class text_msg_handler(object):
             if packing_result.status == param_packing_result_status.ALL_PASS:
                 GA2_handler = command_handler_collection._GA2(self._line_api_wrapper, self._group_manager)
 
-                return GA2_handler.generate_output(packing_result, src)
+                return GA2_handler.generate_output(packing_result, src, execute_in_gid)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
                 return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
@@ -1492,7 +1492,7 @@ class command_handler_collection(object):
             self._line_api_wrapper = line_api_wrapper
             self._group_manager = group_manager
 
-        def generate_output(self, pack_result, src):
+        def generate_output(self, pack_result, src, execute_in_gid):
             setter_uid = bot.line_api_wrapper.source_user_id(src)
             try:
                 setter_name = self._line_api_wrapper.profile_name(setter_uid)
