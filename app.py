@@ -106,7 +106,7 @@ if channel_access_token is None:
     print('Specify LINE_CHANNEL_ACCESS_TOKEN environment variable.')
     sys.exit(1)
 handler = WebhookHandler(channel_secret)
-line_api = bot.line_api_wrapper(LineBotApi(channel_access_token), webpage_generator)
+line_api = bot.line_api_wrapper(LineBotApi(channel_access_token, timeout=15), webpage_generator)
 
 # Imgur APi instantiation
 imgur_client_id = os.getenv('IMGUR_CLIENT_ID', None)
@@ -277,7 +277,7 @@ def handle_error(event, exception_instance):
     error_msg = u'開機時間: {}\n'.format(sys_data.boot_up)
     if isinstance(exception_instance, LineBotApiError):
         error_msg += u'LINE API發生錯誤，狀態碼: {}\n\n'.format(exception_instance.status_code)
-        error_msg += u'錯誤內容: {}\n'.format(exception_instance.error.as_json_string()) 
+        error_msg += u'錯誤內容: {}\n{}'.format(exception_instance.error.message, exception_instance.error.details) 
         if ex.status_code == 429:
             return
     else:

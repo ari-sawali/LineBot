@@ -352,7 +352,7 @@ class line_api_wrapper(object):
     @staticmethod
     def wrap_template_with_action(data_dict, alt_text_unicode, title_unicode):
         """
-        data_dict should follow the format below, and the length of dict must less than or equals to 15. Result may be unexpected if the format is invalid.
+        data_dict should follow the format below, and the length of dict must less than or equals to 30. Result may be unexpected if the format is invalid.
             {label: message}
 
         title will display as "{title} {index}", index is the index of carousel.
@@ -360,7 +360,6 @@ class line_api_wrapper(object):
 
         Return TemplateSendMessage.
         """
-        MAX_ACTIONS = 15
         MAX_ACTIONS_IN_CAROUSEL = 3
         MAX_LABEL_TEXT_LENGTH = 17
 
@@ -368,7 +367,7 @@ class line_api_wrapper(object):
 
         length_action_dict = len(data_dict)
 
-        if length_action_dict > MAX_ACTIONS:
+        if length_action_dict > error.error.line_bot_api.MAX_TEMPLATE_ACTIONS:
             error_msg = error.error.line_bot_api.too_many_linked_words(length_action_dict)
 
             return TextSendMessage(text=error_msg)

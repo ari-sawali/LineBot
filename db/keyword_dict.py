@@ -285,8 +285,8 @@ class group_dict_manager(db_base):
                 linked_word = []
             else:
                 raise ValueError('linked word should be list or tuple type.')
-        elif len(linked_word) > 15:
-            return error.main.miscellaneous(u'相關關鍵字最高只能寫入15組關鍵字。')
+        elif len(linked_word) > error.line_bot_api.MAX_TEMPLATE_ACTIONS:
+            return error.main.miscellaneous(u'相關關鍵字最高只能寫入{}組關鍵字。'.format(error.line_bot_api.MAX_TEMPLATE_ACTIONS))
 
         if kw_type == word_type.STICKER:
             keyword = keyword.replace(' ', '')
@@ -863,7 +863,7 @@ class pair_data(dict_like_mapping):
             keyword_type: WORD_TYPE
             reply_type: WORD_TYPE
             reply_attach_text: STRING
-            linked_word: ARRAY(STRING) (MAX 15)
+            linked_word: ARRAY(STRING) (MAX 30)
         }
         statistics: {
             created_time: TIMESTAMP

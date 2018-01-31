@@ -88,6 +88,8 @@ class error(object):
                 u'\n需求權限: {}+\n\n權限相關說明請參閱使用說明書( {} )'.format(permission, error.USER_MANUAL_URL) if permission is not None else u'')
 
     class line_bot_api(object):
+        MAX_TEMPLATE_ACTIONS = 30
+
         @staticmethod
         def unable_to_receive_user_id():
             return u'無法獲取LINE UID。請確定達成全部以下條件後重試:\n1.LINE版本7.5.0或以上\n2.已加入小水母好友\n\n如果全部符合上述條件仍然跳出此錯誤訊息的話，請輸入"小水母"填寫問題回報單。'
@@ -110,7 +112,7 @@ class error(object):
 
         @staticmethod
         def too_many_linked_words(count):
-            MAX = 15
+            MAX = error.line_bot_api.MAX_TEMPLATE_ACTIONS
             return u'因相關關鍵字數量({}個)超過系統限制({}個)，故無法顯示。請刪除{}組相關關鍵字以後重試。'.format(count, MAX, count - MAX)
 
     class oxford_api(object):
