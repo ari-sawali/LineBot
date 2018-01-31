@@ -1383,7 +1383,9 @@ class packer_factory(object):
 
     _GA = [ur'小水母 當(啞巴|機器人|服務員|八嘎囧)']
 
-    _GA2 = [ur'小水母 讓 ?([U]{1}[0-9a-f]{32}) ?變成(可憐兒|一般人|副管|管理員)']
+    _GA2 = [param_packer.func_GA2(command_category=param_packer.func_GA2.command_category.SET_PERMISSION,
+                                  CH_regex=ur'小水母 讓 ?(\w+) ?變成(\w+)',
+                                  EN_regex=ur'JC\nGA2\n(\w+)\n(\w+)')]
 
     _GA3 = [(ur'小水母 啟用公用資料庫([A-Z0-9]{40})', ur'JC\nGA3\n([A-Z0-9]{40})')]
 

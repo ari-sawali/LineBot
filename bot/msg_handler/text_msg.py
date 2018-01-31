@@ -609,55 +609,20 @@ class text_msg_handler(object):
         return text
     
     def _GA2(self, src, execute_in_gid, group_config_type, executor_permission, text):
-        regex_list = packer_factory._GA2
+        packer_list = packer_factory._GA2
 
-        regex_result = tool.regex_finder.find_match(regex_list, text)
+        for packer in packer_list:
+            packing_result = packer.pack(text)
+            if packing_result.status == param_packing_result_status.ALL_PASS:
+                GA2_handler = command_handler_collection._GA2(self._line_api_wrapper)
 
-        if regex_result is None:
-            return
-
-        setter_uid = bot.line_api_wrapper.source_user_id(src)
-        try:
-            setter_name = self._line_api_wrapper.profile_name(setter_uid)
-        except bot.UserProfileNotFoundError:
-            return error.line_bot_api.unable_to_receive_user_id()
-
-        if regex_result.match_at == 0:
-            setter_uid = bot.line_api_wrapper.source_user_id(src)
-            target_uid = regex_result.group(1)
-
-            if not bot.line_api_wrapper.is_valid_user_id(target_uid):
-                return error.line_bot_api.illegal_user_id(target_uid)
-
-            try:
-                target_name = self._line_api_wrapper.profile_name(target_uid)
-            except bot.UserProfileNotFoundError:
-                return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
-
-            action = ext.to_int(regex_result.group(2))
-
-            if action == u'可憐兒':
-                permission = bot.permission.RESTRICTED
-            elif action == u'一般人':
-                permission = bot.permission.USER
-            elif action == u'副管':
-                permission = bot.permission.MODERATOR
-            elif action == u'管理員':
-                permission = bot.permission.ADMIN
+                return GA2_handler.generate_output(packing_result, src)
+            elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
+                return unicode(packing_result.result)
+            elif packing_result.status == param_packing_result_status.NO_MATCH:
+                pass
             else:
-                return error.sys_command.action_not_implemented(u'GA', regex_result.match_at, action)
-            
-            try:
-                if permission == bot.permission.USER:
-                    self._group_manager.delete_permission(execute_in_gid, setter_uid, target_uid)
-                    return u'權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
-                else:
-                    self._group_manager.set_permission(execute_in_gid, setter_uid, target_uid, permission)
-                    return u'權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限: {}'.format(setter_uid, setter_name, target_name, target_uid, unicode(permission))
-            except db.InsufficientPermissionError:
-                return error.permission.restricted()
-        else:
-            raise RegexNotImplemented(error.sys_command.regex_not_implemented(u'GA2', regex_result.match_at, regex_result.regex))
+                raise UndefinedPackedStatusException(unicode(packing_result.status))
     
     def _GA3(self, src, execute_in_gid, group_config_type, executor_permission, text):
         regex_list = packer_factory._GA3
@@ -1521,3 +1486,35 @@ class command_handler_collection(object):
                 return default
             else:
                 return count
+
+    class _GA2(object):
+        def __init__(self, line_api_wrapper):
+            self._line_api_wrapper = line_api_wrapper
+
+        def generate_output(self, pack_result, src):
+            setter_uid = bot.line_api_wrapper.source_user_id(src)
+            try:
+                setter_name = self._line_api_wrapper.profile_name(setter_uid)
+            except bot.UserProfileNotFoundError:
+                return error.line_bot_api.unable_to_receive_user_id()
+
+            target_uid = pack_result.result[param_packer.func_GA2.param_category.UID]
+            try:
+                target_name = self._line_api_wrapper.profile_name(target_uid)
+            except bot.UserProfileNotFoundError:
+                return error.main.miscellaneous(u'無法查詢權限更動目標的使用者資料。請先確保更動目標已加入小水母的好友以後再試一次。')
+
+            permission = pack_result.result[param_packer.func_GA2.param_category.PERMISSION]
+
+            if not bot.line_api_wrapper.is_valid_user_id(target_uid):
+                return error.line_bot_api.illegal_user_id(target_uid)
+            
+            try:
+                if permission == bot.permission.USER:
+                    self._group_manager.delete_permission(execute_in_gid, setter_uid, target_uid)
+                    return u'權限刪除成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}'.format(setter_uid, setter_name, target_name, target_uid)
+                else:
+                    self._group_manager.set_permission(execute_in_gid, setter_uid, target_uid, permission)
+                    return u'權限更改/新增成功。\n執行者: {}\n執行者UID: {}\n目標: {}\n目標UID: {}\n新權限: {}'.format(setter_uid, setter_name, target_name, target_uid, unicode(permission))
+            except db.InsufficientPermissionError:
+                return error.permission.restricted()
