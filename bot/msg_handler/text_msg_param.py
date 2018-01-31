@@ -451,13 +451,13 @@ class param_validator(object):
             err = error.sys_command.unknown_func_GA2_permission(obj)
             t = err
 
-            if obj == u'可憐兒' or obj == u'0':
+            if obj == u'可憐兒' or obj == u'-1':
                 t = bot.permission.RESTRICTED
-            elif obj == u'一般人' or obj == u'1':
+            elif obj == u'一般人' or obj == u'0':
                 t = bot.permission.USER
-            elif obj == u'副管' or obj == u'2':
+            elif obj == u'副管' or obj == u'1':
                 t = bot.permission.MODERATOR
-            elif obj == u'管理員' or obj == u'3':
+            elif obj == u'管理員' or obj == u'2':
                 t = bot.permission.ADMIN
 
             return param_validation_result(t, t != err)

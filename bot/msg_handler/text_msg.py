@@ -65,7 +65,7 @@ class text_msg_handler(object):
         src_uid = bot.line_api_wrapper.source_user_id(src)
 
         texts = split(text, text_msg_handler.REMOTE_SPLITTER, 2)
-        if bot.line_api_wrapper.is_valid_room_group_id(texts[0], True, True):
+        if bot.line_api_wrapper.is_valid_room_group_id(texts[0], True, True) and texts[1] is not None:
             attempt_to_remote = True
             execute_remote_gid = texts[0]
             text = texts[1]
@@ -1191,7 +1191,7 @@ class command_handler_collection(object):
             if param_dict[param_packer.func_D.param_category.IS_ID]:
                 disabled_data = kwd_instance.disable_keyword_by_id(param_dict[param_packer.func_D.param_category.ID], executor_uid, pinned)
             else:
-                disabled_data = kwd_instance.disable_keyword(self._replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
+                disabled_data = kwd_instance.disable_keyword(command_handler_collection.replace_newline(param_dict[param_packer.func_D.param_category.WORD]), executor_uid, pinned)
 
             return ext.action_result(disabled_data, len(disabled_data) > 0)
 
