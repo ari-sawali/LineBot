@@ -3,9 +3,9 @@
 import time
 import httplib
 
-import enum
+from enum import Enum
 
-class mode(enum):
+class mode(Enum):
     FUNNY = 1
     NORMAL = 1
 
