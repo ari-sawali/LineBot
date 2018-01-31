@@ -77,12 +77,11 @@ class text_msg_handler(object):
         cmd_iter = self._get_cmd_data(text)
         if cmd_iter is not None:
             cmd_key, cmd_data = cmd_iter
-
-        # terminate if set to silence
-        if cmd_data is None:
+        else:
             print 'Called an not existed command.'
             return False
 
+        # terminate if set to silence
         if group_config_type <= db.group_data_range.SILENCE and cmd_data.function_code != 'GA':
             print 'Terminate because the group is set to silence and function code is not GA.'
             return False
