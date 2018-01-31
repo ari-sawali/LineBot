@@ -614,7 +614,7 @@ class text_msg_handler(object):
         for packer in packer_list:
             packing_result = packer.pack(text)
             if packing_result.status == param_packing_result_status.ALL_PASS:
-                GA2_handler = command_handler_collection._GA2(self._line_api_wrapper)
+                GA2_handler = command_handler_collection._GA2(self._line_api_wrapper, self._group_manager)
 
                 return GA2_handler.generate_output(packing_result, src)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
@@ -1488,8 +1488,9 @@ class command_handler_collection(object):
                 return count
 
     class _GA2(object):
-        def __init__(self, line_api_wrapper):
+        def __init__(self, line_api_wrapper, group_manager):
             self._line_api_wrapper = line_api_wrapper
+            self._group_manager = group_manager
 
         def generate_output(self, pack_result, src):
             setter_uid = bot.line_api_wrapper.source_user_id(src)
