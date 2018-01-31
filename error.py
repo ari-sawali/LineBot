@@ -139,6 +139,10 @@ class error(object):
 
     class sys_command(object):
         @staticmethod
+        def parameter_error(index, content):
+            return u'參數{}發生錯誤，請查閱說明書以獲取使用方法。錯誤訊息: {}'.format(index, content)
+
+        @staticmethod
         def must_https(obj):
             return u'必須是https連結。({})'.format(obj)
 

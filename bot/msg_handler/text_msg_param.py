@@ -53,7 +53,7 @@ class param_packer_base(object):
                 if validate_result.valid:
                     p_dict[param.field_enum] = validate_result.ret
                 else:
-                    return param_packing_result(validate_result.ret, param_packing_result_status.ERROR_IN_PARAM, self._cat)
+                    return param_packing_result(error.sys_command.parameter_error(i, validate_result.ret), param_packing_result_status.ERROR_IN_PARAM, self._cat)
 
             return param_packing_result(p_dict, param_packing_result_status.ALL_PASS, self._cat)
         else:
@@ -355,7 +355,7 @@ class param_validator(object):
             if base is not None:
                 return base
 
-            return param_validation_result(obj, bot.line_api_wrapper.is_valid_user_id(obj) and bot.line_api_wrapper.is_valid_room_group_id(obj))
+            return param_validation_result(obj, bot.line_api_wrapper.is_valid_user_id(obj) or bot.line_api_wrapper.is_valid_room_group_id(obj))
 
         @staticmethod
         def validate_uid(obj, allow_null):
