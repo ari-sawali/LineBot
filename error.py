@@ -3,7 +3,15 @@
 import time
 import httplib
 
+import enum
+
+class mode(enum):
+    FUNNY = 1
+    NORMAL = 1
+
 class error(object):
+    MODE = mode.FUNNY
+
     USER_MANUAL_URL = 'https://sites.google.com/view/jellybot'
 
     class webpage(object):
@@ -139,8 +147,15 @@ class error(object):
 
     class sys_command(object):
         @staticmethod
+        def unable_to_parse(result):
+            return u'傻逼，說明書看好看滿再來叫我做事，都沒看好就在那邊想打指令，Hen煩捏！\n\n{}'.format(result)
+
+        @staticmethod
         def parameter_error(index, content):
-            return u'參數{}發生錯誤，請查閱說明書以獲取使用方法。錯誤訊息: {}'.format(index, content)
+            if error.MODE == mode.FUNNY:
+                return u'你第{}個參數手殘打錯了，你看看: {}'.format(index, content)
+            else:
+                return u'參數{}發生錯誤，請查閱說明書以獲取使用方法。錯誤訊息: {}'.format(index, content)
 
         @staticmethod
         def must_https(obj):
@@ -222,7 +237,6 @@ class error(object):
         @staticmethod
         def func_C_currency_symbol_unrecognizable(obj):
             return u'無法分析貨幣種類。({})'.format(obj)
-
 
     class string_calculator(object):
         @staticmethod

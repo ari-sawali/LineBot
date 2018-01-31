@@ -268,7 +268,7 @@ class text_msg_handler(object):
 
                 return text
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -294,7 +294,7 @@ class text_msg_handler(object):
 
                 return A_handler.generate_output(kwd_add_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -323,7 +323,7 @@ class text_msg_handler(object):
 
                 return D_handler.generate_output(kwd_del_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -345,7 +345,7 @@ class text_msg_handler(object):
 
                 return Q_handler.generate_output(query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -364,7 +364,7 @@ class text_msg_handler(object):
 
                 return I_handler.generate_output(kwd_instance, query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -386,7 +386,7 @@ class text_msg_handler(object):
 
                 return X_handler.gene(clone_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -408,7 +408,7 @@ class text_msg_handler(object):
 
                 return X2_handler.generate_output(clear_count)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -437,7 +437,7 @@ class text_msg_handler(object):
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -465,7 +465,7 @@ class text_msg_handler(object):
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -491,7 +491,7 @@ class text_msg_handler(object):
                 else:
                     raise UndefinedCommandCategoryException()
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -594,7 +594,7 @@ class text_msg_handler(object):
             else:
                 return error.sys_command.action_not_implemented(u'GA', regex_result.match_at, action)
             
-            if executor_permission > bot.permission.MODERATOR:
+            if executor_permission >= bot.permission.MODERATOR:
                 change_result = self._group_manager.set_config_type(execute_in_gid, cfg_type)
             else:
                 change_result = False
@@ -618,7 +618,7 @@ class text_msg_handler(object):
 
                 return GA2_handler.generate_output(packing_result, src, execute_in_gid)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
@@ -678,7 +678,7 @@ class text_msg_handler(object):
 
                 return self._O_generate_output(packing_result, oxford_query_result)
             elif packing_result.status == param_packing_result_status.ERROR_IN_PARAM:
-                return u'解析指令時發生錯誤。\n\n{}'.format(packing_result.result)
+                return error.sys_command.unable_to_parse(packing_result.result)
             elif packing_result.status == param_packing_result_status.NO_MATCH:
                 pass
             else:
